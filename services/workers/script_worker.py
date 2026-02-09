@@ -282,16 +282,20 @@ class ScriptWorker(BaseWorker):
 				self._publish_chains_if_changed(True)
 
 			elif action == str(Commands.START_CHAIN):
-				script_name = payload.get("script")
+				script_name = payload.get("script") or payload.get("script_name")
 				instance_id = payload.get("instance_id") or str(int(time.time() * 1000))
 				if not script_name:
-					self.publish_error(key="script_worker", action="start_chain", error="missing payload.script")
+					self.publish_error(
+						key="script_worker",
+						action="start_chain",
+						error="missing payload.script or payload.script_name",
+					)
 					continue
 
 				try:
-
-					self.loader.load_script(script_name)
-					fn = self.loader.get_entrypoint(script_name)
+					fn = self.loader.load_script(script_name, force=True)
+					if not fn:
+						raise RuntimeError("script load failed")
 				except Exception as ex:
 					self.publish_error(key=str(script_name), action="start_chain", error=str(ex))
 					continue
@@ -338,3 +342,18 @@ class ScriptWorker(BaseWorker):
 				if inst:
 					inst.paused = False
 					self._publish_chains_if_changed(True)
+
+			elif action == str(Commands.RELOAD_SCRIPT):
+				script_name = payload.get("script") or payload.get("script_name")
+				if not script_name:
+					self.publish_error(
+						key="script_worker",
+						action="reload_script",
+						error="missing payload.script or payload.script_name",
+					)
+					continue
+				try:
+					self.loader.load_script(script_name, force=True)
+					self._publish_scripts_if_changed(True)
+				except Exception as ex:
+					self.publish_error(key=str(script_name), action="reload_script", error=str(ex))

@@ -1,0 +1,146 @@
+{
+  "auth": {
+    "login_required": true
+  },
+  "persistence": {
+    "backend": "json",
+    "external_db": {
+      "dsn": "",
+      "enabled": false
+    },
+    "json_path": "config/app_config.json"
+  },
+  "ui": {
+    "navigation": {
+      "custom_routes": [
+        {
+          "icon": "home",
+          "key": "home",
+          "label": "Home",
+          "path": "home.py"
+        },
+        {
+          "icon": "warning",
+          "key": "errors",
+          "label": "Errors",
+          "path": "errors.py"
+        },
+        {
+          "icon": "settings",
+          "key": "settings",
+          "label": "Settings",
+          "path": "settings/settings_page.py"
+        },
+        {
+          "icon": "insert_drive_file",
+          "key": "packaging",
+          "label": "Packaging",
+          "path": "operator/packaging.py"
+        },
+        {
+          "icon": "home",
+          "key": "vi_home",
+          "label": "Visual Inspection",
+          "path": "visual_inspection/home.py"
+        }
+      ],
+      "main_route": "home",
+      "route_roles": {
+        "errors": [
+          "user",
+          "admin"
+        ],
+        "home": [
+          "user",
+          "admin"
+        ],
+        "packaging": [
+          "user"
+        ],
+        "reports": [
+          "user",
+          "admin"
+        ],
+        "route_settings": [
+          "user",
+          "admin"
+        ],
+        "settings": [
+          "user"
+        ],
+        "tcp_settings": [
+          "admin"
+        ],
+        "vi_home": [
+          "user",
+          "admin"
+        ]
+      },
+      "visible_routes": [
+        "summary",
+        "packaging",
+        "settings",
+        "errors",
+        "vi_home",
+        "test5"
+      ]
+    }
+  },
+  "workers": {
+    "configs": {
+      "rest_api": {
+        "endpoints": [
+          {
+            "base_url": "https://api.example.com",
+            "headers": {
+              "Authorization": "Bearer token"
+            },
+            "name": "example",
+            "timeout_s": 10.0,
+            "verify_ssl": true
+          },
+          {
+            "base_url": "http://127.0.0.1:8088/system/webdev/Core/odc/BookSingleSerial",
+            "headers": {
+              "Content-Type": "application/json"
+            },
+            "name": "book_serial",
+            "timeout_s": 10.0,
+            "verify_ssl": false
+          }
+        ]
+      },
+      "script_worker": {
+        "auto_start_chains": [
+          {
+            "instance_id": "default",
+            "script_name": "packaging/packaging_station"
+          }
+        ]
+      },
+      "tcp_client": {
+        "clients": [
+          {
+            "auto_reconnect": true,
+            "client_id": "scanner1",
+            "connect": true,
+            "delimiter": "\\n",
+            "encoding": "utf-8",
+            "host": "127.0.0.1",
+            "keepalive": true,
+            "mode": "line",
+            "port": 4001,
+            "reconnect_max_s": 1.0,
+            "reconnect_min_s": 1.0,
+            "tcp_nodelay": true
+          }
+        ]
+      }
+    },
+    "enabled_workers": [
+      "script_worker",
+      "tcp_client",
+      "rest_api"
+    ]
+  }
+}

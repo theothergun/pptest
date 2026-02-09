@@ -1,0 +1,195 @@
+from __future__ import annotations
+
+import queue
+from typing import Any
+
+from nicegui import ui
+from layout.context import PageContext
+
+
+TOPIC_CMD = "packaging.cmd"
+
+
+def render(container: ui.element, ctx: PageContext) -> None:
+	with container:
+		build_page(ctx)
+
+
+def build_page(ctx: PageContext) -> None:
+	worker_bus = ctx.workers.worker_bus
+	bridge = ctx.bridge
+
+	# --- lifecycle management (same pattern as your Scripts Lab page) ---
+	page_timers: list = []
+	sub_state = bridge.subscribe_many([
+		"state.container_number",
+		"state.part_number",
+		"state.description",
+		"state.work_instruction",
+		"state.work_feedback",
+		"state.current_container_qty",
+		"state.max_container_qty",
+		"state.part_good",
+		"state.part_bad",
+	])
+
+	def add_timer(*args, **kwargs):
+		t = ui.timer(*args, **kwargs)
+		page_timers.append(t)
+		return t
+
+	def cleanup() -> None:
+		try:
+			sub_state.close()
+		except Exception:
+			pass
+
+		for t in page_timers:
+			try:
+				t.cancel()
+			except Exception:
+				pass
+		page_timers[:] = []
+
+	ctx.state._page_cleanup = cleanup
+	ui.context.client.on_disconnect(cleanup)
+	# -------------------------------------------------------------------
+
+	# --------------------------
+	# UI refs (only for styling)
+	# --------------------------
+	ui_refs: dict[str, Any] = {
+		"card_current_qty": None,
+		"card_max_qty": None,
+	}
+
+	def _publish_cmd(cmd: str) -> None:
+		publish_fn = getattr(worker_bus, "publish", None)
+		if not callable(publish_fn):
+			return
+		publish_fn(TOPIC_CMD, cmd=cmd)
+
+	def _set_counter_cards_color(current_qty: int, max_qty: int) -> None:
+		# rules:
+		# - red if both 0
+		# - orange if 0 < current < max (or max == 0 but current > 0)
+		# - green if max > 0 and current >= max
+		if current_qty == 0 and max_qty == 0:
+			bg = "#FCA5A5"  # red-ish
+		elif max_qty > 0 and current_qty >= max_qty:
+			bg = "#86EFAC"  # green-ish
+		else:
+			bg = "#FDBA74"  # orange-ish
+
+		card_a = ui_refs.get("card_current_qty")
+		card_b = ui_refs.get("card_max_qty")
+		if card_a is not None:
+			try:
+				card_a.style("background-color: %s;" % bg)
+			except Exception:
+				pass
+		if card_b is not None:
+			try:
+				card_b.style("background-color: %s;" % bg)
+			except Exception:
+				pass
+
+	# --------------------------
+	# Layout
+	# --------------------------
+	with ui.column().classes("w-full h-full flex flex-col min-h-0 p-4 gap-4"):
+		with ui.row().classes("w-full items-center gap-4"):
+			ui.label("📦 packaging Station").classes("text-2xl font-bold")
+			ui.space()
+
+		with ui.grid().classes("w-full gap-4").style("grid-template-columns: 360px 1fr 280px;"):
+			with ui.card().classes("w-full"):
+				ui.label("Containernumber").classes("text-sm text-gray-500")
+				ui.label("").classes("text-lg font-bold") \
+					.bind_text_from(ctx.state, "container_number", backward=lambda n: str(n or ""))
+
+				ui.separator()
+
+				ui.label("Partnumber").classes("text-sm text-gray-500")
+				ui.label("").classes("text-lg font-bold") \
+					.bind_text_from(ctx.state, "part_number", backward=lambda n: str(n or ""))
+
+				ui.separator()
+
+				ui.label("Description").classes("text-sm text-gray-500")
+				ui.label("").classes("text-base") \
+					.bind_text_from(ctx.state, "description", backward=lambda n: str(n or ""))
+
+				ui.separator()
+
+				with ui.row().classes("w-full justify-between items-center mt-2"):
+					ui_refs["card_current_qty"] = ui.card().classes("w-[140px] h-[80px] flex items-center justify-center")
+					with ui_refs["card_current_qty"]:
+						ui.label("").classes("text-3xl font-bold") \
+							.bind_text_from(ctx.state, "current_container_qty", backward=lambda n: "%s" % int(n or 0))
+						ui.label("Current").classes("text-xs text-gray-700")
+
+					ui_refs["card_max_qty"] = ui.card().classes("w-[140px] h-[80px] flex items-center justify-center")
+					with ui_refs["card_max_qty"]:
+						ui.label("").classes("text-3xl font-bold") \
+							.bind_text_from(ctx.state, "max_container_qty", backward=lambda n: "%s" % int(n or 0))
+						ui.label("Max").classes("text-xs text-gray-700")
+
+			with ui.column().classes("w-full gap-4"):
+				with ui.card().classes("w-full"):
+					ui.label("Instruction for worker").classes("text-sm text-gray-500")
+					lbl_instruction = ui.label("").classes("text-xl font-semibold")
+					lbl_instruction.style("min-height: 72px;")
+					lbl_instruction.bind_text_from(ctx.state, "work_instruction", backward=lambda n: str(n or ""))
+
+				with ui.card().classes("w-full"):
+					ui.label("Current step").classes("text-sm text-gray-500")
+					lbl_step = ui.label("").classes("text-xl font-semibold")
+					lbl_step.style("min-height: 72px;")
+					lbl_step.bind_text_from(ctx.state, "work_feedback", backward=lambda n: str(n or ""))
+
+			with ui.card().classes("w-full"):
+				ui.label("Total good").classes("text-sm text-gray-500")
+				ui.label("").classes("text-4xl font-bold") \
+					.bind_text_from(ctx.state, "part_good", backward=lambda n: "%s" % int(n or 0))
+
+				ui.separator()
+
+				ui.label("Total bad").classes("text-sm text-gray-500")
+				ui.label("").classes("text-4xl font-bold") \
+					.bind_text_from(ctx.state, "part_bad", backward=lambda n: "%s" % int(n or 0))
+
+		with ui.row().classes("w-full gap-4 justify-start"):
+			ui.button("Start", icon="play_arrow", on_click=lambda: _publish_cmd("start")) \
+				.props("color=green").classes("w-[200px] h-[64px] text-lg")
+			ui.button("Stop", icon="stop", on_click=lambda: _publish_cmd("stop")) \
+				.props("color=red").classes("w-[200px] h-[64px] text-lg")
+			ui.button("Reset", icon="restart_alt", on_click=lambda: _publish_cmd("reset")) \
+				.props("color=blue outline").classes("w-[240px] h-[64px] text-lg")
+
+	# --------------------------
+	# Drain bridge for style updates
+	# --------------------------
+	def _apply_counter_color_from_state() -> None:
+		cur_qty = int(getattr(ctx.state, "current_container_qty", 0) or 0)
+		max_qty = int(getattr(ctx.state, "max_container_qty", 0) or 0)
+		_set_counter_cards_color(cur_qty, max_qty)
+
+	def _drain_bus() -> None:
+		changed = False
+		while True:
+			try:
+				msg = sub_state.queue.get_nowait()
+			except queue.Empty:
+				break
+
+			# only need to react to qty changes for styling
+			key = msg.topic.replace("state.", "")
+			if key in ("current_container_qty", "max_container_qty"):
+				changed = True
+
+		if changed:
+			_apply_counter_color_from_state()
+
+	add_timer(0.1, _drain_bus)
+	_apply_counter_color_from_state()

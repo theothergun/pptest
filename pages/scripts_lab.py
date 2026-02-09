@@ -33,7 +33,8 @@ def render(container: ui.element, ctx: PageContext) -> None:
 
 
 def build_page(ctx: PageContext) -> None:
-	bus = ctx.workers.worker_bus
+	worker_handle = ctx.workers.get("script_worker") if ctx.workers else None
+	bus = ctx.workers.worker_bus if ctx.workers else None
 
 	# --- lifecycle management ---
 	page_timers: list = []
@@ -119,24 +120,35 @@ def build_page(ctx: PageContext) -> None:
 					with ui.row().classes("gap-2"):
 						ui.button(
 							"Stop",
-							on_click=lambda ck=chain_key: ctx.workers.send(Commands.STOP_CHAIN, chain_key=ck),
+							on_click=lambda ck=chain_key: worker_handle.send(Commands.STOP_CHAIN, chain_key=ck)
+							if worker_handle
+							else None,
 						).props("color=negative")
 						ui.button(
 							"Pause",
-							on_click=lambda ck=chain_key: ctx.workers.send(Commands.PAUSE_CHAIN, chain_key=ck),
+							on_click=lambda ck=chain_key: worker_handle.send(Commands.PAUSE_CHAIN, chain_key=ck)
+							if worker_handle
+							else None,
 						).props("color=warning")
 						ui.button(
 							"Resume",
-							on_click=lambda ck=chain_key: ctx.workers.send(Commands.RESUME_CHAIN, chain_key=ck),
+							on_click=lambda ck=chain_key: worker_handle.send(Commands.RESUME_CHAIN, chain_key=ck)
+							if worker_handle
+							else None,
 						).props("color=primary")
 
 	# --------------------------
 	# Bus subscription + drain
 	# --------------------------
-	sub_values = bus.subscribe(WorkerTopics.VALUE_CHANGED)
-	page_subs.append(sub_values)
+	if bus:
+		sub_values = bus.subscribe(WorkerTopics.VALUE_CHANGED)
+		page_subs.append(sub_values)
+	else:
+		sub_values = None
 
 	def _drain_bus() -> None:
+		if not sub_values:
+			return
 		while True:
 			try:
 				msg = sub_values.queue.get_nowait()
@@ -160,5 +172,8 @@ def build_page(ctx: PageContext) -> None:
 	add_timer(0.2, _drain_bus)
 
 	# initial snapshot request
-	ctx.workers.send(Commands.LIST_SCRIPTS)
-	ctx.workers.send(Commands.LIST_CHAINS)
+	if worker_handle:
+		worker_handle.send(Commands.LIST_SCRIPTS)
+		worker_handle.send(Commands.LIST_CHAINS)
+	else:
+		ui.label("Script worker is not running.").classes("text-sm text-gray-500")

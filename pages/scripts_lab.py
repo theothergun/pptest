@@ -11,8 +11,8 @@ from services.worker_topics import WorkerTopics
 from services.worker_commands import ScriptWorkerCommands as Commands
 
 
-KEY_SCRIPTS_LIST = "script.list_scripts"
-KEY_CHAINS_LIST = "script.list_chains"
+KEY_SCRIPTS_LIST = "script.scripts_list"
+KEY_CHAINS_LIST = "script.chains_list"
 KEY_CHAIN_STATE = "script.chain_state"
 KEY_LOG = "script.log"
 

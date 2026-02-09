@@ -9,8 +9,8 @@ from layout.context import PageContext
 from services.app_config import DEFAULT_CONFIG_PATH, load_app_config, save_app_config
 from services.worker_commands import ScriptWorkerCommands as Commands
 
-# Must match the worker publish key for logs (StepChainContext.LOG_TOPIC)
-KEY_LOG = "script_log"
+# Must match the worker publish key for logs (ScriptWorker KEY_LOG)
+KEY_LOG = "script.log"
 KEY_SCRIPTS_LIST = "script.scripts_list"
 KEY_CHAINS_LIST = "script.chains_list"
 KEY_CHAIN_STATE = "script.chain_state"

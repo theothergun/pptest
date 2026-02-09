@@ -81,11 +81,11 @@ class StepChainContext:
 	def wait_for_value(self, source: str, key: str) -> Optional[Any]:
 		"""
 		Read latest VALUE_CHANGED for a worker/key.
-		ScriptWorker writes bus messages into ctx.data["bus"].
+		ScriptWorker writes bus messages into ctx.data["bus_values"].
 		"""
 		return (
 			self.data
-			.get("bus", {})
+			.get("bus_values", {})
 			.get(source, {})
 			.get(key)
 		)

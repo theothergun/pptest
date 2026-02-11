@@ -4,6 +4,7 @@ from nicegui import ui
 
 from layout.main_area import PageContext
 from auth.session import get_user, logout
+from services.i18n import SUPPORTED_LANGUAGES, get_language, set_language, t
 
 
 def build_header(ctx: PageContext) -> ui.header:
@@ -11,12 +12,26 @@ def build_header(ctx: PageContext) -> ui.header:
 
     with header:
         with ui.row().classes("h-full items-center w-full px-4"):
-            ui.label("SOME CUSTOM LABEL").classes("text-lg font-semibold")
+            ui.label(t("app.title", "Shopfloor application")).classes("text-lg font-semibold")
             ui.space()
+
+            language_options = {entry["code"]: entry["label"] for entry in SUPPORTED_LANGUAGES}
+
+            def on_language_change(e) -> None:
+                lang = set_language(e.value)
+                ui.notify(f"Language switched to: {language_options[lang]}", type="positive")
+                ui.run_javascript("location.reload()")
+
+            ui.select(
+                options=language_options,
+                value=get_language(),
+                on_change=on_language_change,
+                label="Language",
+            ).props("dense outlined bg-color=white").classes("min-w-[180px] text-black")
 
             # Toggle Nav
             ui.button(
-                "Toggle Nav",
+                t("header.toggle_nav", "Toggle Nav"),
                 icon="menu",
                 on_click=lambda: ctx.drawer.toggle() if ctx.drawer else None,
             ).props("flat color=white no-caps")
@@ -25,7 +40,6 @@ def build_header(ctx: PageContext) -> ui.header:
             dt_label = ui.label("").classes("ml-3 text-sm text-white/90")
 
             def update_time() -> None:
-                # You can change the format as you like
                 dt_label.set_text(datetime.now().strftime("%d-%m-%Y %H:%M"))
 
             update_time()
@@ -44,7 +58,7 @@ def build_header(ctx: PageContext) -> ui.header:
                 logout()
                 ui.run_javascript("window.location.href = '/login'")
 
-            ui.button("Logout", icon="logout", on_click=do_logout).props("flat color=white no-caps") \
+            ui.button(t("header.logout", "Logout"), icon="logout", on_click=do_logout).props("flat color=white no-caps") \
                 .classes("ml-2")
 
     return header

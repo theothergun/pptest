@@ -1,0 +1,47 @@
+{
+  "app.title": {
+    "cs": "Aplikace pro výrobní halu",
+    "de": "Shopfloor-Anwendung",
+    "en": "Shopfloor application",
+    "es-MX": "Aplicación de piso de producción",
+    "mk": "Апликација за производна линија",
+    "sk": "Aplikácia pre výrobnú halu",
+    "zh": "车间应用"
+  },
+  "header.logout": {
+    "cs": "Odhlásit se",
+    "de": "Abmelden",
+    "en": "Logout",
+    "es-MX": "Cerrar sesión",
+    "mk": "Одјави се",
+    "sk": "Odhlásiť sa",
+    "zh": "退出登录"
+  },
+  "header.toggle_nav": {
+    "cs": "Přepnout navigaci",
+    "de": "Navigation umschalten",
+    "en": "Toggle Nav",
+    "es-MX": "Alternar navegación",
+    "mk": "Прикажи/скриј мени",
+    "sk": "Prepnúť navigáciu",
+    "zh": "切换导航"
+  },
+  "settings.subtitle": {
+    "cs": "Spravujte nastavení aplikace a konfiguraci workerů.",
+    "de": "Anwendungseinstellungen und Worker-Konfiguration verwalten.",
+    "en": "Manage application settings and worker configuration.",
+    "es-MX": "Administra la configuración de la aplicación y de workers.",
+    "mk": "Управувај со поставки и конфигурација на работници.",
+    "sk": "Spravujte nastavenia aplikácie a konfiguráciu workerov.",
+    "zh": "管理应用设置和工作器配置。"
+  },
+  "settings.title": {
+    "cs": "Nastavení",
+    "de": "Einstellungen",
+    "en": "Settings",
+    "es-MX": "Configuración",
+    "mk": "Поставки",
+    "sk": "Nastavenia",
+    "zh": "设置"
+  }
+}

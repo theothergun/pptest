@@ -735,9 +735,23 @@ def build_page(ctx: PageContext) -> None:
 	crash_dialog_seen: dict[str, str] = {}
 
 	def _show_crash_dialog(chain_key: str, message: str) -> None:
-		# Global crash popup is handled in main.py for every view.
-		# Keep Scripts Lab free of additional popups to avoid duplicates.
-		return
+		msg = str(message or "StepChain crashed.")
+		sig = "%s|%s" % (chain_key, msg)
+		if crash_dialog_seen.get(chain_key) == sig:
+			return
+		crash_dialog_seen[chain_key] = sig
+
+		dlg = ui.dialog()
+		with dlg, ui.card().classes("w-[520px] max-w-full"):
+			ui.label("⚠️ StepChain stopped due to an error").classes("text-lg font-bold text-red-700")
+			ui.label("Chain: %s" % chain_key).classes("text-sm text-gray-700")
+			ui.label(msg).classes("text-sm")
+			ui.label("What should the operator do?").classes("text-sm font-semibold mt-2")
+			with ui.row().classes("w-full gap-2 mt-2"):
+				ui.button("Retry", icon="replay", on_click=lambda ck=chain_key, d=dlg: (crash_dialog_seen.pop(ck, None), worker_handle.send(Commands.RETRY_CHAIN, chain_key=ck), d.close())).props("color=primary")
+				ui.button("Stop chain", icon="stop", on_click=lambda ck=chain_key, d=dlg: (crash_dialog_seen.pop(ck, None), worker_handle.send(Commands.STOP_CHAIN, chain_key=ck), d.close())).props("color=negative")
+				ui.button("Close", on_click=dlg.close).props("flat")
+		dlg.open()
 
 	def _drain_bus() -> None:
 		while True:

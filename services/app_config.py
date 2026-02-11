@@ -133,6 +133,7 @@ WORKER_SCRIPT = "script_worker"
 WORKER_TCP = "tcp_client"
 WORKER_REST = "rest_worker"
 WORKER_TWINCAT = "twincat_worker"
+WORKER_ITAC = "itac"
 
 
 # ------------------------------------------------------------------ Config models
@@ -204,6 +205,23 @@ class TwincatEndpoint:
     default_trans_mode: str = "server_cycle"
     default_cycle_ms: int = 200
     default_string_len: int = 80
+
+
+@dataclass
+class ItacEndpoint:
+	name: str
+	base_url: str
+	station_number: str
+	client: str = "01"
+	registration_type: str = "S"
+	system_identifier: str = "nicegui"
+	station_password: str = ""
+	user: str = ""
+	password: str = ""
+	timeout_s: float = 10.0
+	verify_ssl: bool = True
+	auto_login: bool = True
+	force_locale: str = ""
 
 
 @dataclass
@@ -330,6 +348,11 @@ def get_rest_api_endpoints(cfg: AppConfig) -> list[RestApiEndpoint]:
     raw = get_worker_config(cfg, WORKER_REST).get("endpoints", [])
     return [RestApiEndpoint(**e) for e in raw if isinstance(e, dict)]
 
+
+
+def get_itac_endpoints(cfg: AppConfig) -> list[ItacEndpoint]:
+	raw = get_worker_config(cfg, WORKER_ITAC).get("endpoints", [])
+	return [ItacEndpoint(**e) for e in raw if isinstance(e, dict)]
 
 def get_twincat_plc_endpoints(cfg: AppConfig) -> list[TwincatEndpoint]:
     raw = get_worker_config(cfg, WORKER_TWINCAT).get("plc_endpoints", [])

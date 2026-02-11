@@ -19,6 +19,23 @@ class ScriptWorkerCommands(StrEnum):
 	UPDATE_LOG = "script.log"
 	SET_HOT_RELOAD = "script.set_hot_reload"
 
+
+# ------------------------------------------------------------------ iTAC (IMSApi REST) Worker
+
+class ItacCommands(StrEnum):
+	ADD_CONNECTION = "itac.add_connection"
+	REMOVE_CONNECTION = "itac.remove_connection"
+
+	LOGIN = "itac.login"
+	LOGOUT = "itac.logout"
+
+	CALL_CUSTOM_FUNCTION = "itac.custom_function"
+	GET_STATION_SETTING = "itac.get_station_setting"
+
+	RAW_CALL = "itac.raw_call"
+	STOP = "itac.stop"
+
+
 # ------------------------------------------------------------------ TCP Client Worker
 
 class TcpClientCommands(StrEnum):

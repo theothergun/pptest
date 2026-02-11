@@ -10,6 +10,7 @@ class ScriptWorkerCommands(StrEnum):
 	STOP_CHAIN = "script.stop_chain"
 	PAUSE_CHAIN = "script.pause_chain"
 	RESUME_CHAIN = "script.resume_chain"
+	RETRY_CHAIN = "script.retry_chain"
 	RELOAD_SCRIPT = "script.reload_script"
 	RELOAD_ALL = "script.reload_all"
 	LIST_SCRIPTS = "script.scripts_list"

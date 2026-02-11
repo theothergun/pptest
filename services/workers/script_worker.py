@@ -71,6 +71,9 @@ class ScriptWorker(BaseWorker):
 			Topics.ERROR,
 		]))
 
+		# Mirror UI/AppState updates into each chain context so scripts can read state.* values.
+		self.ui_state_sub = self.add_subscription(self.bridge.subscribe_many(["state", "state.*"]))
+
 		self.log.info(f"[__init__] init scripts_dir={self.scripts_dir}")
 
 	# ------------------------------------------------------------------ safe helpers
@@ -183,6 +186,41 @@ class ScriptWorker(BaseWorker):
 					continue
 				self._apply_bus_msg_to_ctx(inst.context, msg)
 
+	def _apply_ui_state_msg_to_ctx(self, ctx: StepChainContext, topic: str, payload: dict[str, Any]) -> None:
+		try:
+			if topic == "state":
+				if isinstance(payload, dict):
+					ctx._replace_app_state(payload)
+				return
+
+			if not topic.startswith("state."):
+				return
+
+			key = topic.split("state.", 1)[1]
+			if not key:
+				return
+
+			value = payload.get(key) if isinstance(payload, dict) else None
+			ctx._update_app_state(key, value)
+		except Exception:
+			self.log.error("[_apply_ui_state_msg_to_ctx] failed\n%s" % self._format_exc())
+
+	def _drain_ui_state_updates(self, max_items: int) -> None:
+		for _ in range(max_items):
+			try:
+				msg = self.ui_state_sub.queue.get_nowait()
+			except queue.Empty:
+				break
+
+			topic = str(getattr(msg, "topic", "") or "")
+			payload = getattr(msg, "payload", None)
+			data = payload if isinstance(payload, dict) else {}
+
+			for inst in self.chains.values():
+				if not inst.active:
+					continue
+				self._apply_ui_state_msg_to_ctx(inst.context, topic, data)
+
 	# ------------------------------------------------------------------ lifecycle
 
 	def _get_cycle_time_s(self, ctx: StepChainContext) -> float:
@@ -215,6 +253,10 @@ class ScriptWorker(BaseWorker):
 
 		self._publish_scripts_if_changed(True)
 		self._publish_chains_if_changed(True)
+		try:
+			self.bridge.request_ui_state()
+		except Exception:
+			pass
 
 		handlers = {
 			Commands.SET_HOT_RELOAD: self._cmd_set_hot_reload,
@@ -247,6 +289,7 @@ class ScriptWorker(BaseWorker):
 							self.publish_error_as("script_worker", key="script_worker", action="hot_reload", error=err)
 
 				self._drain_bus_updates(400)
+				self._drain_ui_state_updates(200)
 				self.dispatch_commands(handlers, limit=200, unknown_handler=self._cmd_unknown)
 
 				next_due_ts: Optional[float] = None
@@ -501,6 +544,10 @@ class ScriptWorker(BaseWorker):
 
 		self._publish_scripts_if_changed(True)
 		self._publish_chains_if_changed(True)
+		try:
+			self.bridge.request_ui_state()
+		except Exception:
+			pass
 		self.log.info(f"[_cmd_reload_all] reloaded_count={len(reloaded)}")
 
 	# ------------------------------------------------------------------ internals

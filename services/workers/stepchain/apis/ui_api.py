@@ -35,6 +35,10 @@ class UiApi:
         if not k:
             return
         try:
+            self._ctx._update_app_state(k, value)
+        except Exception:
+            pass
+        try:
             self._ctx.bridge.emit_patch(k, value)
         except Exception:
             pass

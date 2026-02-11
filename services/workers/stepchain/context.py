@@ -59,6 +59,9 @@ class StepChainContext:
 		# Script-owned UI state (persist across ticks; diffed before publishing)
 		self._ui_state: Optional[Dict[str, Any]] = None
 
+		# Latest AppState values mirrored from UiBridge state.* events
+		self._app_state: Dict[str, Any] = {}
+
 		# Computed helpers for "last" lookup
 		self._last_seen_by_source: Dict[str, str] = {}
 
@@ -85,6 +88,17 @@ class StepChainContext:
 		self.data[source][source_id] = payload
 		self._last_seen_by_source[source] = source_id
 
+	def _update_app_state(self, key: str, value: Any) -> None:
+		key_s = str(key or "").strip()
+		if not key_s:
+			return
+		self._app_state[key_s] = value
+
+	def _replace_app_state(self, values: Dict[str, Any]) -> None:
+		if not isinstance(values, dict):
+			return
+		self._app_state = dict(values)
+
 	def get_state(self) -> Dict[str, Any]:
 		"""State exported to UI; includes runtime state, vars, and ui_state."""
 		ui_state = self._ui_state if isinstance(self._ui_state, dict) else {}
@@ -101,6 +115,7 @@ class StepChainContext:
 			"paused": self.paused,
 			"data": copy.deepcopy(self._vars),
 			"ui_state": copy.deepcopy(ui_state),
+			"app_state": copy.deepcopy(self._app_state),
 		}
 
 
@@ -192,6 +207,18 @@ class PublicStepChainContext:
 		"""Write one AppState/UI variable (state.<key>) through UiBridge."""
 		self.ui.set_state(key, value)
 
+	def get_state_var(self, key: str, default: Any = None) -> Any:
+		"""Read one mirrored AppState value by key."""
+		return self.values.state(key, default)
+
+	def get_state(self, key: str, default: Any = None) -> Any:
+		"""Alias for get_state_var (simpler script syntax)."""
+		return self.get_state_var(key, default)
+
+	def state(self, key: str, default: Any = None) -> Any:
+		"""Shortest read helper: ctx.state("work_feedback")."""
+		return self.get_state_var(key, default)
+
 	def set_state_many(self, **values: Any) -> None:
 		"""Write multiple AppState/UI variables in one call."""
 		self.ui.set_state_many(**values)
@@ -234,4 +261,5 @@ class PublicStepChainContext:
 			"paused": self._ctx.paused,
 			"vars": self.vars.as_dict(),
 			"ui_state": dict(ui_state),
+			"app_state": self.values.state_all(),
 		}

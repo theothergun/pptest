@@ -45,3 +45,12 @@ class ValuesApi:
                 if isinstance(payload, dict) and payload.get("key") == target:
                     return payload.get("value", default)
         return default
+
+
+    def state(self, key: str, default: Any = None) -> Any:
+        """Read one AppState value mirrored into the chain context."""
+        return self._ctx._app_state.get(str(key), default)
+
+    def state_all(self) -> dict[str, Any]:
+        """Read full mirrored AppState snapshot."""
+        return copy.deepcopy(self._ctx._app_state)

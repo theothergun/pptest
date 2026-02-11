@@ -27,6 +27,23 @@ class UiApi:
     def clear(self) -> None:
         self._ctx._ui_state = {}
 
+
+    # -------- AppState bridge helpers (persisted UI variables) --------
+    def set_state(self, key: str, value: Any) -> None:
+        """Write one value into AppState via UiBridge.emit_patch."""
+        k = str(key or "").strip()
+        if not k:
+            return
+        try:
+            self._ctx.bridge.emit_patch(k, value)
+        except Exception:
+            pass
+
+    def set_state_many(self, **values: Any) -> None:
+        """Write multiple AppState keys (patch-per-key to avoid full-state replacement)."""
+        for k, v in values.items():
+            self.set_state(str(k), v)
+
     def notify(self, message: str, type_: str = "info") -> None:
         try:
             self._ctx.bridge.emit_notify(str(message), str(type_))

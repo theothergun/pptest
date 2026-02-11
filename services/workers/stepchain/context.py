@@ -188,6 +188,20 @@ class PublicStepChainContext:
 	def notify(self, message: str, type_: str = "info") -> None:
 		self.ui.notify(message, type_)
 
+	def set_state(self, key: str, value: Any) -> None:
+		"""Write one AppState/UI variable (state.<key>) through UiBridge."""
+		self.ui.set_state(key, value)
+
+	def set_state_many(self, **values: Any) -> None:
+		"""Write multiple AppState/UI variables in one call."""
+		self.ui.set_state_many(**values)
+
+
+	def update_state(self, key: str, value: Any) -> None:
+		"""Alias for non-programmer-friendly scripts."""
+		self.set_state(key, value)
+
+
 	def error(self, message: str) -> None:
 		self.flow.fail(message)
 

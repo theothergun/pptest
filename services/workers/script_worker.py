@@ -71,6 +71,9 @@ class ScriptWorker(BaseWorker):
 			Topics.ERROR,
 		]))
 
+		# Mirror UI/AppState updates into each chain context so scripts can read state.* values.
+		self.ui_state_sub = self.add_subscription(self.bridge.subscribe_many(["state", "state.*"]))
+
 		self.log.info(f"[__init__] init scripts_dir={self.scripts_dir}")
 
 	# ------------------------------------------------------------------ safe helpers
@@ -92,6 +95,8 @@ class ScriptWorker(BaseWorker):
 				"instance": inst.instance_id,
 				"active": bool(inst.active),
 				"paused": bool(inst.paused),
+				"error_flag": bool(getattr(ctx, "error_flag", False)),
+				"error_message": str(getattr(ctx, "error_message", "") or ""),
 				"step": getattr(ctx, "step", 0),
 				"cycle_count": getattr(ctx, "cycle_count", 0),
 				"step_time": getattr(ctx, "step_time", 0.0),
@@ -107,7 +112,19 @@ class ScriptWorker(BaseWorker):
 
 	def _publish_chains_if_changed(self, force: bool = False) -> None:
 		payload = self._build_chain_list_payload()
-		sig = "|".join([str(x.get("key", "")) for x in payload])
+		sig = "|".join([
+			"%s:%s:%s:%s:%s:%s:%s:%s" % (
+				str(x.get("key", "")),
+				str(x.get("active", False)),
+				str(x.get("paused", False)),
+				str(x.get("error_flag", False)),
+				str(x.get("error_message", "")),
+				str(x.get("step", 0)),
+				str(x.get("cycle_count", 0)),
+				str(x.get("step_time", 0.0)),
+			)
+			for x in payload
+		])
 		if force or sig != self._last_chain_sig:
 			self._last_chain_sig = sig
 			self.publish_value_as("script_worker", Commands.LIST_CHAINS, payload)
@@ -118,17 +135,33 @@ class ScriptWorker(BaseWorker):
 		"""
 		try:
 			raw_state = ctx.get_state()
-			safe_state = raw_state
+			safe_state = dict(raw_state) if isinstance(raw_state, dict) else {"state": raw_state}
+			safe_state.setdefault("chain_key", chain_key)
+			if ":" in chain_key:
+				script_name, instance_id = chain_key.split(":", 1)
+				safe_state.setdefault("script_name", script_name)
+				safe_state.setdefault("instance_id", instance_id)
 
+			inst = self.chains.get(chain_key)
+			if inst is not None:
+				safe_state["active"] = bool(inst.active)
+				safe_state["paused"] = bool(inst.paused)
+			safe_state.setdefault("error_flag", bool(getattr(ctx, "error_flag", False)))
+			safe_state.setdefault("error_message", str(getattr(ctx, "error_message", "") or ""))
 
 			self.publish_value_as(chain_key, Commands.UPDATE_CHAIN_STATE, safe_state)
 		except Exception:
 			err = "failed publishing chain state\n%s" % self._format_exc()
 			self.publish_error_as(chain_key, key=chain_key, action="publish_chain_state", error=err)
 
-	def _publish_chain_log(self, chain_key: str, message: str) -> None:
+	def _publish_chain_log(self, chain_key: str, message: str, level: str = "info") -> None:
 		try:
-			self.publish_value_as(chain_key, Commands.UPDATE_LOG, str(message))
+			payload = {"chain_key": chain_key, "step": 0, "step_desc": "", "level": str(level), "message": str(message)}
+			inst = self.chains.get(chain_key)
+			if inst is not None:
+				payload["step"] = int(getattr(inst.context, "step", 0))
+				payload["step_desc"] = str(getattr(inst.context, "step_desc", "") or "")
+			self.publish_value_as(chain_key, Commands.UPDATE_LOG, payload)
 		except Exception:
 			err = "failed publishing chain log\n%s" % self._format_exc()
 			self.publish_error_as(chain_key, key=chain_key, action="publish_chain_log", error=err)
@@ -164,6 +197,41 @@ class ScriptWorker(BaseWorker):
 					continue
 				self._apply_bus_msg_to_ctx(inst.context, msg)
 
+	def _apply_ui_state_msg_to_ctx(self, ctx: StepChainContext, topic: str, payload: dict[str, Any]) -> None:
+		try:
+			if topic == "state":
+				if isinstance(payload, dict):
+					ctx._replace_app_state(payload)
+				return
+
+			if not topic.startswith("state."):
+				return
+
+			key = topic.split("state.", 1)[1]
+			if not key:
+				return
+
+			value = payload.get(key) if isinstance(payload, dict) else None
+			ctx._update_app_state(key, value)
+		except Exception:
+			self.log.error("[_apply_ui_state_msg_to_ctx] failed\n%s" % self._format_exc())
+
+	def _drain_ui_state_updates(self, max_items: int) -> None:
+		for _ in range(max_items):
+			try:
+				msg = self.ui_state_sub.queue.get_nowait()
+			except queue.Empty:
+				break
+
+			topic = str(getattr(msg, "topic", "") or "")
+			payload = getattr(msg, "payload", None)
+			data = payload if isinstance(payload, dict) else {}
+
+			for inst in self.chains.values():
+				if not inst.active:
+					continue
+				self._apply_ui_state_msg_to_ctx(inst.context, topic, data)
+
 	# ------------------------------------------------------------------ lifecycle
 
 	def _get_cycle_time_s(self, ctx: StepChainContext) -> float:
@@ -196,6 +264,10 @@ class ScriptWorker(BaseWorker):
 
 		self._publish_scripts_if_changed(True)
 		self._publish_chains_if_changed(True)
+		try:
+			self.bridge.request_ui_state()
+		except Exception:
+			pass
 
 		handlers = {
 			Commands.SET_HOT_RELOAD: self._cmd_set_hot_reload,
@@ -205,6 +277,7 @@ class ScriptWorker(BaseWorker):
 			Commands.STOP_CHAIN: self._cmd_stop_chain,
 			Commands.PAUSE_CHAIN: self._cmd_pause_chain,
 			Commands.RESUME_CHAIN: self._cmd_resume_chain,
+			Commands.RETRY_CHAIN: self._cmd_retry_chain,
 			Commands.RELOAD_SCRIPT: self._cmd_reload_script,
 			Commands.RELOAD_ALL: self._cmd_reload_all,
 		}
@@ -228,6 +301,7 @@ class ScriptWorker(BaseWorker):
 							self.publish_error_as("script_worker", key="script_worker", action="hot_reload", error=err)
 
 				self._drain_bus_updates(400)
+				self._drain_ui_state_updates(200)
 				self.dispatch_commands(handlers, limit=200, unknown_handler=self._cmd_unknown)
 
 				next_due_ts: Optional[float] = None
@@ -237,7 +311,10 @@ class ScriptWorker(BaseWorker):
 						continue
 
 					if inst.paused:
-						#self._publish_chain_state(chain_key, inst.context)
+						now_ts = time.time()
+						if inst.context._step_started_ts <= 0:
+							inst.context._step_started_ts = now_ts
+						inst.context.step_elapsed_s = max(0.0, now_ts - inst.context._step_started_ts)
 						continue
 
 					if inst.next_tick_ts and now < inst.next_tick_ts:
@@ -248,16 +325,37 @@ class ScriptWorker(BaseWorker):
 					inst.context.cycle_count = inst.context.cycle_count + 1
 
 					try:
+						now_ts = time.time()
+						if inst.context._step_started_ts <= 0:
+							inst.context._step_started_ts = now_ts
+						inst.context.step_elapsed_s = max(0.0, now_ts - inst.context._step_started_ts)
+
 						start = time.time()
 						inst.fn(inst.context.public)
 						elapsed_ms = (time.time() - start) * 1000.0
-						inst.context.step_time =  round(elapsed_ms, 2)
-						inst.context.step = inst.context.next_step
+						inst.context.step_time = round(elapsed_ms, 2)
+
+						prev_step = int(getattr(inst.context, "step", 0))
+						next_step = int(getattr(inst.context, "next_step", prev_step))
+						if next_step != prev_step:
+							inst.context._step_started_ts = time.time()
+							inst.context.step_elapsed_s = 0.0
+						inst.context.step = next_step
 					except Exception:
 						err = "chain crashed chain_key=%s\n%s" % (chain_key, self._format_exc())
 						self.log.error("[run] %s" % err)
 						self.publish_error_as(chain_key, key=chain_key, action="chain_tick", error=err)
-						self._stop_chain(chain_key, "exception")
+						inst.paused = True
+						inst.context.paused = True
+						inst.context.error_flag = True
+						inst.context.error_message = "StepChain crashed. Please review and press Retry."
+						self._publish_chain_log(chain_key, "chain crashed - paused; operator can retry", level="error")
+						self._publish_chain_state(chain_key, inst.context)
+						self._publish_chains_if_changed(True)
+						try:
+							self.bridge.emit_notify("⚠️ Script '%s' crashed. Open Scripts Lab and press Retry." % chain_key, "warning")
+						except Exception:
+							pass
 						continue
 
 					cycle_s = self._get_cycle_time_s(inst.context)
@@ -269,7 +367,7 @@ class ScriptWorker(BaseWorker):
 					self._publish_chain_state(chain_key, inst.context)
 
 				# Update UI once per loop
-				#self._publish_chains_if_changed(True)
+				self._publish_chains_if_changed(False)
 
 				# Sleep once per loop (prevents busy-loop and command latency problems)
 				if next_due_ts is None:
@@ -293,7 +391,14 @@ class ScriptWorker(BaseWorker):
 
 	def _cmd_set_hot_reload(self, payload: dict[str, Any]) -> None:
 		self.hot_reload_enabled = bool(payload.get("enabled", False))
-		self.log.info(f"[_cmd_set_hot_reload] enabled={self.hot_reload_enabled}")
+		if "interval" in payload:
+			try:
+				new_interval = float(payload.get("interval", self.reload_check_interval))
+				if new_interval > 0:
+					self.reload_check_interval = new_interval
+			except Exception:
+				pass
+		self.log.info(f"[_cmd_set_hot_reload] enabled={self.hot_reload_enabled} interval={self.reload_check_interval}")
 
 	def _cmd_list_scripts(self, payload: dict[str, Any]) -> None:
 		self._publish_scripts_if_changed(True)
@@ -331,6 +436,7 @@ class ScriptWorker(BaseWorker):
 				worker_bus=self.worker_bus,
 				bridge=self.bridge,
 				state=self.bridge,
+				send_cmd=self.send_cmd,
 			)
 		except Exception:
 			err = "StepChainContext init failed\n%s" % self._format_exc()
@@ -348,6 +454,7 @@ class ScriptWorker(BaseWorker):
 		)
 
 		self.log.info(f"[_cmd_start_chain] started chain_key={chain_key}")
+		self._publish_chain_log(chain_key, "chain started", level="info")
 		self._publish_chains_if_changed(True)
 		self._publish_chain_state(chain_key, ctx)
 
@@ -383,6 +490,7 @@ class ScriptWorker(BaseWorker):
 		inst.paused = True
 		inst.context.paused = True
 		self.log.info(f"[_cmd_pause_chain] paused chain_key={chain_key}")
+		self._publish_chain_log(chain_key, "chain paused", level="info")
 		self._publish_chains_if_changed(True)
 		self._publish_chain_state(chain_key, inst.context)
 
@@ -401,6 +509,28 @@ class ScriptWorker(BaseWorker):
 		inst.context.paused = False
 		inst.next_tick_ts = 0.0
 		self.log.info(f"[_cmd_resume_chain] resumed chain_key={chain_key}")
+		self._publish_chain_log(chain_key, "chain resumed", level="info")
+		self._publish_chains_if_changed(True)
+		self._publish_chain_state(chain_key, inst.context)
+
+	def _cmd_retry_chain(self, payload: dict[str, Any]) -> None:
+		chain_key = self._resolve_chain_key(payload)
+		if not chain_key:
+			self.publish_error_as("script_worker", key="script_worker", action="retry_chain", error="missing payload.chain_key or payload.script/script_name")
+			return
+
+		inst = self.chains.get(chain_key)
+		if not inst:
+			self.publish_error_as(chain_key, key=chain_key, action="retry_chain", error="chain not running")
+			return
+
+		inst.context.error_flag = False
+		inst.context.error_message = ""
+		inst.paused = False
+		inst.context.paused = False
+		inst.next_tick_ts = 0.0
+		self.log.info(f"[_cmd_retry_chain] retrying chain_key={chain_key}")
+		self._publish_chain_log(chain_key, "retry requested by operator", level="info")
 		self._publish_chains_if_changed(True)
 		self._publish_chain_state(chain_key, inst.context)
 
@@ -458,6 +588,10 @@ class ScriptWorker(BaseWorker):
 
 		self._publish_scripts_if_changed(True)
 		self._publish_chains_if_changed(True)
+		try:
+			self.bridge.request_ui_state()
+		except Exception:
+			pass
 		self.log.info(f"[_cmd_reload_all] reloaded_count={len(reloaded)}")
 
 	# ------------------------------------------------------------------ internals
@@ -474,4 +608,5 @@ class ScriptWorker(BaseWorker):
 			pass
 
 		self.log.info(f"[_stop_chain] stopped chain_key={chain_key} reason={reason}")
+		self._publish_chain_log(chain_key, "chain stopped: %s" % reason, level="info")
 		self._publish_chains_if_changed(True)

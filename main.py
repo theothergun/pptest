@@ -1,4 +1,5 @@
 import os
+import queue
 from nicegui import ui, app
 
 from auth.middleware import AuthMiddleware
@@ -171,6 +172,98 @@ def index():
 
 	# UI flush loop
 	ui.timer(0.5, lambda: ctx.bridge.flush(ctx))
+
+	# Global StepChain crash dialog (works on every route/view)
+	sub_script_state = ctx.worker_bus.subscribe("VALUE_CHANGED")
+	crash_dialog_seen: dict[str, str] = {}
+	active_crash_dialogs: dict[str, ui.dialog] = {}
+
+	def _open_chain_crash_dialog(chain_key: str, message: str) -> None:
+		msg = str(message or "StepChain crashed.")
+		if chain_key in active_crash_dialogs:
+			return
+		sig = "%s|%s" % (chain_key, msg)
+		if crash_dialog_seen.get(chain_key) == sig:
+			return
+		crash_dialog_seen[chain_key] = sig
+
+		dlg = ui.dialog()
+		active_crash_dialogs[chain_key] = dlg
+		with dlg, ui.card().classes("w-[540px] max-w-full"):
+			ui.label("⚠️ StepChain stopped due to an error").classes("text-lg font-bold text-red-700")
+			ui.label("Chain: %s" % chain_key).classes("text-sm text-gray-700")
+			ui.label(msg).classes("text-sm")
+			ui.label("Choose an action:").classes("text-sm font-semibold mt-2")
+			with ui.row().classes("w-full gap-2 mt-2"):
+				ui.button(
+					"Retry",
+					icon="replay",
+					on_click=lambda ck=chain_key, d=dlg: (_send_retry(ck), d.close()),
+				).props("color=primary")
+				ui.button(
+					"Stop chain",
+					icon="stop",
+					on_click=lambda ck=chain_key, d=dlg: (_send_stop(ck), d.close()),
+				).props("color=negative")
+				ui.button("Close", on_click=dlg.close).props("flat")
+		dlg.on("hide", lambda e=None, ck=chain_key: active_crash_dialogs.pop(ck, None))
+		dlg.open()
+
+	def _send_retry(chain_key: str) -> None:
+		h = ctx.workers.get(WorkerName.SCRIPT) if ctx.workers else None
+		if not h:
+			ui.notify("Script worker not available", type="negative")
+			return
+		h.send(ScriptCommands.RETRY_CHAIN, chain_key=chain_key)
+
+	def _send_stop(chain_key: str) -> None:
+		h = ctx.workers.get(WorkerName.SCRIPT) if ctx.workers else None
+		if not h:
+			ui.notify("Script worker not available", type="negative")
+			return
+		h.send(ScriptCommands.STOP_CHAIN, chain_key=chain_key)
+
+	def _drain_script_crashes() -> None:
+		while True:
+			try:
+				msg = sub_script_state.queue.get_nowait()
+			except queue.Empty:
+				break
+
+			payload = getattr(msg, "payload", None) or {}
+			if payload.get("key") != ScriptCommands.UPDATE_CHAIN_STATE:
+				continue
+			value = payload.get("value") or {}
+			if not isinstance(value, dict):
+				continue
+			chain_key = str(value.get("chain_key") or value.get("chain_id") or "unknown")
+			if not bool(value.get("error_flag", False)):
+				# Clear dedupe state when chain recovered, so next crash opens popup again
+				crash_dialog_seen.pop(chain_key, None)
+				dlg = active_crash_dialogs.pop(chain_key, None)
+				if dlg is not None:
+					try:
+						dlg.close()
+					except Exception:
+						pass
+				continue
+
+			error_message = str(value.get("error_message") or "StepChain crashed.")
+			_open_chain_crash_dialog(chain_key, error_message)
+
+	crash_timer = ui.timer(0.2, _drain_script_crashes)
+
+	def _cleanup_crash_watcher() -> None:
+		try:
+			sub_script_state.close()
+		except Exception:
+			pass
+		try:
+			crash_timer.cancel()
+		except Exception:
+			pass
+
+	ui.context.client.on_disconnect(_cleanup_crash_watcher)
 
 	# --------- LAYOUT ---------
 	build_header(ctx)

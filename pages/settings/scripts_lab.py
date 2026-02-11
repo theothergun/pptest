@@ -748,8 +748,8 @@ def build_page(ctx: PageContext) -> None:
 			ui.label(msg).classes("text-sm")
 			ui.label("What should the operator do?").classes("text-sm font-semibold mt-2")
 			with ui.row().classes("w-full gap-2 mt-2"):
-				ui.button("Retry", icon="replay", on_click=lambda ck=chain_key, d=dlg: (worker_handle.send(Commands.RETRY_CHAIN, chain_key=ck), d.close())).props("color=primary")
-				ui.button("Stop chain", icon="stop", on_click=lambda ck=chain_key, d=dlg: (worker_handle.send(Commands.STOP_CHAIN, chain_key=ck), d.close())).props("color=negative")
+				ui.button("Retry", icon="replay", on_click=lambda ck=chain_key, d=dlg: (crash_dialog_seen.pop(ck, None), worker_handle.send(Commands.RETRY_CHAIN, chain_key=ck), d.close())).props("color=primary")
+				ui.button("Stop chain", icon="stop", on_click=lambda ck=chain_key, d=dlg: (crash_dialog_seen.pop(ck, None), worker_handle.send(Commands.STOP_CHAIN, chain_key=ck), d.close())).props("color=negative")
 				ui.button("Close", on_click=dlg.close).props("flat")
 		dlg.open()
 
@@ -780,8 +780,11 @@ def build_page(ctx: PageContext) -> None:
 					step_desc = state.get("step_desc", "") or ""
 					merged_step_desc = ("%s %s" % (error_message, step_desc)).strip()
 
-					if bool(state.get("error_flag", False)):
+					error_flag = bool(state.get("error_flag", False))
+					if error_flag:
 						_show_crash_dialog(chain_key, error_message)
+					else:
+						crash_dialog_seen.pop(chain_key, None)
 
 					if chain_key in chain_cards:
 						_update_chain_card(

@@ -227,6 +227,8 @@ def index():
 		dlg.open()
 
 	def _send_retry(chain_key: str) -> None:
+		# Allow popup again if it crashes after retry
+		crash_dialog_seen.pop(chain_key, None)
 		h = ctx.workers.get(WorkerName.SCRIPT) if ctx.workers else None
 		if not h:
 			ui.notify("Script worker not available", type="negative")
@@ -234,6 +236,7 @@ def index():
 		h.send(ScriptCommands.RETRY_CHAIN, chain_key=chain_key)
 
 	def _send_stop(chain_key: str) -> None:
+		crash_dialog_seen.pop(chain_key, None)
 		h = ctx.workers.get(WorkerName.SCRIPT) if ctx.workers else None
 		if not h:
 			ui.notify("Script worker not available", type="negative")
@@ -253,10 +256,12 @@ def index():
 			value = payload.get("value") or {}
 			if not isinstance(value, dict):
 				continue
+			chain_key = str(value.get("chain_key") or value.get("chain_id") or "unknown")
 			if not bool(value.get("error_flag", False)):
+				# Clear dedupe state when chain recovered, so next crash opens popup again
+				crash_dialog_seen.pop(chain_key, None)
 				continue
 
-			chain_key = str(value.get("chain_key") or value.get("chain_id") or "unknown")
 			error_message = str(value.get("error_message") or "StepChain crashed.")
 			_open_chain_crash_dialog(chain_key, error_message)
 

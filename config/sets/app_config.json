@@ -109,6 +109,21 @@
   },
   "workers": {
     "configs": {
+       "itac": {
+        "endpoints": [
+          {
+            "name": "itac_main",
+            "base_url": "http://10.1.2.3:8080/mes/imsapi/rest/actions",
+            "station_number": "01010010",
+            "client": "01",
+            "registration_type": "S",
+            "system_identifier": "nicegui",
+            "timeout_s": 10.0,
+            "verify_ssl": false,
+            "auto_login": true
+          }
+        ]
+      },
       "rest_api": {
         "endpoints": [
           {
@@ -195,7 +210,8 @@
     "enabled_workers": [
       "script_worker",
       "twincat",
-      "tcp_client"
+      "tcp_client",
+      "twincat"
     ]
   }
 }

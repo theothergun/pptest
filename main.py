@@ -22,6 +22,7 @@ from services.app_config import (
 	get_tcp_client_entries,
 	get_script_auto_start_chains,
 	get_twincat_plc_endpoints,
+	get_itac_endpoints,
 )
 
 from services.worker_commands import (
@@ -58,12 +59,13 @@ GLOBAL_WORKERS = WorkerRegistry(GLOBAL_BRIDGE, GLOBAL_WORKER_BUS)
 from services.workers.tcp_client_worker import TcpClientWorker
 from services.workers.twincat_worker import TwinCatWorker
 from services.workers.script_worker import ScriptWorker
-
+from services.workers.itac_worker import ItacWorker
 
 WORKER_CATALOG = {
 	WorkerName.TCP_CLIENT: TcpClientWorker,
 	WorkerName.TWINCAT: TwinCatWorker,
     WorkerName.SCRIPT: ScriptWorker,
+	WorkerName.ITAC : ItacWorker
 }
 
 for worker_name in APP_CONFIG.workers.enabled_workers:
@@ -131,6 +133,26 @@ if twincat_handle:
 			default_trans_mode=client.default_trans_mode,
 			default_cycle_ms=client.default_cycle_ms,
 			default_string_len=client.default_string_len,
+		)
+
+itac_handle = GLOBAL_WORKERS.get(WorkerName.ITAC)
+if itac_handle:
+	for endpoint in get_itac_endpoints(APP_CONFIG):
+		itac_handle.send(
+			ItacCommands.ADD_CONNECTION,
+			connection_id=endpoint.name,
+			base_url=endpoint.base_url,
+			station_number=endpoint.station_number,
+			client=endpoint.client,
+			registration_type=endpoint.registration_type,
+			system_identifier=endpoint.system_identifier,
+			station_password=endpoint.station_password,
+			user=endpoint.user,
+			password=endpoint.password,
+			timeout_s=endpoint.timeout_s,
+			verify_ssl=endpoint.verify_ssl,
+			auto_login=endpoint.auto_login,
+			force_locale=endpoint.force_locale,
 		)
 
 

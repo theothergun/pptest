@@ -26,7 +26,9 @@ def build_page(ctx: PageContext) -> None:
 		"state.part_number",
 		"state.description",
 		"state.work_instruction",
+		"state.work_instruction_state",
 		"state.work_feedback",
+		"state.work_feedback_state",
 		"state.current_container_qty",
 		"state.max_container_qty",
 		"state.part_good",
@@ -61,6 +63,9 @@ def build_page(ctx: PageContext) -> None:
 	ui_refs: dict[str, Any] = {
 		"card_current_qty": None,
 		"card_max_qty": None,
+
+		"card_instruction": None,  # NEW
+		"card_feedback": None,  # NEW
 	}
 
 	def _publish_cmd(cmd: str) -> None:
@@ -91,6 +96,40 @@ def build_page(ctx: PageContext) -> None:
 		if card_b is not None:
 			try:
 				card_b.style("background-color: %s;" % bg)
+			except Exception:
+				pass
+
+	# ---------------------------------------------------------
+	# NEW: instruction/feedback state -> background color logic
+	# ---------------------------------------------------------
+	def _bg_for_state(state: int) -> str:
+		# 1=Green, 2=Yellow, 3=Red, 4=Blue, 5=Grey
+		if state == 1:
+			return "#86EFAC"  # green-ish
+		if state == 2:
+			return "#FDE68A"  # yellow-ish
+		if state == 3:
+			return "#FCA5A5"  # red-ish
+		if state == 4:
+			return "#93C5FD"  # blue-ish
+		return "#E5E7EB"  # grey-ish (also default)
+
+	def _set_instruction_feedback_cards_color(work_instruction_state: int, work_feedback_state: int) -> None:
+		card_instruction = ui_refs.get("card_instruction")
+		card_feedback = ui_refs.get("card_feedback")
+
+		bg_instruction = _bg_for_state(work_instruction_state)
+		bg_feedback = _bg_for_state(work_feedback_state)
+
+		if card_instruction is not None:
+			try:
+				card_instruction.style("background-color: %s;" % bg_instruction)
+			except Exception:
+				pass
+
+		if card_feedback is not None:
+			try:
+				card_feedback.style("background-color: %s;" % bg_feedback)
 			except Exception:
 				pass
 
@@ -136,14 +175,16 @@ def build_page(ctx: PageContext) -> None:
 						ui.label("Max").classes("text-xs text-gray-700")
 
 			with ui.column().classes("w-full gap-4"):
-				with ui.card().classes("w-full"):
-					ui.label("Instruction for worker").classes("text-sm text-gray-500")
+				ui_refs["card_instruction"] = ui.card().classes("w-full")  # NEW ref
+				with ui_refs["card_instruction"]:
+					ui.label("Instruction for worker").classes("text-sm text-gray-700")
 					lbl_instruction = ui.label("").classes("text-xl font-semibold")
 					lbl_instruction.style("min-height: 72px;")
 					lbl_instruction.bind_text_from(ctx.state, "work_instruction", backward=lambda n: str(n or ""))
 
-				with ui.card().classes("w-full"):
-					ui.label("Current step").classes("text-sm text-gray-500")
+				ui_refs["card_feedback"] = ui.card().classes("w-full")  # NEW ref
+				with ui_refs["card_feedback"]:
+					ui.label("Current step").classes("text-sm text-gray-700")
 					lbl_step = ui.label("").classes("text-xl font-semibold")
 					lbl_step.style("min-height: 72px;")
 					lbl_step.bind_text_from(ctx.state, "work_feedback", backward=lambda n: str(n or ""))
@@ -175,21 +216,32 @@ def build_page(ctx: PageContext) -> None:
 		max_qty = int(getattr(ctx.state, "max_container_qty", 0) or 0)
 		_set_counter_cards_color(cur_qty, max_qty)
 
+	def _apply_instruction_feedback_color_from_state() -> None:
+		instr_state = int(getattr(ctx.state, "work_instruction_state", 4) or 4)
+		feed_state = int(getattr(ctx.state, "work_feedback_state", 4) or 4)
+		_set_instruction_feedback_cards_color(instr_state, feed_state)
+
 	def _drain_bus() -> None:
-		changed = False
+		changed_counter = False
+		changed_text_boxes = False
+
 		while True:
 			try:
 				msg = sub_state.queue.get_nowait()
 			except queue.Empty:
 				break
 
-			# only need to react to qty changes for styling
 			key = msg.topic.replace("state.", "")
 			if key in ("current_container_qty", "max_container_qty"):
-				changed = True
+				changed_counter = True
+			elif key in ("work_instruction_state", "work_feedback_state"):
+				changed_text_boxes = True
 
-		if changed:
+		if changed_counter:
 			_apply_counter_color_from_state()
+		if changed_text_boxes:
+			_apply_instruction_feedback_color_from_state()
 
 	add_timer(0.1, _drain_bus)
 	_apply_counter_color_from_state()
+	_apply_instruction_feedback_color_from_state()

@@ -10,12 +10,6 @@
     },
     "json_path": "config/app_config.json"
   },
-  "proxy": {
-    "enabled": true,
-    "http": "http://192.168.1.26:3128",
-    "https": "http://192.168.1.26:3128",
-    "no_proxy": "localhost,127.0.0.1,10.1.2.3"
-  },
   "ui": {
     "navigation": {
       "custom_routes": [
@@ -44,12 +38,6 @@
           "path": "summary.py"
         },
         {
-          "icon": "home",
-          "key": "app_state",
-          "label": "app_state",
-          "path": "settings/app_state_view.py"
-        },
-        {
           "icon": "insert_drive_file",
           "key": "packaging",
           "label": "Packaging",
@@ -60,29 +48,15 @@
           "key": "vi_home",
           "label": "Visual Inspection",
           "path": "visual_inspection/home.py"
-        },
-        {
-          "icon": "lang",
-          "key": "language_manager",
-          "label": "Langauge",
-          "path": "settings/language_manager.py"
         }
       ],
       "main_route": "home",
       "route_roles": {
-        "app_state": [
-          "user",
-          "admin"
-        ],
         "errors": [
           "user",
           "admin"
         ],
         "home": [
-          "user",
-          "admin"
-        ],
-        "language_manager": [
           "user",
           "admin"
         ],
@@ -98,7 +72,8 @@
           "admin"
         ],
         "settings": [
-          "user"
+          "user",
+          "admin"
         ],
         "summary": [
           "user",
@@ -118,29 +93,12 @@
         "settings",
         "errors",
         "vi_home",
-        "test5",
-        "app_state",
-        "language_manager"
+        "test5"
       ]
     }
   },
   "workers": {
     "configs": {
-      "itac": {
-        "endpoints": [
-          {
-            "auto_login": true,
-            "base_url": "http://mk01smesapp02:8080/mes/imsapi/rest/actions",
-            "client": "01",
-            "name": "itac_main",
-            "registration_type": "S",
-            "station_number": "6000000001",
-            "system_identifier": "nicegui",
-            "timeout_s": 10.0,
-            "verify_ssl": false
-          }
-        ]
-      },
       "rest_api": {
         "endpoints": [
           {
@@ -167,7 +125,7 @@
         "auto_start_chains": [
           {
             "instance_id": "default",
-            "script_name": "Packaging/pack"
+            "script_name": "Packaging/packaging_station"
           }
         ]
       },
@@ -188,48 +146,12 @@
             "tcp_nodelay": true
           }
         ]
-      },
-      "twincat": {
-        "plc_endpoints": [
-          {
-            "ads_port": 851,
-            "client_id": "twincat",
-            "plc_ams_net_id": "5.140.130.124.1.1",
-            "plc_ip": "192.168.0.50",
-            "subscriptions": [
-              {
-                "cycle_ms": 500,
-                "name": "MAIN.currentIPAddress",
-                "plc_type": "STRING",
-                "string_len": 64,
-                "trans_mode": "server_cycle"
-              },
-              {
-                "name": "MAIN.watchdog",
-                "plc_type": "UINT",
-                "trans_mode": "on_change"
-              },
-              {
-                "name": "MAIN.idx",
-                "plc_type": "INT",
-                "trans_mode": "on_change"
-              },
-              {
-                "name": "MAIN.isMQTTSetup",
-                "plc_type": "BOOL",
-                "trans_mode": "on_change"
-              }
-            ]
-          }
-        ]
       }
     },
     "enabled_workers": [
       "script_worker",
-      "twincat",
       "tcp_client",
-      "twincat",
-      "itac"
+      "rest_api"
     ]
   }
 }

@@ -233,6 +233,17 @@ class PublicStepChainContext:
 		"""Alias for non-programmer-friendly scripts."""
 		self.set_state(key, value)
 
+	# -------------------- iTAC (IMSApi REST) helpers --------------------
+
+	def itac_station_setting(self, connection_id: str, keys: Any, timeout_s: float = 5.0) -> Any:
+		return self.workers.itac_station_setting(connection_id, keys, timeout_s=timeout_s)
+
+	def itac_custom_function(self, connection_id: str, method_name: str, in_args: Any = None, timeout_s: float = 10.0) -> Any:
+		return self.workers.itac_custom_function(connection_id, method_name, in_args=in_args, timeout_s=timeout_s)
+
+	def itac_raw_call(self, connection_id: str, function_name: str, body: Any = None, timeout_s: float = 10.0) -> Any:
+		return self.workers.itac_raw_call(connection_id, function_name, body=body, timeout_s=timeout_s)
+
 
 
 	# -------------------- simplified worker IO for non-programmers --------------------

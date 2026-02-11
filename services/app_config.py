@@ -225,6 +225,13 @@ class ItacEndpoint:
 
 
 @dataclass
+class ProxyConfig:
+	enabled: bool = False
+	http: str = ""
+	https: str = ""
+	no_proxy: str = ""  # comma separated: "localhost,127.0.0.1,10.1.2.
+
+@dataclass
 class WorkersConfig:
     # These names must match WORKER_* constants
     enabled_workers: list[str] = field(
@@ -239,6 +246,7 @@ class AppConfig:
     ui: UiConfig = field(default_factory=UiConfig)
     workers: WorkersConfig = field(default_factory=WorkersConfig)
     persistence: PersistenceConfig = field(default_factory=PersistenceConfig)
+    proxy: ProxyConfig = field(default_factory=ProxyConfig)
 
 
 _APP_CONFIG: AppConfig | None = None
@@ -324,7 +332,9 @@ def _from_dict(data: dict[str, Any]) -> AppConfig:
     if not persistence.json_path:
         persistence.json_path = get_config_path()
 
-    return AppConfig(auth=auth, ui=ui_cfg, workers=workers_cfg, persistence=persistence)
+    proxy = ProxyConfig(**data.get("proxy", {}))
+
+    return AppConfig(auth=auth, ui=ui_cfg, workers=workers_cfg, persistence=persistence, proxy=proxy)
 
 
 # ------------------------------------------------------------------ Helpers

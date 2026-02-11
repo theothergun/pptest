@@ -21,43 +21,57 @@ def render(container: ui.element, _ctx: PageContext) -> None:
             "text-sm text-gray-500"
         )
 
-        rows = export_rows()
+        all_rows = export_rows()
         columns = [{"name": "key", "label": "Key", "field": "key", "align": "left"}]
         for lang in SUPPORTED_LANGUAGES:
             code = lang["code"]
             columns.append({"name": code, "label": lang["label"], "field": code, "align": "left"})
 
-        table = ui.table(columns=columns, rows=rows, row_key="key").props(
-            "dense separator=cell flat"
-        ).classes("w-full")
+        selected_row: dict[str, str] = {"key": ""}
+        editors: dict[str, ui.textarea] = {}
 
         with ui.row().classes("w-full gap-2 items-center"):
+            filter_input = ui.input("Filter keys", placeholder="type key fragment...").classes("min-w-[260px]")
             key_input = ui.input("New key", placeholder="example.page.title").classes("min-w-[260px]")
+
+            def apply_filter() -> None:
+                query = str(filter_input.value or "").strip().lower()
+                if not query:
+                    table.rows[:] = all_rows
+                else:
+                    table.rows[:] = [row for row in all_rows if query in str(row.get("key", "")).lower()]
+                table.update()
 
             def add_row() -> None:
                 key = str(key_input.value or "").strip()
                 if not key:
                     ui.notify("Please enter a translation key.", type="negative")
                     return
-                if any(row.get("key") == key for row in table.rows):
+                if any(row.get("key") == key for row in all_rows):
                     ui.notify(f"Key '{key}' already exists.", type="warning")
                     return
                 new_row = {"key": key}
                 for lang in SUPPORTED_LANGUAGES:
                     new_row[lang["code"]] = ""
-                table.rows.append(new_row)
-                table.update()
+                all_rows.append(new_row)
+                all_rows.sort(key=lambda item: str(item.get("key", "")))
+                apply_filter()
                 key_input.value = ""
                 ui.notify(f"Added: {key}", type="positive")
 
+            ui.button("Filter", on_click=apply_filter).props("flat")
             ui.button("Add key", on_click=add_row).props("color=primary")
 
         with ui.card().classes("w-full"):
-            ui.label("Edit selected phrase").classes("font-semibold")
+            ui.label("Translations").classes("font-semibold")
+            with ui.element("div").classes("w-full max-h-[40vh] overflow-auto"):
+                table = ui.table(columns=columns, rows=list(all_rows), row_key="key").props(
+                    "dense separator=cell flat virtual-scroll"
+                ).classes("w-full")
 
+        with ui.card().classes("w-full"):
+            ui.label("Edit selected phrase").classes("font-semibold")
             selected_key = ui.label("No key selected").classes("text-sm text-gray-500")
-            editors: dict[str, ui.textarea] = {}
-            selected_row: dict[str, str] = {"key": ""}
 
             def bind_selected(row: dict[str, str] | None) -> None:
                 if not row:
@@ -77,29 +91,30 @@ def render(container: ui.element, _ctx: PageContext) -> None:
 
             table.on("rowClick", lambda e: bind_selected(e.args[1]))
 
-            with ui.grid(columns=2).classes("w-full gap-2"):
-                for lang in SUPPORTED_LANGUAGES:
-                    code = lang["code"]
-                    editor = ui.textarea(label=lang["label"]).props("autogrow outlined")
-                    editor.classes("w-full")
-                    editors[code] = editor
+            with ui.element("div").classes("w-full max-h-[32vh] overflow-auto pr-1"):
+                with ui.grid(columns=2).classes("w-full gap-2"):
+                    for lang in SUPPORTED_LANGUAGES:
+                        code = lang["code"]
+                        editor = ui.textarea(label=lang["label"]).props("autogrow outlined")
+                        editor.classes("w-full")
+                        editors[code] = editor
 
             def save_row_changes() -> None:
                 key = str(selected_row.get("key") or "")
                 if not key:
                     ui.notify("Select a key in table first.", type="warning")
                     return
-                for row in table.rows:
+                for row in all_rows:
                     if row.get("key") == key:
                         for lang in SUPPORTED_LANGUAGES:
                             code = lang["code"]
                             row[code] = str(editors[code].value or "")
                         break
-                table.update()
+                apply_filter()
                 ui.notify(f"Updated: {key}", type="positive")
 
             def persist_all() -> None:
-                payload = import_rows(table.rows)
+                payload = import_rows(all_rows)
                 save_translations(payload)
                 ui.notify("Translations saved.", type="positive")
 

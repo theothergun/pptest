@@ -35,6 +35,7 @@ from services.worker_commands import (
 
 from services.app_state import AppState
 from services.logging_setup import setup_logging
+from services.i18n import bootstrap_defaults
 from loguru import logger
 
 
@@ -44,6 +45,7 @@ from loguru import logger
 
 setup_logging(app_name="mes_app", log_level="DEBUG")
 logger.info("Starting NiceGUI")
+bootstrap_defaults()
 
 
 

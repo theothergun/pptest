@@ -5,6 +5,7 @@ from typing import Any
 
 from nicegui import ui
 from layout.context import PageContext
+from services.i18n import t
 
 
 TOPIC_CMD = "packaging.cmd"
@@ -26,7 +27,9 @@ def build_page(ctx: PageContext) -> None:
 		"state.part_number",
 		"state.description",
 		"state.work_instruction",
+		"state.work_instruction_state",
 		"state.work_feedback",
+		"state.work_feedback_state",
 		"state.current_container_qty",
 		"state.max_container_qty",
 		"state.part_good",
@@ -61,6 +64,9 @@ def build_page(ctx: PageContext) -> None:
 	ui_refs: dict[str, Any] = {
 		"card_current_qty": None,
 		"card_max_qty": None,
+
+		"card_instruction": None,  # NEW
+		"card_feedback": None,  # NEW
 	}
 
 	def _publish_cmd(cmd: str) -> None:
@@ -94,29 +100,63 @@ def build_page(ctx: PageContext) -> None:
 			except Exception:
 				pass
 
+	# ---------------------------------------------------------
+	# NEW: instruction/feedback state -> background color logic
+	# ---------------------------------------------------------
+	def _bg_for_state(state: int) -> str:
+		# 1=Green, 2=Yellow, 3=Red, 4=Blue, 5=Grey
+		if state == 1:
+			return "#86EFAC"  # green-ish
+		if state == 2:
+			return "#FDE68A"  # yellow-ish
+		if state == 3:
+			return "#FCA5A5"  # red-ish
+		if state == 4:
+			return "#93C5FD"  # blue-ish
+		return "#E5E7EB"  # grey-ish (also default)
+
+	def _set_instruction_feedback_cards_color(work_instruction_state: int, work_feedback_state: int) -> None:
+		card_instruction = ui_refs.get("card_instruction")
+		card_feedback = ui_refs.get("card_feedback")
+
+		bg_instruction = _bg_for_state(work_instruction_state)
+		bg_feedback = _bg_for_state(work_feedback_state)
+
+		if card_instruction is not None:
+			try:
+				card_instruction.style("background-color: %s;" % bg_instruction)
+			except Exception:
+				pass
+
+		if card_feedback is not None:
+			try:
+				card_feedback.style("background-color: %s;" % bg_feedback)
+			except Exception:
+				pass
+
 	# --------------------------
 	# Layout
 	# --------------------------
 	with ui.column().classes("w-full h-full flex flex-col min-h-0 p-4 gap-4"):
 		with ui.row().classes("w-full items-center gap-4"):
-			ui.label("📦 packaging Station").classes("text-2xl font-bold")
+			ui.label(t("packaging.title", "📦 packaging Station")).classes("text-2xl font-bold")
 			ui.space()
 
 		with ui.grid().classes("w-full gap-4").style("grid-template-columns: 360px 1fr 280px;"):
 			with ui.card().classes("w-full"):
-				ui.label("Containernumber").classes("text-sm text-gray-500")
+				ui.label(t("packaging.container_number", "Containernumber")).classes("text-sm text-gray-500")
 				ui.label("").classes("text-lg font-bold") \
 					.bind_text_from(ctx.state, "container_number", backward=lambda n: str(n or ""))
 
 				ui.separator()
 
-				ui.label("Partnumber").classes("text-sm text-gray-500")
+				ui.label(t("packaging.part_number", "Partnumber")).classes("text-sm text-gray-500")
 				ui.label("").classes("text-lg font-bold") \
 					.bind_text_from(ctx.state, "part_number", backward=lambda n: str(n or ""))
 
 				ui.separator()
 
-				ui.label("Description").classes("text-sm text-gray-500")
+				ui.label(t("common.description", "Description")).classes("text-sm text-gray-500")
 				ui.label("").classes("text-base") \
 					.bind_text_from(ctx.state, "description", backward=lambda n: str(n or ""))
 
@@ -127,44 +167,46 @@ def build_page(ctx: PageContext) -> None:
 					with ui_refs["card_current_qty"]:
 						ui.label("").classes("text-3xl font-bold") \
 							.bind_text_from(ctx.state, "current_container_qty", backward=lambda n: "%s" % int(n or 0))
-						ui.label("Current").classes("text-xs text-gray-700")
+						ui.label(t("common.current", "Current")).classes("text-xs text-gray-700")
 
 					ui_refs["card_max_qty"] = ui.card().classes("w-[140px] h-[80px] flex items-center justify-center")
 					with ui_refs["card_max_qty"]:
 						ui.label("").classes("text-3xl font-bold") \
 							.bind_text_from(ctx.state, "max_container_qty", backward=lambda n: "%s" % int(n or 0))
-						ui.label("Max").classes("text-xs text-gray-700")
+						ui.label(t("common.max", "Max")).classes("text-xs text-gray-700")
 
 			with ui.column().classes("w-full gap-4"):
-				with ui.card().classes("w-full"):
-					ui.label("Instruction for worker").classes("text-sm text-gray-500")
+				ui_refs["card_instruction"] = ui.card().classes("w-full")  # NEW ref
+				with ui_refs["card_instruction"]:
+					ui.label(t("packaging.instruction_for_worker", "Instruction for worker")).classes("text-sm text-gray-700")
 					lbl_instruction = ui.label("").classes("text-xl font-semibold")
 					lbl_instruction.style("min-height: 72px;")
 					lbl_instruction.bind_text_from(ctx.state, "work_instruction", backward=lambda n: str(n or ""))
 
-				with ui.card().classes("w-full"):
-					ui.label("Current step").classes("text-sm text-gray-500")
+				ui_refs["card_feedback"] = ui.card().classes("w-full")  # NEW ref
+				with ui_refs["card_feedback"]:
+					ui.label(t("packaging.current_step", "Current step")).classes("text-sm text-gray-700")
 					lbl_step = ui.label("").classes("text-xl font-semibold")
 					lbl_step.style("min-height: 72px;")
 					lbl_step.bind_text_from(ctx.state, "work_feedback", backward=lambda n: str(n or ""))
 
 			with ui.card().classes("w-full"):
-				ui.label("Total good").classes("text-sm text-gray-500")
+				ui.label(t("packaging.total_good", "Total good")).classes("text-sm text-gray-500")
 				ui.label("").classes("text-4xl font-bold") \
 					.bind_text_from(ctx.state, "part_good", backward=lambda n: "%s" % int(n or 0))
 
 				ui.separator()
 
-				ui.label("Total bad").classes("text-sm text-gray-500")
+				ui.label(t("packaging.total_bad", "Total bad")).classes("text-sm text-gray-500")
 				ui.label("").classes("text-4xl font-bold") \
 					.bind_text_from(ctx.state, "part_bad", backward=lambda n: "%s" % int(n or 0))
 
 		with ui.row().classes("w-full gap-4 justify-start"):
-			ui.button("Start", icon="play_arrow", on_click=lambda: _publish_cmd("start")) \
+			ui.button(t("common.start", "Start"), icon="play_arrow", on_click=lambda: _publish_cmd("start")) \
 				.props("color=green").classes("w-[200px] h-[64px] text-lg")
-			ui.button("Stop", icon="stop", on_click=lambda: _publish_cmd("stop")) \
+			ui.button(t("common.stop", "Stop"), icon="stop", on_click=lambda: _publish_cmd("stop")) \
 				.props("color=red").classes("w-[200px] h-[64px] text-lg")
-			ui.button("Reset", icon="restart_alt", on_click=lambda: _publish_cmd("reset")) \
+			ui.button(t("common.reset", "Reset"), icon="restart_alt", on_click=lambda: _publish_cmd("reset")) \
 				.props("color=blue outline").classes("w-[240px] h-[64px] text-lg")
 
 	# --------------------------
@@ -175,21 +217,32 @@ def build_page(ctx: PageContext) -> None:
 		max_qty = int(getattr(ctx.state, "max_container_qty", 0) or 0)
 		_set_counter_cards_color(cur_qty, max_qty)
 
+	def _apply_instruction_feedback_color_from_state() -> None:
+		instr_state = int(getattr(ctx.state, "work_instruction_state", 4) or 4)
+		feed_state = int(getattr(ctx.state, "work_feedback_state", 4) or 4)
+		_set_instruction_feedback_cards_color(instr_state, feed_state)
+
 	def _drain_bus() -> None:
-		changed = False
+		changed_counter = False
+		changed_text_boxes = False
+
 		while True:
 			try:
 				msg = sub_state.queue.get_nowait()
 			except queue.Empty:
 				break
 
-			# only need to react to qty changes for styling
 			key = msg.topic.replace("state.", "")
 			if key in ("current_container_qty", "max_container_qty"):
-				changed = True
+				changed_counter = True
+			elif key in ("work_instruction_state", "work_feedback_state"):
+				changed_text_boxes = True
 
-		if changed:
+		if changed_counter:
 			_apply_counter_color_from_state()
+		if changed_text_boxes:
+			_apply_instruction_feedback_color_from_state()
 
 	add_timer(0.1, _drain_bus)
 	_apply_counter_color_from_state()
+	_apply_instruction_feedback_color_from_state()

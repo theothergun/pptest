@@ -30,6 +30,7 @@ from services.worker_commands import (
 	ScriptWorkerCommands as ScriptCommands,
 	RestApiCommands as RestCommands,
 	TwinCatCommands,
+	ItacCommands
 )
 
 from services.app_state import AppState
@@ -47,6 +48,7 @@ logger.info("Starting NiceGUI")
 bootstrap_defaults()
 
 APP_CONFIG = load_app_config()
+_apply_proxy_env(APP_CONFIG)
 
 GLOBAL_WORKER_BUS = WorkerBus()
 GLOBAL_BRIDGE = UiBridge()

@@ -9,6 +9,7 @@ from layout.page_scaffold import build_page
 from services.app_config import get_app_config
 from services.worker_commands import ScriptWorkerCommands as ScriptCommands
 from services.worker_topics import ScriptWorkerTopics as ScriptTopics
+from services.i18n import t
 
 
 def render(container: ui.element, ctx: PageContext) -> None:
@@ -48,14 +49,14 @@ def render(container: ui.element, ctx: PageContext) -> None:
     @ui.refreshable
     def workers_list() -> None:
         if not enabled_workers:
-            ui.label("No workers are enabled.").classes("text-sm text-gray-500")
+            ui.label(t("summary.no_workers", "No workers are enabled.")).classes("text-sm text-gray-500")
             return
 
         with ui.column().classes("w-full gap-2"):
             for name in enabled_workers:
                 handle = worker_registry.get(name) if worker_registry else None
                 is_alive = bool(handle and handle.is_alive())
-                status = "Connected" if is_alive else "Disconnected"
+                status = t("summary.connected", "Connected") if is_alive else t("summary.disconnected", "Disconnected")
                 icon = "check_circle" if is_alive else "highlight_off"
                 color = "text-green-600" if is_alive else "text-red-500"
 
@@ -70,12 +71,12 @@ def render(container: ui.element, ctx: PageContext) -> None:
     @ui.refreshable
     def chains_list() -> None:
         if not script_handle:
-            ui.label("Script worker is not running.").classes("text-sm text-gray-500")
+            ui.label(t("summary.script_worker_not_running", "Script worker is not running.")).classes("text-sm text-gray-500")
             return
 
         chains = chains_state["value"]
         if not chains:
-            ui.label("No running scripts.").classes("text-sm text-gray-500")
+            ui.label(t("summary.no_running_scripts", "No running scripts.")).classes("text-sm text-gray-500")
             return
 
         with ui.column().classes("w-full gap-2"):
@@ -83,15 +84,15 @@ def render(container: ui.element, ctx: PageContext) -> None:
                 active = bool(chain.get("active"))
                 paused = bool(chain.get("paused"))
                 if not active:
-                    state = "Stopped"
+                    state = t("summary.state_stopped", "Stopped")
                     icon = "highlight_off"
                     color = "text-red-500"
                 elif paused:
-                    state = "Paused"
+                    state = t("summary.state_paused", "Paused")
                     icon = "pause_circle"
                     color = "text-amber-500"
                 else:
-                    state = "Running"
+                    state = t("summary.state_running", "Running")
                     icon = "play_circle"
                     color = "text-green-600"
 
@@ -108,17 +109,17 @@ def render(container: ui.element, ctx: PageContext) -> None:
                         ui.label(state).classes("text-sm text-gray-500")
 
                     with ui.row().classes("w-full text-xs text-gray-500 gap-4"):
-                        ui.label(f"Step: {step}")
-                        ui.label(f"Cycles: {cycle_count}")
+                        ui.label(t("summary.step", "Step: {step}", step=step))
+                        ui.label(t("summary.cycles", "Cycles: {count}", count=cycle_count))
 
     def build_content(_parent: ui.element) -> None:
         with ui.column().classes("w-full gap-4"):
             with ui.card().classes("w-full"):
-                ui.label("Workers").classes("text-lg font-bold")
+                ui.label(t("summary.workers", "Workers")).classes("text-lg font-bold")
                 workers_list()
 
             with ui.card().classes("w-full"):
-                ui.label("Script Chains").classes("text-lg font-bold")
+                ui.label(t("summary.script_chains", "Script Chains")).classes("text-lg font-bold")
                 chains_list()
 
     if bus:
@@ -144,4 +145,4 @@ def render(container: ui.element, ctx: PageContext) -> None:
 
     add_timer(1.0, workers_list.refresh)
 
-    build_page(ctx, container, title="Summary", content=build_content, show_action_bar=False)
+    build_page(ctx, container, title=t("summary.title", "Summary"), content=build_content, show_action_bar=False)

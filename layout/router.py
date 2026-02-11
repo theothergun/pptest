@@ -11,6 +11,7 @@ from layout.context import PageContext
 from layout.action_bar import ActionBar, Action, EventBus, ACTIONS_BY_ROUTE
 
 from services.app_config import get_app_config
+from services.i18n import t
 
 
 # All pages get (container, ctx) so they can use ctx.bus/action_bar, etc.
@@ -40,18 +41,18 @@ def _render_custom_route(route_path: str) -> RenderFn:
     def _render(container: ui.element, ctx: PageContext) -> None:
         target = _resolve_route_path(route_path)
         if not os.path.exists(target):
-            ui.label(f"Route file not found: {route_path}").classes("text-red-600")
+            ui.label(t("router.file_not_found", "Route file not found: {route_path}", route_path=route_path)).classes("text-red-600")
             return
         module_name = f"custom_route_{hash(target)}"
         spec = importlib.util.spec_from_file_location(module_name, target)
         if not spec or not spec.loader:
-            ui.label(f"Failed to load route: {route_path}").classes("text-red-600")
+            ui.label(t("router.failed_to_load", "Failed to load route: {route_path}", route_path=route_path)).classes("text-red-600")
             return
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
         render_fn = getattr(module, "render", None)
         if not callable(render_fn):
-            ui.label(f"Route file missing render(): {route_path}").classes("text-red-600")
+            ui.label(t("router.missing_render", "Route file missing render(): {route_path}", route_path=route_path)).classes("text-red-600")
             return
         render_fn(container, ctx)
     return _render
@@ -121,7 +122,7 @@ def get_initial_route_from_url(default: str = "home") -> str:
 def navigate(ctx: PageContext, route_key: str) -> None:
     route = get_routes().get(route_key)
     if not route or not is_route_visible(route_key):
-        ui.notify(f"Unknown route: {route_key}", type="negative")
+        ui.notify(t("router.unknown_route", "Unknown route: {route_key}", route_key=route_key), type="negative")
         return
 
     # per-user state (persists if storage_secret stays the same)

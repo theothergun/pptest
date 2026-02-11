@@ -38,6 +38,12 @@
           "path": "summary.py"
         },
         {
+          "icon": "home",
+          "key": "app_state",
+          "label": "app_state",
+          "path": "settings/app_state_view.py"
+        },
+        {
           "icon": "insert_drive_file",
           "key": "packaging",
           "label": "Packaging",
@@ -52,6 +58,10 @@
       ],
       "main_route": "home",
       "route_roles": {
+        "app_state": [
+          "user",
+          "admin"
+        ],
         "errors": [
           "user",
           "admin"
@@ -92,12 +102,28 @@
         "settings",
         "errors",
         "vi_home",
-        "test5"
+        "test5",
+        "app_state"
       ]
     }
   },
   "workers": {
     "configs": {
+       "itac": {
+        "endpoints": [
+          {
+            "name": "itac_main",
+            "base_url": "http://10.1.2.3:8080/mes/imsapi/rest/actions",
+            "station_number": "01010010",
+            "client": "01",
+            "registration_type": "S",
+            "system_identifier": "nicegui",
+            "timeout_s": 10.0,
+            "verify_ssl": false,
+            "auto_login": true
+          }
+        ]
+      },
       "rest_api": {
         "endpoints": [
           {
@@ -184,7 +210,8 @@
     "enabled_workers": [
       "script_worker",
       "twincat",
-      "tcp_client"
+      "tcp_client",
+      "twincat"
     ]
   }
 }

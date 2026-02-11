@@ -5,4 +5,5 @@ class WorkerName:
     REST_API = "rest_api"
     SCRIPT = "script_worker"
     TWINCAT = "twincat"
+    ITAC = "itac"
     # add more here

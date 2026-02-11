@@ -38,6 +38,12 @@
           "path": "summary.py"
         },
         {
+          "icon": "home",
+          "key": "app_state",
+          "label": "app_state",
+          "path": "settings/app_state_view.py"
+        },
+        {
           "icon": "insert_drive_file",
           "key": "packaging",
           "label": "Packaging",
@@ -52,6 +58,10 @@
       ],
       "main_route": "home",
       "route_roles": {
+        "app_state": [
+          "user",
+          "admin"
+        ],
         "errors": [
           "user",
           "admin"
@@ -92,7 +102,8 @@
         "settings",
         "errors",
         "vi_home",
-        "test5"
+        "test5",
+        "app_state"
       ]
     }
   },

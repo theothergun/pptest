@@ -12,9 +12,11 @@ class ScriptWorkerCommands(StrEnum):
 	RESUME_CHAIN = "script.resume_chain"
 	RELOAD_SCRIPT = "script.reload_script"
 	RELOAD_ALL = "script.reload_all"
-	LIST_SCRIPTS = "script.list_scripts"
-	LIST_CHAINS = "script.list_chains"
-
+	LIST_SCRIPTS = "script.scripts_list"
+	LIST_CHAINS = "script.chains_list"
+	UPDATE_CHAIN_STATE = "script.chain_state"
+	UPDATE_LOG = "script.log"
+	SET_HOT_RELOAD = "script.set_hot_reload"
 
 # ------------------------------------------------------------------ TCP Client Worker
 

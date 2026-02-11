@@ -1,36 +1,23 @@
 from __future__ import annotations
 
+import logging
 import queue
 import json
 from pathlib import Path
 
 from nicegui import ui
+
 from layout.context import PageContext
 from services.app_config import DEFAULT_CONFIG_PATH, load_app_config, save_app_config
 from services.worker_commands import ScriptWorkerCommands as Commands
+from pages.utils.safe_json import safe_format_data
 
-# Must match the worker publish key for logs (ScriptWorker KEY_LOG)
-KEY_LOG = "script.log"
-KEY_SCRIPTS_LIST = "script.scripts_list"
-KEY_CHAINS_LIST = "script.chains_list"
-KEY_CHAIN_STATE = "script.chain_state"
 
 
 def render(container: ui.element, ctx: PageContext) -> None:
 	"""Render function matching router signature."""
 	with container:
 		build_page(ctx)
-
-
-def _safe_format_data(value: object) -> str:
-	"""Convert potentially self-referential payloads into a safe string for ui.code."""
-	try:
-		return json.dumps(value, indent=2, sort_keys=True)
-	except Exception:
-		try:
-			return repr(value)
-		except Exception:
-			return "<unrepresentable>"
 
 
 def _build_tree_from_script_paths(script_paths: list[str]) -> tuple[list[dict], set[str]]:
@@ -183,7 +170,7 @@ def build_page(ctx: PageContext) -> None:
 
 				editor["title"] = title
 
-				ta = ui.codemirror(value="", language='Python').classes("w-full h-full")
+				ta = ui.codemirror(value="", language="Python").classes("w-full h-full")
 				ta.props("autogrow=true")
 				ta.style("height: calc(100vh - 140px); font-family: monospace;")
 				editor["textarea"] = ta
@@ -306,6 +293,36 @@ def build_page(ctx: PageContext) -> None:
 			return "orange"
 		return "green"
 
+	def _start_chain_for_card(chain_key: str) -> None:
+		w = chain_cards.get(chain_key)
+		if not w:
+			ui.notify("Chain not found", type="negative")
+			return
+		script_name = (w.get("script") or "").strip()
+		instance_id = (w.get("instance") or "default").strip() or "default"
+		if not script_name:
+			ui.notify("Missing script name for start", type="negative")
+			return
+		worker_handle.send(Commands.START_CHAIN, script_name=script_name, instance_id=instance_id)
+		ui.notify("Starting %s (%s)" % (script_name, instance_id), type="info")
+
+	def _format_step_time(step_time_val) -> str:
+		if step_time_val is None:
+			return ""
+		try:
+			if isinstance(step_time_val, (int, float)):
+				if step_time_val < 0:
+					return ""
+				if step_time_val == int(step_time_val):
+					return "%sms" % int(step_time_val)
+				return "%sms" % step_time_val
+			s = str(step_time_val).strip()
+			if not s or s == "-1":
+				return ""
+			return s
+		except Exception:
+			return ""
+
 	def _ensure_chain_card(chain: dict) -> None:
 		chains_container = ui_refs.get("chains_container")
 		if chains_container is None:
@@ -324,12 +341,15 @@ def build_page(ctx: PageContext) -> None:
 				ui.icon("code")
 				ui.label("%s" % chain.get("script", "unknown")).classes("text-lg font-bold flex-grow")
 				badge = ui.badge("", color="green")
+
 			with ui.grid(columns=2).classes("w-full gap-2 mb-2"):
 				ui.label("Instance:").classes("font-semibold")
 				ui.label(chain.get("instance", "default"))
 
 				ui.label("Current Step:").classes("font-semibold")
-				step_label = ui.label("").classes("text-blue-600 font-mono text-lg")
+				with ui.row().classes("items-center gap-2"):
+					step_label = ui.label("").classes("text-blue-600 font-mono text-lg")
+					step_time_label = ui.label("").classes("text-gray-500 font-mono text-lg")
 
 				ui.label("Step Text:").classes("font-semibold")
 				step_text = ui.label("").classes("text-blue-600 font-mono text-lg")
@@ -338,19 +358,25 @@ def build_page(ctx: PageContext) -> None:
 				cycles_label = ui.label("").classes("text-gray-600")
 
 			with ui.row().classes("w-full gap-2"):
-				ui.button(
+				btn_pause = ui.button(
 					"Pause",
 					icon="pause",
 					on_click=lambda ck=chain_key: worker_handle.send(Commands.PAUSE_CHAIN, chain_key=ck),
 				).props("color=orange flat dense")
 
-				ui.button(
+				btn_resume = ui.button(
 					"Resume",
 					icon="play_arrow",
 					on_click=lambda ck=chain_key: worker_handle.send(Commands.RESUME_CHAIN, chain_key=ck),
 				).props("color=green flat dense")
 
-				ui.button(
+				btn_start = ui.button(
+					"Start",
+					icon="play_arrow",
+					on_click=lambda ck=chain_key: _start_chain_for_card(ck),
+				).props("color=green flat dense")
+
+				btn_stop = ui.button(
 					"Stop",
 					icon="stop",
 					on_click=lambda ck=chain_key: worker_handle.send(Commands.STOP_CHAIN, chain_key=ck),
@@ -363,30 +389,61 @@ def build_page(ctx: PageContext) -> None:
 				).props("color=blue flat dense").tooltip("Hot-reload this script")
 
 		with card2:
-			data = ui.code("{}")
+			data = ui.json_editor({
+				"content": {"json": {}},
+				"readOnly": True,
+				"mode": "tree",  # or "view" / "text"
+			})
 
 		chain_cards[chain_key] = {
 			"card": card,
 			"card2": card2,
 			"badge": badge,
 			"step_label": step_label,
+			"step_time_label": step_time_label,
 			"cycles_label": cycles_label,
 			"step_desc": step_text,
 			"data": data,
+
+			"btn_pause": btn_pause,
+			"btn_resume": btn_resume,
+			"btn_start": btn_start,
+			"btn_stop": btn_stop,
+
+			"script": chain.get("script", "unknown"),
+			"instance": chain.get("instance", "default"),
 		}
+
+	def _set_visible(el, is_visible: bool) -> None:
+		# NiceGUI supports .visible on newer versions; keep a style fallback.
+		try:
+			el.visible = bool(is_visible)
+			return
+		except Exception:
+			pass
+		try:
+			el.style("display: %s;" % ("inline-flex" if is_visible else "none"))
+		except Exception:
+			pass
 
 	def _update_chain_card(chain: dict) -> None:
 		chain_key = chain.get("key", "unknown")
 		w = chain_cards.get(chain_key)
 		if not w:
 			return
-
 		active = bool(chain.get("active", False))
 		paused = bool(chain.get("paused", False))
 		step = chain.get("step", 0)
 		data = chain.get("data", {})
 		cycle_count = chain.get("cycle_count", 0)
 		step_desc = chain.get("step_desc", "")
+		step_time = chain.get("step_time", None)
+
+		# keep script/instance updated for "Start" button usage
+		if "script" in chain and chain.get("script") is not None:
+			w["script"] = chain.get("script", w.get("script", "unknown"))
+		if "instance" in chain and chain.get("instance") is not None:
+			w["instance"] = chain.get("instance", w.get("instance", "default"))
 
 		status_text = _status_text(active, paused)
 		status_color = _status_color(active, paused)
@@ -397,10 +454,53 @@ def build_page(ctx: PageContext) -> None:
 		except Exception:
 			pass
 
-		w["step_label"].text = "Step %s" % step
+		# Show as "[ 5 , 6ms ]" (no extra label inside the value field)
+		st_str = _format_step_time(step_time)
+		if st_str:
+			w["step_label"].text = " %s - " % step
+			w["step_time_label"].text = "%s " % st_str
+		else:
+			w["step_label"].text = "[ %s ]" % step
+			w["step_time_label"].text = ""
+
 		w["cycles_label"].text = str(cycle_count)
 		w["step_desc"].text = step_desc
-		w["data"].content = _safe_format_data(data)
+		je = w["data"]
+		payload = data # safe_format_data(data)
+		if len(payload) < 1:
+			return
+		print (payload)
+		try:
+			#je.properties.setdefault("content", {})
+			je.properties["content"]["json"] = payload
+		except Exception:
+			pass
+
+		# refresh widget (version dependent)
+		try:
+			pass
+			# NiceGUI 2.x typically works:
+			#je.update()
+		except Exception:
+			# NiceGUI 3.x workaround:
+			try:
+				pass
+				#je.run_editor_method("update", payload)
+			except Exception:
+				pass
+
+		# Button visibility rules:
+		# - Resume hidden unless paused
+		# - Start shown only when stopped
+		show_pause = active and (not paused)
+		show_resume = active and paused
+		show_start = not active
+		show_stop = active
+
+		_set_visible(w["btn_pause"], show_pause)
+		_set_visible(w["btn_resume"], show_resume)
+		_set_visible(w["btn_start"], show_start)
+		_set_visible(w["btn_stop"], show_stop)
 
 	def _apply_chains_snapshot(chains: list[dict]) -> None:
 		empty_container = ui_refs.get("empty_container")
@@ -511,6 +611,15 @@ def build_page(ctx: PageContext) -> None:
 				ui.button("Save startup scripts", on_click=_save_startup_scripts).props("color=primary").classes("mt-2")
 
 	# --------------------------
+	# Hot reload toggle (UI -> worker)
+	# --------------------------
+	def _send_hot_reload_setting(enabled: bool) -> None:
+		try:
+			worker_handle.send(Commands.SET_HOT_RELOAD, enabled=bool(enabled), interval=1.0)
+		except Exception:
+			pass
+
+	# --------------------------
 	# Layout
 	# --------------------------
 	with ui.column().classes("w-full h-full flex flex-col min-h-0"):
@@ -518,6 +627,10 @@ def build_page(ctx: PageContext) -> None:
 		with ui.row().classes("w-full items-center gap-4 mb-4"):
 			ui.label("📜 Scripts Lab").classes("text-2xl font-bold")
 			ui.space()
+
+			hot_reload_toggle = ui.switch("Hot Reload (1s)", value=False)
+			hot_reload_toggle.on_value_change(lambda e: _send_hot_reload_setting(bool(getattr(e, "value", False))))
+
 			ui.button(
 				"Reload All Scripts",
 				icon="refresh",
@@ -598,7 +711,7 @@ def build_page(ctx: PageContext) -> None:
 	# --------------------------
 	# Bus subscription (NEW CONTRACT)
 	#   - subscribe("*")
-	#   - msg.key / msg.source_id / msg.value
+	#   - msg.payload: { key, source_id, value }
 	# --------------------------
 	sub_all = bus.subscribe("*")
 	page_subs.append(sub_all)
@@ -612,43 +725,48 @@ def build_page(ctx: PageContext) -> None:
 				msg = sub_all.queue.get_nowait()
 			except queue.Empty:
 				break
-
-			key = getattr(msg, "key", None)
+			key = msg.payload.get("key")
 
 			# scripts list snapshot
-			if key == KEY_SCRIPTS_LIST:
-				latest_scripts["value"] = getattr(msg, "value", None)
+			if key == Commands.LIST_SCRIPTS:
+				latest_scripts["value"] = msg.payload.get("value")
 
 			# chains list snapshot
-			elif key == KEY_CHAINS_LIST:
-				latest_chains["value"] = getattr(msg, "value", None)
+			elif key == Commands.LIST_CHAINS:
+				latest_chains["value"] = msg.payload.get("value")
 
 			# per-chain state updates (optional; you already have list snapshots)
-			elif key == KEY_CHAIN_STATE:
-				# if you want: directly update a single card fast
-				# expected: msg.source_id = chain_key, msg.value = state dict
+			elif key == Commands.UPDATE_CHAIN_STATE:
 				try:
-					state = getattr(msg, "value", None) or {}
-					chain_key = getattr(msg, "source_id", None) or state.get("chain_id") or "unknown"
-					# update only if we already have a card or if it exists in list view later
+					val = msg.payload.get("value") or {}
+					chain_key = val.get("chain_key") or val.get("chain_id") or "unknown"
+					state = val
+
+					error_message = state.get("error_message", "") or ""
+					step_desc = state.get("step_desc", "") or ""
+					merged_step_desc = ("%s %s" % (error_message, step_desc)).strip()
+
 					if chain_key in chain_cards:
-						_update_chain_card({
-							"key": chain_key,
-							"script": state.get("script_name", chain_key.split(":")[0] if ":" in chain_key else chain_key),
-							"instance": state.get("instance_id", "default"),
-							"active": True,
-							"paused": bool(state.get("paused", False)),
-							"step": state.get("step", 0),
-							"cycle_count": state.get("cycle_count", 0),
-							"step_desc": state.get("step_desc", ""),
-							"data": state.get("data", {}),
-						})
-				except Exception:
-					pass
+						_update_chain_card(
+							{
+								"key": chain_key,
+								"script": state.get("script_name", chain_key.split(":")[0] if ":" in chain_key else chain_key),
+								"instance": state.get("instance_id", "default"),
+								"active": bool(state.get("active", True)),
+								"paused": bool(state.get("paused", False)),
+								"step": state.get("step", 0),
+								"cycle_count": state.get("cycle_count", 0),
+								"step_desc": merged_step_desc,
+								"data": state.get("data", {}),
+								"step_time": state.get("step_time", None),
+							}
+						)
+				except Exception as ex:
+					logging.error(ex)
 
 			# log lines
-			elif key == KEY_LOG:
-				payload = getattr(msg, "value", None) or {}
+			elif key == Commands.UPDATE_LOG:
+				payload = msg.payload.get("value") or {}
 				step = payload.get("step", "?")
 				step_desc = payload.get("step_desc", "?")
 				level = payload.get("level", "info")
@@ -679,3 +797,6 @@ def build_page(ctx: PageContext) -> None:
 	# initial snapshots
 	worker_handle.send(Commands.LIST_SCRIPTS)
 	worker_handle.send(Commands.LIST_CHAINS)
+
+	# Ensure worker matches initial UI toggle state (default OFF)
+	_send_hot_reload_setting(False)

@@ -41,3 +41,5 @@ class AppState:
     description: str = ""
     current_container_qty: str = ""
     max_container_qty: str = ""
+
+    test_new_kea: str= ""

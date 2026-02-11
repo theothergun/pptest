@@ -129,10 +129,10 @@ DEFAULT_CONFIG_PATH = get_config_path()
 
 # ------------------------------------------------------------------ Worker Names (authoritative)
 
-WORKER_SCRIPT = "script"
-WORKER_TCP = "tcp"
-WORKER_REST = "rest"
-WORKER_TWINCAT = "twincat"
+WORKER_SCRIPT = "script_worker"
+WORKER_TCP = "tcp_client"
+WORKER_REST = "rest_worker"
+WORKER_TWINCAT = "twincat_worker"
 
 
 # ------------------------------------------------------------------ Config models

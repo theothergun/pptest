@@ -1,8 +1,10 @@
+# services/workers/base_worker.py
 from __future__ import annotations
 
 import queue
 import threading
-from typing import Any, Optional
+from contextlib import contextmanager
+from typing import Any, Callable, Optional
 
 from loguru import logger
 
@@ -10,6 +12,10 @@ from services.ui_bridge import UiBridge
 from services.worker_bus import WorkerBus
 from services.worker_registry import SendCmdFn
 from services.worker_topics import WorkerTopics
+
+
+CommandPayload = dict[str, Any]
+CommandHandler = Callable[[CommandPayload], None]
 
 
 class BaseWorker:
@@ -37,6 +43,9 @@ class BaseWorker:
 		# IMPORTANT: must be set by workers before publishing
 		self.current_source_id: str = ""
 
+		# Optional: track subscriptions to close on shutdown
+		self._subs: list[Any] = []
+
 	# ------------------------------------------------------------------ lifecycle
 
 	def should_stop(self) -> bool:
@@ -63,13 +72,32 @@ class BaseWorker:
 		if self._connected == connected:
 			return
 		self._connected = connected
-		self.log.info("connection status changed: connected=%s", connected)
+		self.log.info(f"connection status changed: connected={connected}")
 
 	def is_connected(self) -> bool:
 		return self._connected
 
 	def is_running(self) -> bool:
 		return self._running
+
+	# ------------------------------------------------------------------ subscriptions
+
+	def add_subscription(self, sub: Any) -> Any:
+		"""
+		Register a subscription-like object that has a .close() method.
+		Workers can call this for WorkerBus subscriptions to ensure clean shutdown.
+		"""
+		self._subs.append(sub)
+		return sub
+
+	def close_subscriptions(self) -> None:
+		for sub in list(self._subs):
+			try:
+				if hasattr(sub, "close") and callable(getattr(sub, "close")):
+					sub.close()
+			except Exception as ex:
+				self.log.debug(f"failed closing subscription: {ex!r}")
+		self._subs = []
 
 	# ------------------------------------------------------------------ UI bridge
 
@@ -89,12 +117,12 @@ class BaseWorker:
 
 	def _pub(self, topic: WorkerTopics, **payload: Any) -> None:
 		if not self.current_source_id:
-			self.log.error("publish without source_id! topic=%s payload=%s", topic, payload)
+			self.log.error(f"publish without source_id! topic={topic} payload={payload}")
 			return
 
 		self.worker_bus.publish(
 			topic=topic,
-			source=self.name.lower().replace("worker", ""),
+			source=self.name,
 			source_id=self.current_source_id,
 			**payload
 		)
@@ -106,6 +134,10 @@ class BaseWorker:
 		self._pub(WorkerTopics.CLIENT_DISCONNECTED, reason=reason)
 
 	def publish_value(self, key: str, value: Any) -> None:
+		"""
+		UI pages (like Scripts Lab) subscribe to WorkerTopics.VALUE_CHANGED.
+		So publishing values must use VALUE_CHANGED, not a custom topic.
+		"""
 		self._pub(WorkerTopics.VALUE_CHANGED, key=key, value=value)
 
 	def publish_write_finished(self, key: str) -> None:
@@ -116,6 +148,44 @@ class BaseWorker:
 
 	def publish_error(self, key: Optional[str], action: str, error: str) -> None:
 		self._pub(WorkerTopics.ERROR, key=key, action=action, error=error)
+
+	# ------------------------------------------------------------------ publish helpers
+
+	@contextmanager
+	def as_source(self, source_id: str):
+		"""
+		Temporarily set current_source_id for publish calls.
+		"""
+		prev = self.current_source_id
+		self.current_source_id = str(source_id or "")
+		try:
+			yield
+		finally:
+			self.current_source_id = prev
+
+	def publish_value_as(self, source_id: str, key: str, value: Any) -> None:
+		with self.as_source(source_id):
+			self.publish_value(key=key, value=value)
+
+	def publish_error_as(self, source_id: str, key: Optional[str], action: str, error: str) -> None:
+		with self.as_source(source_id):
+			self.publish_error(key=key, action=action, error=error)
+
+	def publish_connected_as(self, source_id: str) -> None:
+		with self.as_source(source_id):
+			self.publish_connected()
+
+	def publish_disconnected_as(self, source_id: str, reason: str) -> None:
+		with self.as_source(source_id):
+			self.publish_disconnected(reason)
+
+	def publish_write_finished_as(self, source_id: str, key: str) -> None:
+		with self.as_source(source_id):
+			self.publish_write_finished(key)
+
+	def publish_write_error_as(self, source_id: str, key: Optional[str], error: str) -> None:
+		with self.as_source(source_id):
+			self.publish_write_error(key, error)
 
 	# ------------------------------------------------------------------ command helpers
 
@@ -134,3 +204,32 @@ class BaseWorker:
 			except queue.Empty:
 				break
 		return items
+
+	def dispatch_commands(
+		self,
+		handlers: dict[str, CommandHandler],
+		*,
+		limit: int = 50,
+		unknown_handler: Optional[CommandHandler] = None,
+	) -> None:
+		for cmd, payload in self.drain_commands(limit=limit):
+			name = str(cmd or "")
+			data = payload or {}
+
+			if name == "__stop__":
+				return
+
+			handler = handlers.get(name)
+			if handler is None:
+				if unknown_handler is not None:
+					try:
+						unknown_handler(data)
+					except Exception as ex:
+						self.publish_error_as(self.name, key=self.name, action="cmd_unknown_handler", error=str(ex))
+				continue
+
+			try:
+				handler(data)
+			except Exception as ex:
+				self.publish_error_as(self.name, key=self.name, action=f"cmd:{name}", error=str(ex))
+				self.log.exception(f"command handler crashed: cmd={name} payload={data!r}")

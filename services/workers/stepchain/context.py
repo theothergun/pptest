@@ -1,105 +1,174 @@
 from __future__ import annotations
 
-import time
+import copy
 import uuid
 from typing import Any, Dict, Optional
 
 from loguru import logger
 
-from services.worker_topics import WorkerTopics
-from services.worker_commands import TcpClientCommands
-from services.worker_names import WorkerName
+from services.workers.stepchain.apis.values_api import ValuesApi
+from services.workers.stepchain.apis.vars_api import VarsApi
+from services.workers.stepchain.apis.ui_api import UiApi
+from services.workers.stepchain.apis.flow_api import FlowApi
+from services.workers.stepchain.apis.timing_api import TimingApi
 
 
 class StepChainContext:
+	"""
+	Internal engine context for one running step chain instance.
+
+	IMPORTANT:
+	- This object is owned by the runtime.
+	- User scripts MUST NOT receive this object directly.
+	- Scripts should receive `public`, which exposes a stable, limited API.
+	"""
 
 	def __init__(
 		self,
 		chain_id: str,
-		worker_bus,
-		bridge,
-		state,
-	):
-		self.chain_id = chain_id
+		worker_bus: Any,
+		bridge: Any,
+		state: Any,
+	) -> None:
+		self.chain_id = str(chain_id or uuid.uuid4())
 		self.worker_bus = worker_bus
 		self.bridge = bridge
 		self.state = state
 
-		# step control
-		self.step = 0
-		self.step_desc = "-"
-		self.next_step: Optional[int] = None
-		self.step_entry_time = time.time()
-		self.cycle_count = 0
-		self.cycle_time = 0.1
+		# Runtime input snapshots (bus values)
+		self.data: Dict[str, Dict[str, Any]] = {}
 
-		# runtime
-		self.data: Dict[str, Any] = {}
-		self.error_flag = False
-		self.error_message = ""
+		# Engine state (managed by runtime)
+		self.step = 0
+		self.next_step = 0
+		self.step_time = 0.0
+		self.cycle_time = 0.1
+		self.cycle_count = 0
 		self.paused = False
 
-	# ------------------------------------------------------------------ helpers for scripts
-
-	def create_id(self) -> str:
-		return uuid.uuid4().hex
-
-	def goto(self, next_step: int) -> None:
-		self.next_step = next_step
-
-	def reset(self) -> None:
-		self.goto(0)
+		# Status / error reporting
 		self.error_flag = False
 		self.error_message = ""
+		self.step_desc = ""
 
-	def step_time(self) -> float:
-		return time.time() - self.step_entry_time
+		# Script-owned variables (persist across ticks)
+		self._vars: Dict[str, Any] = {}
 
-	def timeout(self, seconds: float) -> bool:
-		return self.step_time() >= seconds
+		# Script-owned UI state (persist across ticks; diffed before publishing)
+		self._ui_state: Optional[Dict[str, Any]] = None
 
-	def cycle(self) -> None:
-		self.cycle_count += 1
-		if self.next_step is not None:
-			if self.next_step != self.step:
-				self.step = self.next_step
-				self.step_entry_time = time.time()
-			self.next_step = None
+		# Computed helpers for "last" lookup
+		self._last_seen_by_source: Dict[str, str] = {}
 
-	# ------------------------------------------------------------------ worker interaction (NEW STANDARD)
+		# Cached public API wrapper
+		self._public: Optional[PublicStepChainContext] = None
 
-	def tcp_send(self, client_id: str, data: Any) -> None:
-		self.bridge.send_cmd(
-			WorkerName.TCP,
-			TcpClientCommands.SEND,
-			client_id=client_id,
-			data=data,
-		)
+		logger.bind(component="StepChainContext", chain_id=self.chain_id).debug("created")
 
-	# ------------------------------------------------------------------ VALUE API (the important part)
+	@property
+	def public(self) -> "PublicStepChainContext":
+		"""Public, script-safe API wrapper."""
+		if self._public is None:
+			self._public = PublicStepChainContext(self)
+		return self._public
 
-	def wait_for_value(self, source: str, key: str) -> Optional[Any]:
-		"""
-		Read latest VALUE_CHANGED for a worker/key.
-		ScriptWorker writes bus messages into ctx.data["bus_values"].
-		"""
-		return (
-			self.data
-			.get("bus_values", {})
-			.get(source, {})
-			.get(key)
-		)
+	def _update_bus_value(self, source: str, source_id: str, payload: Any) -> None:
+		"""Runtime hook: called by ScriptWorker when a VALUE_CHANGED event arrives."""
+		source = str(source or "unknown")
+		source_id = str(source_id or "")
 
-	# ------------------------------------------------------------------ state export
+		if source not in self.data:
+			self.data[source] = {}
 
-	def get_state_dict(self) -> Dict[str, Any]:
+		self.data[source][source_id] = payload
+		self._last_seen_by_source[source] = source_id
+
+	def get_state(self) -> Dict[str, Any]:
+		"""State exported to UI; includes runtime state, vars, and ui_state."""
+		ui_state = self._ui_state if isinstance(self._ui_state, dict) else {}
+
 		return {
 			"chain_id": self.chain_id,
 			"step": self.step,
-			"step_time": self.step_time(),
+			"step_time": self.step_time,
 			"cycle_count": self.cycle_count,
 			"error_flag": self.error_flag,
 			"error_message": self.error_message,
+			"step_desc": self.public.step_desc,
 			"paused": self.paused,
-			"data": dict(self.data),
+			"data": copy.deepcopy(self._vars),
+			"ui_state": copy.deepcopy(ui_state),
+		}
+
+
+class PublicStepChainContext:
+	"""Stable, script-facing context (public API)."""
+
+	def __init__(self, ctx: StepChainContext) -> None:
+		self._ctx = ctx
+
+		self.values = ValuesApi(ctx)
+		self.vars = VarsApi(ctx)
+		self.ui = UiApi(ctx)
+		self.flow = FlowApi(ctx)
+		self.timing = TimingApi(ctx)
+
+	@property
+	def chain_id(self) -> str:
+		return self._ctx.chain_id
+
+	@property
+	def cycle_count(self) -> int:
+		return int(self._ctx.cycle_count)
+
+	@property
+	def paused(self) -> bool:
+		return bool(self._ctx.paused)
+
+	@property
+	def error_flag(self) -> bool:
+		return bool(self._ctx.error_flag)
+
+	@property
+	def error_message(self) -> str:
+		return str(self._ctx.error_message or "")
+
+	@property
+	def step(self) -> int:
+		return int(self._ctx.step)
+
+	@property
+	def step_desc(self) -> str:
+		return str(self._ctx.step_desc or "")
+
+	def goto(self, step: int, desc: str = "") -> None:
+		self.flow.goto(step=step, desc=desc)
+
+	def fail(self, message: str) -> None:
+		self.flow.fail(message)
+
+	def clear_error(self) -> None:
+		self.flow.clear_error()
+
+	def log(self, message: str) -> None:
+		self.ui.log(message)
+
+	def set_cycle_time(self, seconds: float) -> None:
+		self.timing.set_cycle_time(seconds)
+
+	def set_step_desc(self, value: str) -> None:
+		self._ctx.step_desc = value
+
+	def snapshot(self) -> Dict[str, Any]:
+		ui_state = self._ctx._ui_state if isinstance(self._ctx._ui_state, dict) else {}
+		return {
+			"chain_id": self._ctx.chain_id,
+			"step": self._ctx.step,
+			"cycle_count": self._ctx.cycle_count,
+			"error_flag": self._ctx.error_flag,
+			"error_message": self._ctx.error_message,
+			"step_desc": self.step_desc,
+			"paused": self._ctx.paused,
+			"vars": self.vars.as_dict(),
+			"ui_state": dict(ui_state),
 		}

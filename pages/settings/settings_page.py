@@ -7,6 +7,7 @@ from pages.settings.route import route_settings
 from pages.settings.tcp_client import tcp_settings
 from pages.settings.rest_api import rest_api_settings
 from pages.settings import scripts_lab
+from pages.settings import language_manager
 
 from services.app_config import (
 	list_config_sets,
@@ -14,6 +15,8 @@ from services.app_config import (
 	create_config_set,
 	set_active_set,
 )
+from services.i18n import t
+
 
 def render(container: ui.element, ctx: PageContext) -> None:
 	with container:
@@ -25,9 +28,9 @@ def render(container: ui.element, ctx: PageContext) -> None:
 
 			# Left side (title + subtitle)
 			with ui.column().classes("gap-0"):
-				ui.label("Settings").classes("text-2xl font-bold")
+				ui.label(t("settings.title", "Settings")).classes("text-2xl font-bold")
 				ui.label(
-					"Manage application settings and worker configuration."
+					t("settings.subtitle", "Manage application settings and worker configuration.")
 				).classes("text-sm text-gray-500")
 
 			# Right side (config set selector)
@@ -41,7 +44,6 @@ def render(container: ui.element, ctx: PageContext) -> None:
 					set_active_set(e.value)
 					ui.notify(f"Active config set: {e.value}", type="positive")
 					ui.run_javascript("location.reload()")
-					#ctx.refresh_drawer()
 
 				def open_create_dialog():
 					d = ui.dialog()
@@ -93,6 +95,7 @@ def render(container: ui.element, ctx: PageContext) -> None:
 			ui.tab("TCP Clients")
 			ui.tab("Scripts")
 			ui.tab("REST APIs")
+			ui.tab("Languages")
 
 		with ui.tab_panels(tabs, value="Routes").classes("w-full"):
 			with ui.tab_panel("Routes"):
@@ -103,3 +106,5 @@ def render(container: ui.element, ctx: PageContext) -> None:
 				scripts_lab.render(ui.column().classes("w-full gap-4"), ctx)
 			with ui.tab_panel("REST APIs"):
 				rest_api_settings.render(ui.column().classes("w-full gap-4"), ctx)
+			with ui.tab_panel("Languages"):
+				language_manager.render(ui.column().classes("w-full gap-4"), ctx)

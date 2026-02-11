@@ -1,0 +1,1847 @@
+{
+  "app.title": {
+    "cs": "Shopfloor application",
+    "de": "Shopfloor application",
+    "en": "Shopfloor application",
+    "es-MX": "Shopfloor application",
+    "mk": "Shopfloor application",
+    "sk": "Shopfloor application",
+    "zh": "Shopfloor application"
+  },
+  "auto.2026_my_app": {
+    "cs": "© 2026 My App",
+    "de": "© 2026 My App",
+    "en": "© 2026 My App",
+    "es-MX": "© 2026 My App",
+    "mk": "© 2026 My App",
+    "sk": "© 2026 My App",
+    "zh": "© 2026 My App"
+  },
+  "auto.add_client": {
+    "cs": "Add client",
+    "de": "Add client",
+    "en": "Add client",
+    "es-MX": "Add client",
+    "mk": "Add client",
+    "sk": "Add client",
+    "zh": "Add client"
+  },
+  "auto.add_custom_routes_including_subfolders_like_packaging_packaging_py": {
+    "cs": "Add custom routes (including subfolders like packaging/packaging.py).",
+    "de": "Add custom routes (including subfolders like packaging/packaging.py).",
+    "en": "Add custom routes (including subfolders like packaging/packaging.py).",
+    "es-MX": "Add custom routes (including subfolders like packaging/packaging.py).",
+    "mk": "Add custom routes (including subfolders like packaging/packaging.py).",
+    "sk": "Add custom routes (including subfolders like packaging/packaging.py).",
+    "zh": "Add custom routes (including subfolders like packaging/packaging.py)."
+  },
+  "auto.add_edit_custom_routes_including_subfolders_like_packaging_packaging_py": {
+    "cs": "Add / Edit custom routes (including subfolders like packaging/packaging.py).",
+    "de": "Add / Edit custom routes (including subfolders like packaging/packaging.py).",
+    "en": "Add / Edit custom routes (including subfolders like packaging/packaging.py).",
+    "es-MX": "Add / Edit custom routes (including subfolders like packaging/packaging.py).",
+    "mk": "Add / Edit custom routes (including subfolders like packaging/packaging.py).",
+    "sk": "Add / Edit custom routes (including subfolders like packaging/packaging.py).",
+    "zh": "Add / Edit custom routes (including subfolders like packaging/packaging.py)."
+  },
+  "auto.add_endpoint": {
+    "cs": "Add endpoint",
+    "de": "Add endpoint",
+    "en": "Add endpoint",
+    "es-MX": "Add endpoint",
+    "mk": "Add endpoint",
+    "sk": "Add endpoint",
+    "zh": "Add endpoint"
+  },
+  "auto.add_key": {
+    "cs": "Add key",
+    "de": "Add key",
+    "en": "Add key",
+    "es-MX": "Add key",
+    "mk": "Add key",
+    "sk": "Add key",
+    "zh": "Add key"
+  },
+  "auto.add_py_files_to_scripts_directory": {
+    "cs": "(Add .py files to 'scripts/' directory)",
+    "de": "(Add .py files to 'scripts/' directory)",
+    "en": "(Add .py files to 'scripts/' directory)",
+    "es-MX": "(Add .py files to 'scripts/' directory)",
+    "mk": "(Add .py files to 'scripts/' directory)",
+    "sk": "(Add .py files to 'scripts/' directory)",
+    "zh": "(Add .py files to 'scripts/' directory)"
+  },
+  "auto.add_rest_endpoint": {
+    "cs": "Add REST endpoint",
+    "de": "Add REST endpoint",
+    "en": "Add REST endpoint",
+    "es-MX": "Add REST endpoint",
+    "mk": "Add REST endpoint",
+    "sk": "Add REST endpoint",
+    "zh": "Add REST endpoint"
+  },
+  "auto.add_route": {
+    "cs": "Add route",
+    "de": "Add route",
+    "en": "Add route",
+    "es-MX": "Add route",
+    "mk": "Add route",
+    "sk": "Add route",
+    "zh": "Add route"
+  },
+  "auto.add_tcp_client": {
+    "cs": "Add TCP client",
+    "de": "Add TCP client",
+    "en": "Add TCP client",
+    "es-MX": "Add TCP client",
+    "mk": "Add TCP client",
+    "sk": "Add TCP client",
+    "zh": "Add TCP client"
+  },
+  "auto.allowed_roles_comma_separated": {
+    "cs": "Allowed roles (comma separated)",
+    "de": "Allowed roles (comma separated)",
+    "en": "Allowed roles (comma separated)",
+    "es-MX": "Allowed roles (comma separated)",
+    "mk": "Allowed roles (comma separated)",
+    "sk": "Allowed roles (comma separated)",
+    "zh": "Allowed roles (comma separated)"
+  },
+  "auto.apply_row": {
+    "cs": "Apply row",
+    "de": "Apply row",
+    "en": "Apply row",
+    "es-MX": "Apply row",
+    "mk": "Apply row",
+    "sk": "Apply row",
+    "zh": "Apply row"
+  },
+  "auto.appstate_inspector": {
+    "cs": "AppState Inspector",
+    "de": "AppState Inspector",
+    "en": "AppState Inspector",
+    "es-MX": "AppState Inspector",
+    "mk": "AppState Inspector",
+    "sk": "AppState Inspector",
+    "zh": "AppState Inspector"
+  },
+  "auto.assigned_failures": {
+    "cs": "Assigned Failures",
+    "de": "Assigned Failures",
+    "en": "Assigned Failures",
+    "es-MX": "Assigned Failures",
+    "mk": "Assigned Failures",
+    "sk": "Assigned Failures",
+    "zh": "Assigned Failures"
+  },
+  "auto.available_scripts": {
+    "cs": "Available Scripts",
+    "de": "Available Scripts",
+    "en": "Available Scripts",
+    "es-MX": "Available Scripts",
+    "mk": "Available Scripts",
+    "sk": "Available Scripts",
+    "zh": "Available Scripts"
+  },
+  "auto.base_url": {
+    "cs": "Base URL",
+    "de": "Base URL",
+    "en": "Base URL",
+    "es-MX": "Base URL",
+    "mk": "Base URL",
+    "sk": "Base URL",
+    "zh": "Base URL"
+  },
+  "auto.cancel": {
+    "cs": "Cancel",
+    "de": "Cancel",
+    "en": "Cancel",
+    "es-MX": "Cancel",
+    "mk": "Cancel",
+    "sk": "Cancel",
+    "zh": "Cancel"
+  },
+  "auto.catalogue_reloaded": {
+    "cs": "Catalogue reloaded",
+    "de": "Catalogue reloaded",
+    "en": "Catalogue reloaded",
+    "es-MX": "Catalogue reloaded",
+    "mk": "Catalogue reloaded",
+    "sk": "Catalogue reloaded",
+    "zh": "Catalogue reloaded"
+  },
+  "auto.chain_not_found": {
+    "cs": "Chain not found",
+    "de": "Chain not found",
+    "en": "Chain not found",
+    "es-MX": "Chain not found",
+    "mk": "Chain not found",
+    "sk": "Chain not found",
+    "zh": "Chain not found"
+  },
+  "auto.chains": {
+    "cs": "Chains",
+    "de": "Chains",
+    "en": "Chains",
+    "es-MX": "Chains",
+    "mk": "Chains",
+    "sk": "Chains",
+    "zh": "Chains"
+  },
+  "auto.choose_an_action": {
+    "cs": "Choose an action:",
+    "de": "Choose an action:",
+    "en": "Choose an action:",
+    "es-MX": "Choose an action:",
+    "mk": "Choose an action:",
+    "sk": "Choose an action:",
+    "zh": "Choose an action:"
+  },
+  "auto.clear_logs": {
+    "cs": "Clear logs",
+    "de": "Clear logs",
+    "en": "Clear logs",
+    "es-MX": "Clear logs",
+    "mk": "Clear logs",
+    "sk": "Clear logs",
+    "zh": "Clear logs"
+  },
+  "auto.clear_subscriber": {
+    "cs": "Clear subscriber",
+    "de": "Clear subscriber",
+    "en": "Clear subscriber",
+    "es-MX": "Clear subscriber",
+    "mk": "Clear subscriber",
+    "sk": "Clear subscriber",
+    "zh": "Clear subscriber"
+  },
+  "auto.cleared_all_errors": {
+    "cs": "Cleared all errors",
+    "de": "Cleared all errors",
+    "en": "Cleared all errors",
+    "es-MX": "Cleared all errors",
+    "mk": "Cleared all errors",
+    "sk": "Cleared all errors",
+    "zh": "Cleared all errors"
+  },
+  "auto.client_id": {
+    "cs": "Client ID",
+    "de": "Client ID",
+    "en": "Client ID",
+    "es-MX": "Client ID",
+    "mk": "Client ID",
+    "sk": "Client ID",
+    "zh": "Client ID"
+  },
+  "auto.client_id_already_exists": {
+    "cs": "Client ID already exists.",
+    "de": "Client ID already exists.",
+    "en": "Client ID already exists.",
+    "es-MX": "Client ID already exists.",
+    "mk": "Client ID already exists.",
+    "sk": "Client ID already exists.",
+    "zh": "Client ID already exists."
+  },
+  "auto.client_id_host_and_port_are_required": {
+    "cs": "Client ID, host, and port are required.",
+    "de": "Client ID, host, and port are required.",
+    "en": "Client ID, host, and port are required.",
+    "es-MX": "Client ID, host, and port are required.",
+    "mk": "Client ID, host, and port are required.",
+    "sk": "Client ID, host, and port are required.",
+    "zh": "Client ID, host, and port are required."
+  },
+  "auto.client_not_found": {
+    "cs": "Client not found.",
+    "de": "Client not found.",
+    "en": "Client not found.",
+    "es-MX": "Client not found.",
+    "mk": "Client not found.",
+    "sk": "Client not found.",
+    "zh": "Client not found."
+  },
+  "auto.close": {
+    "cs": "Close",
+    "de": "Close",
+    "en": "Close",
+    "es-MX": "Close",
+    "mk": "Close",
+    "sk": "Close",
+    "zh": "Close"
+  },
+  "auto.config": {
+    "cs": "Config:",
+    "de": "Config:",
+    "en": "Config:",
+    "es-MX": "Config:",
+    "mk": "Config:",
+    "sk": "Config:",
+    "zh": "Config:"
+  },
+  "auto.configure_rest_api_worker_endpoints": {
+    "cs": "Configure REST API worker endpoints.",
+    "de": "Configure REST API worker endpoints.",
+    "en": "Configure REST API worker endpoints.",
+    "es-MX": "Configure REST API worker endpoints.",
+    "mk": "Configure REST API worker endpoints.",
+    "sk": "Configure REST API worker endpoints.",
+    "zh": "Configure REST API worker endpoints."
+  },
+  "auto.configure_tcp_client_worker_endpoints": {
+    "cs": "Configure TCP client worker endpoints.",
+    "de": "Configure TCP client worker endpoints.",
+    "en": "Configure TCP client worker endpoints.",
+    "es-MX": "Configure TCP client worker endpoints.",
+    "mk": "Configure TCP client worker endpoints.",
+    "sk": "Configure TCP client worker endpoints.",
+    "zh": "Configure TCP client worker endpoints."
+  },
+  "auto.containernumber": {
+    "cs": "Containernumber",
+    "de": "Containernumber",
+    "en": "Containernumber",
+    "es-MX": "Containernumber",
+    "mk": "Containernumber",
+    "sk": "Containernumber",
+    "zh": "Containernumber"
+  },
+  "auto.contains_ltc_data": {
+    "cs": "contains LTC data",
+    "de": "contains LTC data",
+    "en": "contains LTC data",
+    "es-MX": "contains LTC data",
+    "mk": "contains LTC data",
+    "sk": "contains LTC data",
+    "zh": "contains LTC data"
+  },
+  "auto.contains_the_counters": {
+    "cs": "contains the counters",
+    "de": "contains the counters",
+    "en": "contains the counters",
+    "es-MX": "contains the counters",
+    "mk": "contains the counters",
+    "sk": "contains the counters",
+    "zh": "contains the counters"
+  },
+  "auto.contains_vi_data": {
+    "cs": "contains VI data",
+    "de": "contains VI data",
+    "en": "contains VI data",
+    "es-MX": "contains VI data",
+    "mk": "contains VI data",
+    "sk": "contains VI data",
+    "zh": "contains VI data"
+  },
+  "auto.copy_from_optional": {
+    "cs": "Copy from (optional)",
+    "de": "Copy from (optional)",
+    "en": "Copy from (optional)",
+    "es-MX": "Copy from (optional)",
+    "mk": "Copy from (optional)",
+    "sk": "Copy from (optional)",
+    "zh": "Copy from (optional)"
+  },
+  "auto.counters": {
+    "cs": "Counters",
+    "de": "Counters",
+    "en": "Counters",
+    "es-MX": "Counters",
+    "mk": "Counters",
+    "sk": "Counters",
+    "zh": "Counters"
+  },
+  "auto.create": {
+    "cs": "Create",
+    "de": "Create",
+    "en": "Create",
+    "es-MX": "Create",
+    "mk": "Create",
+    "sk": "Create",
+    "zh": "Create"
+  },
+  "auto.create_config_set": {
+    "cs": "Create config set",
+    "de": "Create config set",
+    "en": "Create config set",
+    "es-MX": "Create config set",
+    "mk": "Create config set",
+    "sk": "Create config set",
+    "zh": "Create config set"
+  },
+  "auto.create_key_value_translations_for_all_supported_languages": {
+    "cs": "Create key/value translations for all supported languages.",
+    "de": "Create key/value translations for all supported languages.",
+    "en": "Create key/value translations for all supported languages.",
+    "es-MX": "Create key/value translations for all supported languages.",
+    "mk": "Create key/value translations for all supported languages.",
+    "sk": "Create key/value translations for all supported languages.",
+    "zh": "Create key/value translations for all supported languages."
+  },
+  "auto.current": {
+    "cs": "Current",
+    "de": "Current",
+    "en": "Current",
+    "es-MX": "Current",
+    "mk": "Current",
+    "sk": "Current",
+    "zh": "Current"
+  },
+  "auto.current_step": {
+    "cs": "Current Step:",
+    "de": "Current Step:",
+    "en": "Current Step:",
+    "es-MX": "Current Step:",
+    "mk": "Current Step:",
+    "sk": "Current Step:",
+    "zh": "Current Step:"
+  },
+  "auto.current_step_2": {
+    "cs": "Current step",
+    "de": "Current step",
+    "en": "Current step",
+    "es-MX": "Current step",
+    "mk": "Current step",
+    "sk": "Current step",
+    "zh": "Current step"
+  },
+  "auto.cycles": {
+    "cs": "Cycles:",
+    "de": "Cycles:",
+    "en": "Cycles:",
+    "es-MX": "Cycles:",
+    "mk": "Cycles:",
+    "sk": "Cycles:",
+    "zh": "Cycles:"
+  },
+  "auto.delete": {
+    "cs": "Delete",
+    "de": "Delete",
+    "en": "Delete",
+    "es-MX": "Delete",
+    "mk": "Delete",
+    "sk": "Delete",
+    "zh": "Delete"
+  },
+  "auto.delimiter": {
+    "cs": "Delimiter",
+    "de": "Delimiter",
+    "en": "Delimiter",
+    "es-MX": "Delimiter",
+    "mk": "Delimiter",
+    "sk": "Delimiter",
+    "zh": "Delimiter"
+  },
+  "auto.description": {
+    "cs": "Description",
+    "de": "Description",
+    "en": "Description",
+    "es-MX": "Description",
+    "mk": "Description",
+    "sk": "Description",
+    "zh": "Description"
+  },
+  "auto.details": {
+    "cs": "Details",
+    "de": "Details",
+    "en": "Details",
+    "es-MX": "Details",
+    "mk": "Details",
+    "sk": "Details",
+    "zh": "Details"
+  },
+  "auto.display_name": {
+    "cs": "Display name",
+    "de": "Display name",
+    "en": "Display name",
+    "es-MX": "Display name",
+    "mk": "Display name",
+    "sk": "Display name",
+    "zh": "Display name"
+  },
+  "auto.edit": {
+    "cs": "Edit",
+    "de": "Edit",
+    "en": "Edit",
+    "es-MX": "Edit",
+    "mk": "Edit",
+    "sk": "Edit",
+    "zh": "Edit"
+  },
+  "auto.edit_script": {
+    "cs": "Edit Script",
+    "de": "Edit Script",
+    "en": "Edit Script",
+    "es-MX": "Edit Script",
+    "mk": "Edit Script",
+    "sk": "Edit Script",
+    "zh": "Edit Script"
+  },
+  "auto.edit_selected_phrase": {
+    "cs": "Edit selected phrase",
+    "de": "Edit selected phrase",
+    "en": "Edit selected phrase",
+    "es-MX": "Edit selected phrase",
+    "mk": "Edit selected phrase",
+    "sk": "Edit selected phrase",
+    "zh": "Edit selected phrase"
+  },
+  "auto.encoding": {
+    "cs": "Encoding",
+    "de": "Encoding",
+    "en": "Encoding",
+    "es-MX": "Encoding",
+    "mk": "Encoding",
+    "sk": "Encoding",
+    "zh": "Encoding"
+  },
+  "auto.endpoint_name_already_exists": {
+    "cs": "Endpoint name already exists.",
+    "de": "Endpoint name already exists.",
+    "en": "Endpoint name already exists.",
+    "es-MX": "Endpoint name already exists.",
+    "mk": "Endpoint name already exists.",
+    "sk": "Endpoint name already exists.",
+    "zh": "Endpoint name already exists."
+  },
+  "auto.endpoint_not_found": {
+    "cs": "Endpoint not found.",
+    "de": "Endpoint not found.",
+    "en": "Endpoint not found.",
+    "es-MX": "Endpoint not found.",
+    "mk": "Endpoint not found.",
+    "sk": "Endpoint not found.",
+    "zh": "Endpoint not found."
+  },
+  "auto.enter_a_username": {
+    "cs": "Enter a username",
+    "de": "Enter a username",
+    "en": "Enter a username",
+    "es-MX": "Enter a username",
+    "mk": "Enter a username",
+    "sk": "Enter a username",
+    "zh": "Enter a username"
+  },
+  "auto.example_page_title": {
+    "cs": "example.page.title",
+    "de": "example.page.title",
+    "en": "example.page.title",
+    "es-MX": "example.page.title",
+    "mk": "example.page.title",
+    "sk": "example.page.title",
+    "zh": "example.page.title"
+  },
+  "auto.example_report_card": {
+    "cs": "Example report card",
+    "de": "Example report card",
+    "en": "Example report card",
+    "es-MX": "Example report card",
+    "mk": "Example report card",
+    "sk": "Example report card",
+    "zh": "Example report card"
+  },
+  "auto.existing_clients": {
+    "cs": "Existing clients",
+    "de": "Existing clients",
+    "en": "Existing clients",
+    "es-MX": "Existing clients",
+    "mk": "Existing clients",
+    "sk": "Existing clients",
+    "zh": "Existing clients"
+  },
+  "auto.existing_custom_routes": {
+    "cs": "Existing custom routes",
+    "de": "Existing custom routes",
+    "en": "Existing custom routes",
+    "es-MX": "Existing custom routes",
+    "mk": "Existing custom routes",
+    "sk": "Existing custom routes",
+    "zh": "Existing custom routes"
+  },
+  "auto.existing_endpoints": {
+    "cs": "Existing endpoints",
+    "de": "Existing endpoints",
+    "en": "Existing endpoints",
+    "es-MX": "Existing endpoints",
+    "mk": "Existing endpoints",
+    "sk": "Existing endpoints",
+    "zh": "Existing endpoints"
+  },
+  "auto.fail": {
+    "cs": "FAIL",
+    "de": "FAIL",
+    "en": "FAIL",
+    "es-MX": "FAIL",
+    "mk": "FAIL",
+    "sk": "FAIL",
+    "zh": "FAIL"
+  },
+  "auto.failures": {
+    "cs": "Failures",
+    "de": "Failures",
+    "en": "Failures",
+    "es-MX": "Failures",
+    "mk": "Failures",
+    "sk": "Failures",
+    "zh": "Failures"
+  },
+  "auto.failures_2": {
+    "cs": "failures",
+    "de": "failures",
+    "en": "failures",
+    "es-MX": "failures",
+    "mk": "failures",
+    "sk": "failures",
+    "zh": "failures"
+  },
+  "auto.file_path": {
+    "cs": "File path",
+    "de": "File path",
+    "en": "File path",
+    "es-MX": "File path",
+    "mk": "File path",
+    "sk": "File path",
+    "zh": "File path"
+  },
+  "auto.file_path_e_g_packaging_packaging_py": {
+    "cs": "File path (e.g. packaging/packaging.py)",
+    "de": "File path (e.g. packaging/packaging.py)",
+    "en": "File path (e.g. packaging/packaging.py)",
+    "es-MX": "File path (e.g. packaging/packaging.py)",
+    "mk": "File path (e.g. packaging/packaging.py)",
+    "sk": "File path (e.g. packaging/packaging.py)",
+    "zh": "File path (e.g. packaging/packaging.py)"
+  },
+  "auto.file_path_is_required": {
+    "cs": "File path is required.",
+    "de": "File path is required.",
+    "en": "File path is required.",
+    "es-MX": "File path is required.",
+    "mk": "File path is required.",
+    "sk": "File path is required.",
+    "zh": "File path is required."
+  },
+  "auto.filter_key_contains": {
+    "cs": "Filter (key contains...)",
+    "de": "Filter (key contains...)",
+    "en": "Filter (key contains...)",
+    "es-MX": "Filter (key contains...)",
+    "mk": "Filter (key contains...)",
+    "sk": "Filter (key contains...)",
+    "zh": "Filter (key contains...)"
+  },
+  "auto.groups": {
+    "cs": "Groups",
+    "de": "Groups",
+    "en": "Groups",
+    "es-MX": "Groups",
+    "mk": "Groups",
+    "sk": "Groups",
+    "zh": "Groups"
+  },
+  "auto.headers_json": {
+    "cs": "Headers (JSON)",
+    "de": "Headers (JSON)",
+    "en": "Headers (JSON)",
+    "es-MX": "Headers (JSON)",
+    "mk": "Headers (JSON)",
+    "sk": "Headers (JSON)",
+    "zh": "Headers (JSON)"
+  },
+  "auto.headers_json_must_be_an_object": {
+    "cs": "Headers JSON must be an object.",
+    "de": "Headers JSON must be an object.",
+    "en": "Headers JSON must be an object.",
+    "es-MX": "Headers JSON must be an object.",
+    "mk": "Headers JSON must be an object.",
+    "sk": "Headers JSON must be an object.",
+    "zh": "Headers JSON must be an object."
+  },
+  "auto.headers_must_be_valid_json": {
+    "cs": "Headers must be valid JSON.",
+    "de": "Headers must be valid JSON.",
+    "en": "Headers must be valid JSON.",
+    "es-MX": "Headers must be valid JSON.",
+    "mk": "Headers must be valid JSON.",
+    "sk": "Headers must be valid JSON.",
+    "zh": "Headers must be valid JSON."
+  },
+  "auto.host": {
+    "cs": "Host",
+    "de": "Host",
+    "en": "Host",
+    "es-MX": "Host",
+    "mk": "Host",
+    "sk": "Host",
+    "zh": "Host"
+  },
+  "auto.icon": {
+    "cs": "Icon",
+    "de": "Icon",
+    "en": "Icon",
+    "es-MX": "Icon",
+    "mk": "Icon",
+    "sk": "Icon",
+    "zh": "Icon"
+  },
+  "auto.icon_material_icon_name": {
+    "cs": "Icon (material icon name)",
+    "de": "Icon (material icon name)",
+    "en": "Icon (material icon name)",
+    "es-MX": "Icon (material icon name)",
+    "mk": "Icon (material icon name)",
+    "sk": "Icon (material icon name)",
+    "zh": "Icon (material icon name)"
+  },
+  "auto.instance": {
+    "cs": "Instance:",
+    "de": "Instance:",
+    "en": "Instance:",
+    "es-MX": "Instance:",
+    "mk": "Instance:",
+    "sk": "Instance:",
+    "zh": "Instance:"
+  },
+  "auto.instruction_comes_here": {
+    "cs": "instruction comes here",
+    "de": "instruction comes here",
+    "en": "instruction comes here",
+    "es-MX": "instruction comes here",
+    "mk": "instruction comes here",
+    "sk": "instruction comes here",
+    "zh": "instruction comes here"
+  },
+  "auto.instruction_for_worker": {
+    "cs": "Instruction for worker",
+    "de": "Instruction for worker",
+    "en": "Instruction for worker",
+    "es-MX": "Instruction for worker",
+    "mk": "Instruction for worker",
+    "sk": "Instruction for worker",
+    "zh": "Instruction for worker"
+  },
+  "auto.ke_elektronik_shopfloorapp": {
+    "cs": "KE-Elektronik-Shopfloorapp",
+    "de": "KE-Elektronik-Shopfloorapp",
+    "en": "KE-Elektronik-Shopfloorapp",
+    "es-MX": "KE-Elektronik-Shopfloorapp",
+    "mk": "KE-Elektronik-Shopfloorapp",
+    "sk": "KE-Elektronik-Shopfloorapp",
+    "zh": "KE-Elektronik-Shopfloorapp"
+  },
+  "auto.label": {
+    "cs": "Label",
+    "de": "Label",
+    "en": "Label",
+    "es-MX": "Label",
+    "mk": "Label",
+    "sk": "Label",
+    "zh": "Label"
+  },
+  "auto.language": {
+    "cs": "Language",
+    "de": "Language",
+    "en": "Language",
+    "es-MX": "Language",
+    "mk": "Language",
+    "sk": "Language",
+    "zh": "Language"
+  },
+  "auto.language_manager": {
+    "cs": "Language manager",
+    "de": "Language manager",
+    "en": "Language manager",
+    "es-MX": "Language manager",
+    "mk": "Language manager",
+    "sk": "Language manager",
+    "zh": "Language manager"
+  },
+  "auto.languages": {
+    "cs": "Languages",
+    "de": "Languages",
+    "en": "Languages",
+    "es-MX": "Languages",
+    "mk": "Languages",
+    "sk": "Languages",
+    "zh": "Languages"
+  },
+  "auto.last_update": {
+    "cs": "Last update: -",
+    "de": "Last update: -",
+    "en": "Last update: -",
+    "es-MX": "Last update: -",
+    "mk": "Last update: -",
+    "sk": "Last update: -",
+    "zh": "Last update: -"
+  },
+  "auto.leak_test": {
+    "cs": "Leak Test",
+    "de": "Leak Test",
+    "en": "Leak Test",
+    "es-MX": "Leak Test",
+    "mk": "Leak Test",
+    "sk": "Leak Test",
+    "zh": "Leak Test"
+  },
+  "auto.log": {
+    "cs": "Log",
+    "de": "Log",
+    "en": "Log",
+    "es-MX": "Log",
+    "mk": "Log",
+    "sk": "Log",
+    "zh": "Log"
+  },
+  "auto.login": {
+    "cs": "Login",
+    "de": "Login",
+    "en": "Login",
+    "es-MX": "Login",
+    "mk": "Login",
+    "sk": "Login",
+    "zh": "Login"
+  },
+  "auto.logout": {
+    "cs": "Logout",
+    "de": "Logout",
+    "en": "Logout",
+    "es-MX": "Logout",
+    "mk": "Logout",
+    "sk": "Logout",
+    "zh": "Logout"
+  },
+  "auto.main_content_grows_to_fill_space": {
+    "cs": "Main content grows to fill space.",
+    "de": "Main content grows to fill space.",
+    "en": "Main content grows to fill space.",
+    "es-MX": "Main content grows to fill space.",
+    "mk": "Main content grows to fill space.",
+    "sk": "Main content grows to fill space.",
+    "zh": "Main content grows to fill space."
+  },
+  "auto.manage_application_settings_and_worker_configuration": {
+    "cs": "Manage application settings and worker configuration.",
+    "de": "Manage application settings and worker configuration.",
+    "en": "Manage application settings and worker configuration.",
+    "es-MX": "Manage application settings and worker configuration.",
+    "mk": "Manage application settings and worker configuration.",
+    "sk": "Manage application settings and worker configuration.",
+    "zh": "Manage application settings and worker configuration."
+  },
+  "auto.max": {
+    "cs": "Max",
+    "de": "Max",
+    "en": "Max",
+    "es-MX": "Max",
+    "mk": "Max",
+    "sk": "Max",
+    "zh": "Max"
+  },
+  "auto.missing_script_name_for_start": {
+    "cs": "Missing script name for start",
+    "de": "Missing script name for start",
+    "en": "Missing script name for start",
+    "es-MX": "Missing script name for start",
+    "mk": "Missing script name for start",
+    "sk": "Missing script name for start",
+    "zh": "Missing script name for start"
+  },
+  "auto.mode": {
+    "cs": "Mode",
+    "de": "Mode",
+    "en": "Mode",
+    "es-MX": "Mode",
+    "mk": "Mode",
+    "sk": "Mode",
+    "zh": "Mode"
+  },
+  "auto.multi_user_safe": {
+    "cs": "Multi-user safe",
+    "de": "Multi-user safe",
+    "en": "Multi-user safe",
+    "es-MX": "Multi-user safe",
+    "mk": "Multi-user safe",
+    "sk": "Multi-user safe",
+    "zh": "Multi-user safe"
+  },
+  "auto.name": {
+    "cs": "Name",
+    "de": "Name",
+    "en": "Name",
+    "es-MX": "Name",
+    "mk": "Name",
+    "sk": "Name",
+    "zh": "Name"
+  },
+  "auto.name_and_base_url_are_required": {
+    "cs": "Name and base URL are required.",
+    "de": "Name and base URL are required.",
+    "en": "Name and base URL are required.",
+    "es-MX": "Name and base URL are required.",
+    "mk": "Name and base URL are required.",
+    "sk": "Name and base URL are required.",
+    "zh": "Name and base URL are required."
+  },
+  "auto.new_key": {
+    "cs": "New key",
+    "de": "New key",
+    "en": "New key",
+    "es-MX": "New key",
+    "mk": "New key",
+    "sk": "New key",
+    "zh": "New key"
+  },
+  "auto.nicegui_spa": {
+    "cs": "NiceGUI SPA",
+    "de": "NiceGUI SPA",
+    "en": "NiceGUI SPA",
+    "es-MX": "NiceGUI SPA",
+    "mk": "NiceGUI SPA",
+    "sk": "NiceGUI SPA",
+    "zh": "NiceGUI SPA"
+  },
+  "auto.no_active_errors": {
+    "cs": "No active errors 🎉",
+    "de": "No active errors 🎉",
+    "en": "No active errors 🎉",
+    "es-MX": "No active errors 🎉",
+    "mk": "No active errors 🎉",
+    "sk": "No active errors 🎉",
+    "zh": "No active errors 🎉"
+  },
+  "auto.no_custom_routes_configured_yet": {
+    "cs": "No custom routes configured yet.",
+    "de": "No custom routes configured yet.",
+    "en": "No custom routes configured yet.",
+    "es-MX": "No custom routes configured yet.",
+    "mk": "No custom routes configured yet.",
+    "sk": "No custom routes configured yet.",
+    "zh": "No custom routes configured yet."
+  },
+  "auto.no_key_selected": {
+    "cs": "No key selected",
+    "de": "No key selected",
+    "en": "No key selected",
+    "es-MX": "No key selected",
+    "mk": "No key selected",
+    "sk": "No key selected",
+    "zh": "No key selected"
+  },
+  "auto.no_rest_api_endpoints_configured_yet": {
+    "cs": "No REST API endpoints configured yet.",
+    "de": "No REST API endpoints configured yet.",
+    "en": "No REST API endpoints configured yet.",
+    "es-MX": "No REST API endpoints configured yet.",
+    "mk": "No REST API endpoints configured yet.",
+    "sk": "No REST API endpoints configured yet.",
+    "zh": "No REST API endpoints configured yet."
+  },
+  "auto.no_running_chains": {
+    "cs": "No running chains",
+    "de": "No running chains",
+    "en": "No running chains",
+    "es-MX": "No running chains",
+    "mk": "No running chains",
+    "sk": "No running chains",
+    "zh": "No running chains"
+  },
+  "auto.no_running_chains_2": {
+    "cs": "No running chains.",
+    "de": "No running chains.",
+    "en": "No running chains.",
+    "es-MX": "No running chains.",
+    "mk": "No running chains.",
+    "sk": "No running chains.",
+    "zh": "No running chains."
+  },
+  "auto.no_running_scripts": {
+    "cs": "No running scripts.",
+    "de": "No running scripts.",
+    "en": "No running scripts.",
+    "es-MX": "No running scripts.",
+    "mk": "No running scripts.",
+    "sk": "No running scripts.",
+    "zh": "No running scripts."
+  },
+  "auto.no_scripts_found": {
+    "cs": "No scripts found",
+    "de": "No scripts found",
+    "en": "No scripts found",
+    "es-MX": "No scripts found",
+    "mk": "No scripts found",
+    "sk": "No scripts found",
+    "zh": "No scripts found"
+  },
+  "auto.no_tcp_clients_configured_yet": {
+    "cs": "No TCP clients configured yet.",
+    "de": "No TCP clients configured yet.",
+    "en": "No TCP clients configured yet.",
+    "es-MX": "No TCP clients configured yet.",
+    "mk": "No TCP clients configured yet.",
+    "sk": "No TCP clients configured yet.",
+    "zh": "No TCP clients configured yet."
+  },
+  "auto.no_workers_are_enabled": {
+    "cs": "No workers are enabled.",
+    "de": "No workers are enabled.",
+    "en": "No workers are enabled.",
+    "es-MX": "No workers are enabled.",
+    "mk": "No workers are enabled.",
+    "sk": "No workers are enabled.",
+    "zh": "No workers are enabled."
+  },
+  "auto.nothing_to_save": {
+    "cs": "Nothing to save",
+    "de": "Nothing to save",
+    "en": "Nothing to save",
+    "es-MX": "Nothing to save",
+    "mk": "Nothing to save",
+    "sk": "Nothing to save",
+    "zh": "Nothing to save"
+  },
+  "auto.p_n": {
+    "cs": "P/N:",
+    "de": "P/N:",
+    "en": "P/N:",
+    "es-MX": "P/N:",
+    "mk": "P/N:",
+    "sk": "P/N:",
+    "zh": "P/N:"
+  },
+  "auto.packaging_station": {
+    "cs": "📦 packaging Station",
+    "de": "📦 packaging Station",
+    "en": "📦 packaging Station",
+    "es-MX": "📦 packaging Station",
+    "mk": "📦 packaging Station",
+    "sk": "📦 packaging Station",
+    "zh": "📦 packaging Station"
+  },
+  "auto.partnumber": {
+    "cs": "Partnumber",
+    "de": "Partnumber",
+    "en": "Partnumber",
+    "es-MX": "Partnumber",
+    "mk": "Partnumber",
+    "sk": "Partnumber",
+    "zh": "Partnumber"
+  },
+  "auto.pass": {
+    "cs": "PASS",
+    "de": "PASS",
+    "en": "PASS",
+    "es-MX": "PASS",
+    "mk": "PASS",
+    "sk": "PASS",
+    "zh": "PASS"
+  },
+  "auto.password": {
+    "cs": "Password",
+    "de": "Password",
+    "en": "Password",
+    "es-MX": "Password",
+    "mk": "Password",
+    "sk": "Password",
+    "zh": "Password"
+  },
+  "auto.pause": {
+    "cs": "Pause",
+    "de": "Pause",
+    "en": "Pause",
+    "es-MX": "Pause",
+    "mk": "Pause",
+    "sk": "Pause",
+    "zh": "Pause"
+  },
+  "auto.picture_area": {
+    "cs": "Picture area",
+    "de": "Picture area",
+    "en": "Picture area",
+    "es-MX": "Picture area",
+    "mk": "Picture area",
+    "sk": "Picture area",
+    "zh": "Picture area"
+  },
+  "auto.please_enter_a_translation_key": {
+    "cs": "Please enter a translation key.",
+    "de": "Please enter a translation key.",
+    "en": "Please enter a translation key.",
+    "es-MX": "Please enter a translation key.",
+    "mk": "Please enter a translation key.",
+    "sk": "Please enter a translation key.",
+    "zh": "Please enter a translation key."
+  },
+  "auto.please_select_a_script": {
+    "cs": "Please select a script",
+    "de": "Please select a script",
+    "en": "Please select a script",
+    "es-MX": "Please select a script",
+    "mk": "Please select a script",
+    "sk": "Please select a script",
+    "zh": "Please select a script"
+  },
+  "auto.please_select_a_script_leaf_first": {
+    "cs": "Please select a script leaf first",
+    "de": "Please select a script leaf first",
+    "en": "Please select a script leaf first",
+    "es-MX": "Please select a script leaf first",
+    "mk": "Please select a script leaf first",
+    "sk": "Please select a script leaf first",
+    "zh": "Please select a script leaf first"
+  },
+  "auto.port": {
+    "cs": "Port",
+    "de": "Port",
+    "en": "Port",
+    "es-MX": "Port",
+    "mk": "Port",
+    "sk": "Port",
+    "zh": "Port"
+  },
+  "auto.process_state_and_error_comes_here": {
+    "cs": "process state and error comes here",
+    "de": "process state and error comes here",
+    "en": "process state and error comes here",
+    "es-MX": "process state and error comes here",
+    "mk": "process state and error comes here",
+    "sk": "process state and error comes here",
+    "zh": "process state and error comes here"
+  },
+  "auto.random_error_added": {
+    "cs": "Random error added",
+    "de": "Random error added",
+    "en": "Random error added",
+    "es-MX": "Random error added",
+    "mk": "Random error added",
+    "sk": "Random error added",
+    "zh": "Random error added"
+  },
+  "auto.reconnect_max_s": {
+    "cs": "Reconnect max (s)",
+    "de": "Reconnect max (s)",
+    "en": "Reconnect max (s)",
+    "es-MX": "Reconnect max (s)",
+    "mk": "Reconnect max (s)",
+    "sk": "Reconnect max (s)",
+    "zh": "Reconnect max (s)"
+  },
+  "auto.reconnect_min_s": {
+    "cs": "Reconnect min (s)",
+    "de": "Reconnect min (s)",
+    "en": "Reconnect min (s)",
+    "es-MX": "Reconnect min (s)",
+    "mk": "Reconnect min (s)",
+    "sk": "Reconnect min (s)",
+    "zh": "Reconnect min (s)"
+  },
+  "auto.refresh_catalogue_starting": {
+    "cs": "refresh catalogue starting ...",
+    "de": "refresh catalogue starting ...",
+    "en": "refresh catalogue starting ...",
+    "es-MX": "refresh catalogue starting ...",
+    "mk": "refresh catalogue starting ...",
+    "sk": "refresh catalogue starting ...",
+    "zh": "refresh catalogue starting ..."
+  },
+  "auto.refresh_list": {
+    "cs": "Refresh List",
+    "de": "Refresh List",
+    "en": "Refresh List",
+    "es-MX": "Refresh List",
+    "mk": "Refresh List",
+    "sk": "Refresh List",
+    "zh": "Refresh List"
+  },
+  "auto.refresh_now": {
+    "cs": "Refresh Now",
+    "de": "Refresh Now",
+    "en": "Refresh Now",
+    "es-MX": "Refresh Now",
+    "mk": "Refresh Now",
+    "sk": "Refresh Now",
+    "zh": "Refresh Now"
+  },
+  "auto.refresh_now_2": {
+    "cs": "Refresh now",
+    "de": "Refresh now",
+    "en": "Refresh now",
+    "es-MX": "Refresh now",
+    "mk": "Refresh now",
+    "sk": "Refresh now",
+    "zh": "Refresh now"
+  },
+  "auto.reload_all_scripts": {
+    "cs": "Reload All Scripts",
+    "de": "Reload All Scripts",
+    "en": "Reload All Scripts",
+    "es-MX": "Reload All Scripts",
+    "mk": "Reload All Scripts",
+    "sk": "Reload All Scripts",
+    "zh": "Reload All Scripts"
+  },
+  "auto.reload_script": {
+    "cs": "Reload Script",
+    "de": "Reload Script",
+    "en": "Reload Script",
+    "es-MX": "Reload Script",
+    "mk": "Reload Script",
+    "sk": "Reload Script",
+    "zh": "Reload Script"
+  },
+  "auto.reports": {
+    "cs": "Reports",
+    "de": "Reports",
+    "en": "Reports",
+    "es-MX": "Reports",
+    "mk": "Reports",
+    "sk": "Reports",
+    "zh": "Reports"
+  },
+  "auto.reset": {
+    "cs": "Reset",
+    "de": "Reset",
+    "en": "Reset",
+    "es-MX": "Reset",
+    "mk": "Reset",
+    "sk": "Reset",
+    "zh": "Reset"
+  },
+  "auto.reset_publisher": {
+    "cs": "Reset publisher",
+    "de": "Reset publisher",
+    "en": "Reset publisher",
+    "es-MX": "Reset publisher",
+    "mk": "Reset publisher",
+    "sk": "Reset publisher",
+    "zh": "Reset publisher"
+  },
+  "auto.rest_api": {
+    "cs": "REST API",
+    "de": "REST API",
+    "en": "REST API",
+    "es-MX": "REST API",
+    "mk": "REST API",
+    "sk": "REST API",
+    "zh": "REST API"
+  },
+  "auto.rest_apis": {
+    "cs": "REST APIs",
+    "de": "REST APIs",
+    "en": "REST APIs",
+    "es-MX": "REST APIs",
+    "mk": "REST APIs",
+    "sk": "REST APIs",
+    "zh": "REST APIs"
+  },
+  "auto.rest_endpoint_added": {
+    "cs": "REST endpoint added.",
+    "de": "REST endpoint added.",
+    "en": "REST endpoint added.",
+    "es-MX": "REST endpoint added.",
+    "mk": "REST endpoint added.",
+    "sk": "REST endpoint added.",
+    "zh": "REST endpoint added."
+  },
+  "auto.rest_endpoint_removed": {
+    "cs": "REST endpoint removed.",
+    "de": "REST endpoint removed.",
+    "en": "REST endpoint removed.",
+    "es-MX": "REST endpoint removed.",
+    "mk": "REST endpoint removed.",
+    "sk": "REST endpoint removed.",
+    "zh": "REST endpoint removed."
+  },
+  "auto.rest_endpoint_updated": {
+    "cs": "REST endpoint updated.",
+    "de": "REST endpoint updated.",
+    "en": "REST endpoint updated.",
+    "es-MX": "REST endpoint updated.",
+    "mk": "REST endpoint updated.",
+    "sk": "REST endpoint updated.",
+    "zh": "REST endpoint updated."
+  },
+  "auto.resume": {
+    "cs": "Resume",
+    "de": "Resume",
+    "en": "Resume",
+    "es-MX": "Resume",
+    "mk": "Resume",
+    "sk": "Resume",
+    "zh": "Resume"
+  },
+  "auto.retry": {
+    "cs": "Retry",
+    "de": "Retry",
+    "en": "Retry",
+    "es-MX": "Retry",
+    "mk": "Retry",
+    "sk": "Retry",
+    "zh": "Retry"
+  },
+  "auto.route_added": {
+    "cs": "Route added.",
+    "de": "Route added.",
+    "en": "Route added.",
+    "es-MX": "Route added.",
+    "mk": "Route added.",
+    "sk": "Route added.",
+    "zh": "Route added."
+  },
+  "auto.route_id": {
+    "cs": "Route id",
+    "de": "Route id",
+    "en": "Route id",
+    "es-MX": "Route id",
+    "mk": "Route id",
+    "sk": "Route id",
+    "zh": "Route id"
+  },
+  "auto.route_key_and_file_path_are_required": {
+    "cs": "Route key and file path are required.",
+    "de": "Route key and file path are required.",
+    "en": "Route key and file path are required.",
+    "es-MX": "Route key and file path are required.",
+    "mk": "Route key and file path are required.",
+    "sk": "Route key and file path are required.",
+    "zh": "Route key and file path are required."
+  },
+  "auto.route_key_e_g_packaging": {
+    "cs": "Route key (e.g. packaging)",
+    "de": "Route key (e.g. packaging)",
+    "en": "Route key (e.g. packaging)",
+    "es-MX": "Route key (e.g. packaging)",
+    "mk": "Route key (e.g. packaging)",
+    "sk": "Route key (e.g. packaging)",
+    "zh": "Route key (e.g. packaging)"
+  },
+  "auto.route_not_found": {
+    "cs": "Route not found.",
+    "de": "Route not found.",
+    "en": "Route not found.",
+    "es-MX": "Route not found.",
+    "mk": "Route not found.",
+    "sk": "Route not found.",
+    "zh": "Route not found."
+  },
+  "auto.route_removed": {
+    "cs": "Route removed.",
+    "de": "Route removed.",
+    "en": "Route removed.",
+    "es-MX": "Route removed.",
+    "mk": "Route removed.",
+    "sk": "Route removed.",
+    "zh": "Route removed."
+  },
+  "auto.route_settings": {
+    "cs": "Route Settings",
+    "de": "Route Settings",
+    "en": "Route Settings",
+    "es-MX": "Route Settings",
+    "mk": "Route Settings",
+    "sk": "Route Settings",
+    "zh": "Route Settings"
+  },
+  "auto.route_updated": {
+    "cs": "Route updated.",
+    "de": "Route updated.",
+    "en": "Route updated.",
+    "es-MX": "Route updated.",
+    "mk": "Route updated.",
+    "sk": "Route updated.",
+    "zh": "Route updated."
+  },
+  "auto.routes": {
+    "cs": "Routes",
+    "de": "Routes",
+    "en": "Routes",
+    "es-MX": "Routes",
+    "mk": "Routes",
+    "sk": "Routes",
+    "zh": "Routes"
+  },
+  "auto.running_chains": {
+    "cs": "Running Chains",
+    "de": "Running Chains",
+    "en": "Running Chains",
+    "es-MX": "Running Chains",
+    "mk": "Running Chains",
+    "sk": "Running Chains",
+    "zh": "Running Chains"
+  },
+  "auto.s_n": {
+    "cs": "S/N:",
+    "de": "S/N:",
+    "en": "S/N:",
+    "es-MX": "S/N:",
+    "mk": "S/N:",
+    "sk": "S/N:",
+    "zh": "S/N:"
+  },
+  "auto.save": {
+    "cs": "Save",
+    "de": "Save",
+    "en": "Save",
+    "es-MX": "Save",
+    "mk": "Save",
+    "sk": "Save",
+    "zh": "Save"
+  },
+  "auto.save_all": {
+    "cs": "Save all",
+    "de": "Save all",
+    "en": "Save all",
+    "es-MX": "Save all",
+    "mk": "Save all",
+    "sk": "Save all",
+    "zh": "Save all"
+  },
+  "auto.save_reload": {
+    "cs": "Save + Reload",
+    "de": "Save + Reload",
+    "en": "Save + Reload",
+    "es-MX": "Save + Reload",
+    "mk": "Save + Reload",
+    "sk": "Save + Reload",
+    "zh": "Save + Reload"
+  },
+  "auto.save_startup_scripts": {
+    "cs": "Save startup scripts",
+    "de": "Save startup scripts",
+    "en": "Save startup scripts",
+    "es-MX": "Save startup scripts",
+    "mk": "Save startup scripts",
+    "sk": "Save startup scripts",
+    "zh": "Save startup scripts"
+  },
+  "auto.scrap": {
+    "cs": "SCRAP",
+    "de": "SCRAP",
+    "en": "SCRAP",
+    "es-MX": "SCRAP",
+    "mk": "SCRAP",
+    "sk": "SCRAP",
+    "zh": "SCRAP"
+  },
+  "auto.script_chains": {
+    "cs": "Script Chains",
+    "de": "Script Chains",
+    "en": "Script Chains",
+    "es-MX": "Script Chains",
+    "mk": "Script Chains",
+    "sk": "Script Chains",
+    "zh": "Script Chains"
+  },
+  "auto.script_logs_last_100": {
+    "cs": "Script Logs (last 100)",
+    "de": "Script Logs (last 100)",
+    "en": "Script Logs (last 100)",
+    "es-MX": "Script Logs (last 100)",
+    "mk": "Script Logs (last 100)",
+    "sk": "Script Logs (last 100)",
+    "zh": "Script Logs (last 100)"
+  },
+  "auto.script_worker_is_not_running": {
+    "cs": "Script worker is not running.",
+    "de": "Script worker is not running.",
+    "en": "Script worker is not running.",
+    "es-MX": "Script worker is not running.",
+    "mk": "Script worker is not running.",
+    "sk": "Script worker is not running.",
+    "zh": "Script worker is not running."
+  },
+  "auto.script_worker_not_available": {
+    "cs": "Script worker not available",
+    "de": "Script worker not available",
+    "en": "Script worker not available",
+    "es-MX": "Script worker not available",
+    "mk": "Script worker not available",
+    "sk": "Script worker not available",
+    "zh": "Script worker not available"
+  },
+  "auto.scripts": {
+    "cs": "Scripts",
+    "de": "Scripts",
+    "en": "Scripts",
+    "es-MX": "Scripts",
+    "mk": "Scripts",
+    "sk": "Scripts",
+    "zh": "Scripts"
+  },
+  "auto.scripts_lab": {
+    "cs": "Scripts Lab",
+    "de": "Scripts Lab",
+    "en": "Scripts Lab",
+    "es-MX": "Scripts Lab",
+    "mk": "Scripts Lab",
+    "sk": "Scripts Lab",
+    "zh": "Scripts Lab"
+  },
+  "auto.scripts_lab_2": {
+    "cs": "📜 Scripts Lab",
+    "de": "📜 Scripts Lab",
+    "en": "📜 Scripts Lab",
+    "es-MX": "📜 Scripts Lab",
+    "mk": "📜 Scripts Lab",
+    "sk": "📜 Scripts Lab",
+    "zh": "📜 Scripts Lab"
+  },
+  "auto.select_a_key_in_table_first": {
+    "cs": "Select a key in table first.",
+    "de": "Select a key in table first.",
+    "en": "Select a key in table first.",
+    "es-MX": "Select a key in table first.",
+    "mk": "Select a key in table first.",
+    "sk": "Select a key in table first.",
+    "zh": "Select a key in table first."
+  },
+  "auto.select_a_script_first": {
+    "cs": "Select a script first",
+    "de": "Select a script first",
+    "en": "Select a script first",
+    "es-MX": "Select a script first",
+    "mk": "Select a script first",
+    "sk": "Select a script first",
+    "zh": "Select a script first"
+  },
+  "auto.select_a_script_from_the_tree": {
+    "cs": "Select a script from the tree",
+    "de": "Select a script from the tree",
+    "en": "Select a script from the tree",
+    "es-MX": "Select a script from the tree",
+    "mk": "Select a script from the tree",
+    "sk": "Select a script from the tree",
+    "zh": "Select a script from the tree"
+  },
+  "auto.select_scripts_to_auto_start_default_instance": {
+    "cs": "Select scripts to auto-start (default instance).",
+    "de": "Select scripts to auto-start (default instance).",
+    "en": "Select scripts to auto-start (default instance).",
+    "es-MX": "Select scripts to auto-start (default instance).",
+    "mk": "Select scripts to auto-start (default instance).",
+    "sk": "Select scripts to auto-start (default instance).",
+    "zh": "Select scripts to auto-start (default instance)."
+  },
+  "auto.set_name": {
+    "cs": "Set name",
+    "de": "Set name",
+    "en": "Set name",
+    "es-MX": "Set name",
+    "mk": "Set name",
+    "sk": "Set name",
+    "zh": "Set name"
+  },
+  "auto.settings": {
+    "cs": "Settings",
+    "de": "Settings",
+    "en": "Settings",
+    "es-MX": "Settings",
+    "mk": "Settings",
+    "sk": "Settings",
+    "zh": "Settings"
+  },
+  "auto.shopfloor_application": {
+    "cs": "Shopfloor application",
+    "de": "Shopfloor application",
+    "en": "Shopfloor application",
+    "es-MX": "Shopfloor application",
+    "mk": "Shopfloor application",
+    "sk": "Shopfloor application",
+    "zh": "Shopfloor application"
+  },
+  "auto.sign_in": {
+    "cs": "Sign in",
+    "de": "Sign in",
+    "en": "Sign in",
+    "es-MX": "Sign in",
+    "mk": "Sign in",
+    "sk": "Sign in",
+    "zh": "Sign in"
+  },
+  "auto.ssl_off": {
+    "cs": "SSL off",
+    "de": "SSL off",
+    "en": "SSL off",
+    "es-MX": "SSL off",
+    "mk": "SSL off",
+    "sk": "SSL off",
+    "zh": "SSL off"
+  },
+  "auto.start": {
+    "cs": "Start",
+    "de": "Start",
+    "en": "Start",
+    "es-MX": "Start",
+    "mk": "Start",
+    "sk": "Start",
+    "zh": "Start"
+  },
+  "auto.start_a_chain_by_selecting_a_script_on_the_left": {
+    "cs": "Start a chain by selecting a script on the left",
+    "de": "Start a chain by selecting a script on the left",
+    "en": "Start a chain by selecting a script on the left",
+    "es-MX": "Start a chain by selecting a script on the left",
+    "mk": "Start a chain by selecting a script on the left",
+    "sk": "Start a chain by selecting a script on the left",
+    "zh": "Start a chain by selecting a script on the left"
+  },
+  "auto.start_on_startup": {
+    "cs": "Start on startup",
+    "de": "Start on startup",
+    "en": "Start on startup",
+    "es-MX": "Start on startup",
+    "mk": "Start on startup",
+    "sk": "Start on startup",
+    "zh": "Start on startup"
+  },
+  "auto.start_publishing": {
+    "cs": "Start publishing",
+    "de": "Start publishing",
+    "en": "Start publishing",
+    "es-MX": "Start publishing",
+    "mk": "Start publishing",
+    "sk": "Start publishing",
+    "zh": "Start publishing"
+  },
+  "auto.start_selected": {
+    "cs": "Start Selected",
+    "de": "Start Selected",
+    "en": "Start Selected",
+    "es-MX": "Start Selected",
+    "mk": "Start Selected",
+    "sk": "Start Selected",
+    "zh": "Start Selected"
+  },
+  "auto.startup_scripts_updated": {
+    "cs": "Startup scripts updated.",
+    "de": "Startup scripts updated.",
+    "en": "Startup scripts updated.",
+    "es-MX": "Startup scripts updated.",
+    "mk": "Startup scripts updated.",
+    "sk": "Startup scripts updated.",
+    "zh": "Startup scripts updated."
+  },
+  "auto.step_text": {
+    "cs": "Step Text:",
+    "de": "Step Text:",
+    "en": "Step Text:",
+    "es-MX": "Step Text:",
+    "mk": "Step Text:",
+    "sk": "Step Text:",
+    "zh": "Step Text:"
+  },
+  "auto.stepchain_stopped_due_to_an_error": {
+    "cs": "⚠️ StepChain stopped due to an error",
+    "de": "⚠️ StepChain stopped due to an error",
+    "en": "⚠️ StepChain stopped due to an error",
+    "es-MX": "⚠️ StepChain stopped due to an error",
+    "mk": "⚠️ StepChain stopped due to an error",
+    "sk": "⚠️ StepChain stopped due to an error",
+    "zh": "⚠️ StepChain stopped due to an error"
+  },
+  "auto.stop": {
+    "cs": "Stop",
+    "de": "Stop",
+    "en": "Stop",
+    "es-MX": "Stop",
+    "mk": "Stop",
+    "sk": "Stop",
+    "zh": "Stop"
+  },
+  "auto.stop_chain": {
+    "cs": "Stop chain",
+    "de": "Stop chain",
+    "en": "Stop chain",
+    "es-MX": "Stop chain",
+    "mk": "Stop chain",
+    "sk": "Stop chain",
+    "zh": "Stop chain"
+  },
+  "auto.stop_publishing": {
+    "cs": "Stop publishing",
+    "de": "Stop publishing",
+    "en": "Stop publishing",
+    "es-MX": "Stop publishing",
+    "mk": "Stop publishing",
+    "sk": "Stop publishing",
+    "zh": "Stop publishing"
+  },
+  "auto.tcp_client_added": {
+    "cs": "TCP client added.",
+    "de": "TCP client added.",
+    "en": "TCP client added.",
+    "es-MX": "TCP client added.",
+    "mk": "TCP client added.",
+    "sk": "TCP client added.",
+    "zh": "TCP client added."
+  },
+  "auto.tcp_client_removed": {
+    "cs": "TCP client removed.",
+    "de": "TCP client removed.",
+    "en": "TCP client removed.",
+    "es-MX": "TCP client removed.",
+    "mk": "TCP client removed.",
+    "sk": "TCP client removed.",
+    "zh": "TCP client removed."
+  },
+  "auto.tcp_client_updated": {
+    "cs": "TCP client updated.",
+    "de": "TCP client updated.",
+    "en": "TCP client updated.",
+    "es-MX": "TCP client updated.",
+    "mk": "TCP client updated.",
+    "sk": "TCP client updated.",
+    "zh": "TCP client updated."
+  },
+  "auto.tcp_clients": {
+    "cs": "TCP Clients",
+    "de": "TCP Clients",
+    "en": "TCP Clients",
+    "es-MX": "TCP Clients",
+    "mk": "TCP Clients",
+    "sk": "TCP Clients",
+    "zh": "TCP Clients"
+  },
+  "auto.timeout_s": {
+    "cs": "Timeout (s)",
+    "de": "Timeout (s)",
+    "en": "Timeout (s)",
+    "es-MX": "Timeout (s)",
+    "mk": "Timeout (s)",
+    "sk": "Timeout (s)",
+    "zh": "Timeout (s)"
+  },
+  "auto.toggle_nav": {
+    "cs": "Toggle Nav",
+    "de": "Toggle Nav",
+    "en": "Toggle Nav",
+    "es-MX": "Toggle Nav",
+    "mk": "Toggle Nav",
+    "sk": "Toggle Nav",
+    "zh": "Toggle Nav"
+  },
+  "auto.total_bad": {
+    "cs": "Total bad",
+    "de": "Total bad",
+    "en": "Total bad",
+    "es-MX": "Total bad",
+    "mk": "Total bad",
+    "sk": "Total bad",
+    "zh": "Total bad"
+  },
+  "auto.total_good": {
+    "cs": "Total good",
+    "de": "Total good",
+    "en": "Total good",
+    "es-MX": "Total good",
+    "mk": "Total good",
+    "sk": "Total good",
+    "zh": "Total good"
+  },
+  "auto.translations_saved": {
+    "cs": "Translations saved.",
+    "de": "Translations saved.",
+    "en": "Translations saved.",
+    "es-MX": "Translations saved.",
+    "mk": "Translations saved.",
+    "sk": "Translations saved.",
+    "zh": "Translations saved."
+  },
+  "auto.username": {
+    "cs": "Username",
+    "de": "Username",
+    "en": "Username",
+    "es-MX": "Username",
+    "mk": "Username",
+    "sk": "Username",
+    "zh": "Username"
+  },
+  "auto.viewer": {
+    "cs": "Viewer",
+    "de": "Viewer",
+    "en": "Viewer",
+    "es-MX": "Viewer",
+    "mk": "Viewer",
+    "sk": "Viewer",
+    "zh": "Viewer"
+  },
+  "auto.visibility_changed_re_render_page_to_reflect_it": {
+    "cs": "Visibility changed; re-render page to reflect it.",
+    "de": "Visibility changed; re-render page to reflect it.",
+    "en": "Visibility changed; re-render page to reflect it.",
+    "es-MX": "Visibility changed; re-render page to reflect it.",
+    "mk": "Visibility changed; re-render page to reflect it.",
+    "sk": "Visibility changed; re-render page to reflect it.",
+    "zh": "Visibility changed; re-render page to reflect it."
+  },
+  "auto.visual_control": {
+    "cs": "Visual control",
+    "de": "Visual control",
+    "en": "Visual control",
+    "es-MX": "Visual control",
+    "mk": "Visual control",
+    "sk": "Visual control",
+    "zh": "Visual control"
+  },
+  "auto.visual_inspection": {
+    "cs": "Visual Inspection",
+    "de": "Visual Inspection",
+    "en": "Visual Inspection",
+    "es-MX": "Visual Inspection",
+    "mk": "Visual Inspection",
+    "sk": "Visual Inspection",
+    "zh": "Visual Inspection"
+  },
+  "auto.workerbus_demo_publisher_bus_subscriber_uibridge_page": {
+    "cs": "WorkerBus Demo (Publisher -> Bus -> Subscriber -> UiBridge -> Page)",
+    "de": "WorkerBus Demo (Publisher -> Bus -> Subscriber -> UiBridge -> Page)",
+    "en": "WorkerBus Demo (Publisher -> Bus -> Subscriber -> UiBridge -> Page)",
+    "es-MX": "WorkerBus Demo (Publisher -> Bus -> Subscriber -> UiBridge -> Page)",
+    "mk": "WorkerBus Demo (Publisher -> Bus -> Subscriber -> UiBridge -> Page)",
+    "sk": "WorkerBus Demo (Publisher -> Bus -> Subscriber -> UiBridge -> Page)",
+    "zh": "WorkerBus Demo (Publisher -> Bus -> Subscriber -> UiBridge -> Page)"
+  },
+  "auto.workers": {
+    "cs": "Workers",
+    "de": "Workers",
+    "en": "Workers",
+    "es-MX": "Workers",
+    "mk": "Workers",
+    "sk": "Workers",
+    "zh": "Workers"
+  },
+  "header.logout": {
+    "cs": "Logout",
+    "de": "Logout",
+    "en": "Logout",
+    "es-MX": "Logout",
+    "mk": "Logout",
+    "sk": "Logout",
+    "zh": "Logout"
+  },
+  "header.toggle_nav": {
+    "cs": "Toggle Nav",
+    "de": "Toggle Nav",
+    "en": "Toggle Nav",
+    "es-MX": "Toggle Nav",
+    "mk": "Toggle Nav",
+    "sk": "Toggle Nav",
+    "zh": "Toggle Nav"
+  },
+  "settings.subtitle": {
+    "cs": "Manage application settings and worker configuration.",
+    "de": "Manage application settings and worker configuration.",
+    "en": "Manage application settings and worker configuration.",
+    "es-MX": "Manage application settings and worker configuration.",
+    "mk": "Manage application settings and worker configuration.",
+    "sk": "Manage application settings and worker configuration.",
+    "zh": "Manage application settings and worker configuration."
+  },
+  "settings.title": {
+    "cs": "Settings",
+    "de": "Settings",
+    "en": "Settings",
+    "es-MX": "Settings",
+    "mk": "Settings",
+    "sk": "Settings",
+    "zh": "Settings"
+  }
+}

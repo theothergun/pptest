@@ -8,32 +8,33 @@ from nicegui import ui
 
 from layout.main_area import PageContext
 from services.app_config import DEFAULT_CONFIG_PATH, load_app_config, save_app_config
+from services.i18n import t
 
 
 def render(container: ui.element, ctx: PageContext) -> None:
     with container:
-        ui.label("TCP Clients").classes("text-2xl font-bold")
-        ui.label("Configure TCP client worker endpoints.").classes("text-sm text-gray-500")
+        ui.label(t("tcp.title", "TCP Clients")).classes("text-2xl font-bold")
+        ui.label(t("tcp.subtitle", "Configure TCP client worker endpoints.")).classes("text-sm text-gray-500")
 
         clients_container = ui.column().classes("w-full gap-2 mt-4")
 
         with ui.card().classes("w-full gap-4"):
-            ui.label("Add TCP client").classes("text-lg font-semibold")
-            client_id = ui.input("Client ID").classes("w-full")
-            host = ui.input("Host").classes("w-full")
-            port = ui.input("Port").classes("w-full")
-            connect = ui.switch("Connect on startup", value=True)
-            mode = ui.input("Mode", value="line").classes("w-full")
+            ui.label(t("tcp.add_title", "Add TCP client")).classes("text-lg font-semibold")
+            client_id = ui.input(t("tcp.client_id", "Client ID")).classes("w-full")
+            host = ui.input(t("common.host", "Host")).classes("w-full")
+            port = ui.input(t("common.port", "Port")).classes("w-full")
+            connect = ui.switch(t("tcp.connect_on_startup", "Connect on startup"), value=True)
+            mode = ui.input(t("common.mode", "Mode"), value="line").classes("w-full")
             delimiter = ui.input("Delimiter", value="\\n").classes("w-full")
-            encoding = ui.input("Encoding", value="utf-8").classes("w-full")
-            auto_reconnect = ui.switch("Auto reconnect", value=True)
-            reconnect_min_s = ui.input("Reconnect min (s)", value="1.0").classes("w-full")
-            reconnect_max_s = ui.input("Reconnect max (s)", value="10.0").classes("w-full")
-            keepalive = ui.switch("Keepalive", value=True)
-            tcp_nodelay = ui.switch("TCP no delay", value=True)
+            encoding = ui.input(t("common.encoding", "Encoding"), value="utf-8").classes("w-full")
+            auto_reconnect = ui.switch(t("tcp.auto_reconnect", "Auto reconnect"), value=True)
+            reconnect_min_s = ui.input(t("tcp.reconnect_min", "Reconnect min (s)"), value="1.0").classes("w-full")
+            reconnect_max_s = ui.input(t("tcp.reconnect_max", "Reconnect max (s)"), value="10.0").classes("w-full")
+            keepalive = ui.switch(t("tcp.keepalive", "Keepalive"), value=True)
+            tcp_nodelay = ui.switch(t("tcp.tcp_no_delay", "TCP no delay"), value=True)
 
             ui.button(
-                "Add client",
+                t("tcp.add_client", "Add client"),
                 on_click=lambda: _add_client(
                     client_id.value,
                     host.value,
@@ -52,7 +53,7 @@ def render(container: ui.element, ctx: PageContext) -> None:
             ).props("color=primary")
 
         ui.separator().classes("my-2")
-        ui.label("Existing clients").classes("text-lg font-semibold")
+        ui.label(t("tcp.existing_clients", "Existing clients")).classes("text-lg font-semibold")
         _render_clients(clients_container)
 
 
@@ -92,33 +93,33 @@ def _render_clients(container: ui.element) -> None:
     clients = _get_tcp_clients(data)
 
     if not clients:
-        ui.label("No TCP clients configured yet.").classes("text-sm text-gray-500")
+        ui.label(t("tcp.no_clients", "No TCP clients configured yet.")).classes("text-sm text-gray-500")
         return
 
     for idx, client in enumerate(clients):
         with ui.card().classes("w-full"):
             ui.label(client.get("client_id", "")).classes("font-medium")
             with ui.row().classes("w-full items-center gap-4"):
-                host_input = ui.input("Host", value=client.get("host", "")).classes("flex-1")
-                port_input = ui.input("Port", value=str(client.get("port", ""))).classes("flex-1")
-            connect_input = ui.switch("Connect on startup", value=client.get("connect", True))
-            mode_input = ui.input("Mode", value=client.get("mode", "line")).classes("w-full")
+                host_input = ui.input(t("common.host", "Host"), value=client.get("host", "")).classes("flex-1")
+                port_input = ui.input(t("common.port", "Port"), value=str(client.get("port", ""))).classes("flex-1")
+            connect_input = ui.switch(t("tcp.connect_on_startup", "Connect on startup"), value=client.get("connect", True))
+            mode_input = ui.input(t("common.mode", "Mode"), value=client.get("mode", "line")).classes("w-full")
             delimiter_input = ui.input("Delimiter", value=client.get("delimiter", "\\n")).classes("w-full")
-            encoding_input = ui.input("Encoding", value=client.get("encoding", "utf-8")).classes("w-full")
-            auto_reconnect_input = ui.switch("Auto reconnect", value=client.get("auto_reconnect", True))
+            encoding_input = ui.input(t("common.encoding", "Encoding"), value=client.get("encoding", "utf-8")).classes("w-full")
+            auto_reconnect_input = ui.switch(t("tcp.auto_reconnect", "Auto reconnect"), value=client.get("auto_reconnect", True))
             reconnect_min_input = ui.input(
-                "Reconnect min (s)",
+                t("tcp.reconnect_min", "Reconnect min (s)"),
                 value=str(client.get("reconnect_min_s", 1.0)),
             ).classes("w-full")
             reconnect_max_input = ui.input(
-                "Reconnect max (s)",
+                t("tcp.reconnect_max", "Reconnect max (s)"),
                 value=str(client.get("reconnect_max_s", 10.0)),
             ).classes("w-full")
-            keepalive_input = ui.switch("Keepalive", value=client.get("keepalive", True))
-            tcp_nodelay_input = ui.switch("TCP no delay", value=client.get("tcp_nodelay", True))
+            keepalive_input = ui.switch(t("tcp.keepalive", "Keepalive"), value=client.get("keepalive", True))
+            tcp_nodelay_input = ui.switch(t("tcp.tcp_no_delay", "TCP no delay"), value=client.get("tcp_nodelay", True))
             with ui.row().classes("w-full items-center justify-end gap-2"):
                 ui.button(
-                    "Save",
+                    t("common.save", "Save"),
                     on_click=lambda i=idx, hi=host_input, pi=port_input, ci=connect_input, mi=mode_input,
                     di=delimiter_input, ei=encoding_input, ari=auto_reconnect_input, rmin=reconnect_min_input,
                     rmax=reconnect_max_input, kai=keepalive_input, tni=tcp_nodelay_input: _update_client(
@@ -138,7 +139,7 @@ def _render_clients(container: ui.element) -> None:
                     ),
                 ).props("color=primary")
                 ui.button(
-                    "Delete",
+                    t("common.delete", "Delete"),
                     on_click=lambda i=idx: _delete_client(i, container),
                 ).props("color=negative flat")
 
@@ -159,15 +160,15 @@ def _add_client(
     container: ui.element,
 ) -> None:
     if not client_id or not host or not port:
-        ui.notify("Client ID, host, and port are required.", type="negative")
+        ui.notify(t("tcp.validation.required", "Client ID, host, and port are required."), type="negative")
         return
-    port_value = _parse_int(port, "Port must be a number.")
+    port_value = _parse_int(port, t("tcp.validation.port_number", "Port must be a number."))
     if port_value is None:
         return
-    reconnect_min_value = _parse_float(reconnect_min_s, "Reconnect min must be a number.")
+    reconnect_min_value = _parse_float(reconnect_min_s, t("tcp.validation.reconnect_min", "Reconnect min must be a number."))
     if reconnect_min_value is None:
         return
-    reconnect_max_value = _parse_float(reconnect_max_s, "Reconnect max must be a number.")
+    reconnect_max_value = _parse_float(reconnect_max_s, t("tcp.validation.reconnect_max", "Reconnect max must be a number."))
     if reconnect_max_value is None:
         return
 
@@ -191,7 +192,7 @@ def _add_client(
     )
     _set_tcp_clients(data, clients)
     _write_config_data(data)
-    ui.notify("TCP client added.", type="positive")
+    ui.notify(t("tcp.notify.added", "TCP client added."), type="positive")
     _render_clients(container)
 
 
@@ -199,12 +200,12 @@ def _delete_client(index: int, container: ui.element) -> None:
     data = _load_config_data()
     clients = list(_get_tcp_clients(data))
     if index < 0 or index >= len(clients):
-        ui.notify("Client not found.", type="negative")
+        ui.notify(t("tcp.validation.not_found", "Client not found."), type="negative")
         return
     clients.pop(index)
     _set_tcp_clients(data, clients)
     _write_config_data(data)
-    ui.notify("TCP client removed.", type="positive")
+    ui.notify(t("tcp.notify.removed", "TCP client removed."), type="positive")
     _render_clients(container)
 
 
@@ -223,20 +224,20 @@ def _update_client(
     tcp_nodelay: bool,
     container: ui.element,
 ) -> None:
-    port_value = _parse_int(port, "Port must be a number.")
+    port_value = _parse_int(port, t("tcp.validation.port_number", "Port must be a number."))
     if port_value is None:
         return
-    reconnect_min_value = _parse_float(reconnect_min_s, "Reconnect min must be a number.")
+    reconnect_min_value = _parse_float(reconnect_min_s, t("tcp.validation.reconnect_min", "Reconnect min must be a number."))
     if reconnect_min_value is None:
         return
-    reconnect_max_value = _parse_float(reconnect_max_s, "Reconnect max must be a number.")
+    reconnect_max_value = _parse_float(reconnect_max_s, t("tcp.validation.reconnect_max", "Reconnect max must be a number."))
     if reconnect_max_value is None:
         return
 
     data = _load_config_data()
     clients = list(_get_tcp_clients(data))
     if index < 0 or index >= len(clients):
-        ui.notify("Client not found.", type="negative")
+        ui.notify(t("tcp.validation.not_found", "Client not found."), type="negative")
         return
 
     current = clients[index]
@@ -256,7 +257,7 @@ def _update_client(
     }
     _set_tcp_clients(data, clients)
     _write_config_data(data)
-    ui.notify("TCP client updated.", type="positive")
+    ui.notify(t("tcp.notify.updated", "TCP client updated."), type="positive")
     _render_clients(container)
 
 

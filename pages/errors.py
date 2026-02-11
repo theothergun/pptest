@@ -9,6 +9,7 @@ from layout.page_scaffold import build_page
 from layout.action_bar import Action
 from layout.errors_state import (get_active_errors, upsert_error,
                 resolve_error, clear_all_errors, get_error_count)
+from services.i18n import t
 
 
 def _random_id(prefix: str) -> str:
@@ -28,7 +29,7 @@ def render(container: ui.element, ctx: PageContext) -> None:
     def error_list() -> None:
         errors = get_active_errors()
         if not errors:
-            ui.label("No active errors 🎉").classes("mt-4 text-green-600")
+            ui.label(t("errors.none", "No active errors 🎉")).classes("mt-4 text-green-600")
             return
 
         # show newest first
@@ -58,7 +59,7 @@ def render(container: ui.element, ctx: PageContext) -> None:
             clear_all_errors(ctx)     # updates badge
             error_list.refresh()      # updates list immediately
             sync_actions()
-            ui.notify("Cleared all errors")
+            ui.notify(t("errors.notify.cleared", "Cleared all errors"))
             return
 
         if action_id == "add_random":
@@ -71,8 +72,8 @@ def render(container: ui.element, ctx: PageContext) -> None:
                     ctx,
                     error_id,
                     source="device",
-                    message="Device offline",
-                    details="Heartbeat timeout",
+                    message=t("errors.device_offline", "Device offline"),
+                    details=t("errors.heartbeat_timeout", "Heartbeat timeout"),
                 )
             elif kind == "conn":
                 error_id = _random_id("conn:mqtt")
@@ -80,8 +81,8 @@ def render(container: ui.element, ctx: PageContext) -> None:
                     ctx,
                     error_id,
                     source="connection",
-                    message="MQTT disconnected",
-                    details="Retrying…",
+                    message=t("errors.mqtt_disconnected", "MQTT disconnected"),
+                    details=t("errors.retrying", "Retrying…"),
                     level="warning",
                 )
             else:
@@ -90,13 +91,13 @@ def render(container: ui.element, ctx: PageContext) -> None:
                     ctx,
                     error_id,
                     source="backend",
-                    message="Backend job failed",
-                    details="HTTP 503 from upstream",
+                    message=t("errors.backend_failed", "Backend job failed"),
+                    details=t("errors.http503", "HTTP 503 from upstream"),
                 )
 
             error_list.refresh()
             sync_actions()
-            ui.notify("Random error added")
+            ui.notify(t("errors.notify.random_added", "Random error added"))
             return
 
 
@@ -104,6 +105,6 @@ def render(container: ui.element, ctx: PageContext) -> None:
         sync_actions()
         error_list()
 
-    build_page(ctx,container, title="Errors", content= build_content,
+    build_page(ctx,container, title=t("errors.title", "Errors"), content= build_content,
                show_action_bar=True, on_action_clicked=on_action_clicked)
 

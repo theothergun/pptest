@@ -481,7 +481,6 @@ def build_page(ctx: PageContext) -> None:
 		payload = data # safe_format_data(data)
 		if len(payload) < 1:
 			return
-		print (payload)
 		try:
 			#je.properties.setdefault("content", {})
 			je.properties["content"]["json"] = payload

@@ -30,6 +30,7 @@ from services.worker_commands import (
 	ScriptWorkerCommands as ScriptCommands,
 	RestApiCommands as RestCommands,
 	TwinCatCommands,
+	ItacCommands
 )
 
 from services.app_state import AppState
@@ -46,7 +47,36 @@ setup_logging(app_name="mes_app", log_level="DEBUG")
 logger.info("Starting NiceGUI")
 bootstrap_defaults()
 
+
+
+
+def _apply_proxy_env(cfg) -> None:
+	# process-local; affects only this app process
+	try:
+		p = getattr(cfg, "proxy", None)
+		if not p or not getattr(p, "enabled", False):
+			return
+
+		if getattr(p, "http", ""):
+			os.environ["HTTP_PROXY"] = p.http
+			os.environ["http_proxy"] = p.http
+
+		if getattr(p, "https", ""):
+			os.environ["HTTPS_PROXY"] = p.https
+			os.environ["https_proxy"] = p.https
+
+		if getattr(p, "no_proxy", ""):
+			os.environ["NO_PROXY"] = p.no_proxy
+			os.environ["no_proxy"] = p.no_proxy
+
+	except Exception:
+		# keep it non-fatal; logging optional
+		return
+
+
+
 APP_CONFIG = load_app_config()
+_apply_proxy_env(APP_CONFIG)
 
 GLOBAL_WORKER_BUS = WorkerBus()
 GLOBAL_BRIDGE = UiBridge()

@@ -414,6 +414,7 @@ class ScriptWorker(BaseWorker):
 				worker_bus=self.worker_bus,
 				bridge=self.bridge,
 				state=self.bridge,
+				send_cmd=self.send_cmd,
 			)
 		except Exception:
 			err = "StepChainContext init failed\n%s" % self._format_exc()

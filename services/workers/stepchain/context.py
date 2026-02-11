@@ -11,6 +11,7 @@ from services.workers.stepchain.apis.vars_api import VarsApi
 from services.workers.stepchain.apis.ui_api import UiApi
 from services.workers.stepchain.apis.flow_api import FlowApi
 from services.workers.stepchain.apis.timing_api import TimingApi
+from services.workers.stepchain.apis.workers_api import WorkersApi
 
 
 class StepChainContext:
@@ -29,11 +30,13 @@ class StepChainContext:
 		worker_bus: Any,
 		bridge: Any,
 		state: Any,
+		send_cmd: Any = None,
 	) -> None:
 		self.chain_id = str(chain_id or uuid.uuid4())
 		self.worker_bus = worker_bus
 		self.bridge = bridge
 		self.state = state
+		self.send_cmd = send_cmd
 
 		# Runtime input snapshots (bus values)
 		self.data: Dict[str, Dict[str, Any]] = {}
@@ -130,6 +133,8 @@ class PublicStepChainContext:
 		self.ui = UiApi(ctx)
 		self.flow = FlowApi(ctx)
 		self.timing = TimingApi(ctx)
+		self.workers = WorkersApi(ctx)
+		self.worker = self.workers  # alias
 
 	@property
 	def chain_id(self) -> str:
@@ -228,6 +233,24 @@ class PublicStepChainContext:
 		"""Alias for non-programmer-friendly scripts."""
 		self.set_state(key, value)
 
+
+
+	# -------------------- simplified worker IO for non-programmers --------------------
+
+	def send_tcp(self, client_id: str, data: Any) -> None:
+		self.workers.tcp_send(client_id, data)
+
+	def read_tcp(self, client_id: str, default: Any = None, decode: bool = True) -> Any:
+		return self.workers.tcp_message(client_id, default=default, decode=decode)
+
+	def write_plc(self, client_id: str, name: str, value: Any) -> None:
+		self.workers.plc_write(client_id, name, value)
+
+	def read_plc(self, client_id: str, name: str, default: Any = None) -> Any:
+		return self.workers.plc_value(client_id, name, default)
+
+	def read_worker_value(self, worker: str, source_id: str, key: str, default: Any = None) -> Any:
+		return self.workers.get(worker, source_id, key, default)
 
 	def error(self, message: str) -> None:
 		self.flow.fail(message)

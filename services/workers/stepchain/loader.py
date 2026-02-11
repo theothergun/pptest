@@ -109,7 +109,9 @@ class ScriptLoader:
 				raise FileNotFoundError(str(script_path))
 			return None
 
-		mtime = script_path.stat().st_mtime
+		stats = script_path.stat()
+		mtime = stats.st_mtime
+		mtime_ns = stats.st_mtime_ns
 
 		# Reload check
 		if not force and script_name in self.scripts:
@@ -118,7 +120,7 @@ class ScriptLoader:
 				return info.function
 
 		try:
-			module_name = self._make_module_name(script_name, mtime)
+			module_name = self._make_module_name(script_name, mtime_ns)
 
 			# Clean previous module (important for long sessions)
 			old = self.scripts.get(script_name)
@@ -160,11 +162,11 @@ class ScriptLoader:
 
 	# ------------------------------------------------------------------ helpers
 
-	def _make_module_name(self, script_name: str, mtime: float) -> str:
+	def _make_module_name(self, script_name: str, mtime_tag_value: float | int) -> str:
 		flat = script_name.replace("\\", "/").strip("/")
 		flat = flat.replace("/", "_").replace("-", "_").replace(".", "_")
 		# int(mtime) is seconds; include fractional part for fewer collisions
-		mtime_tag = ("%0.6f" % float(mtime)).replace(".", "_")
+		mtime_tag = str(mtime_tag_value).replace(".", "_")
 		return "stepchain_%s_%s" % (flat, mtime_tag)
 
 	def _resolve_chain_func(self, module: Any, script_name: str) -> Optional[Callable]:
@@ -174,6 +176,8 @@ class ScriptLoader:
 		candidates = [
 			"chain",
 			"main",
+			"step_chain",
+			"stepchain",
 			base,
 			base + "_chain",
 			flat,

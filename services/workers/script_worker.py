@@ -107,7 +107,17 @@ class ScriptWorker(BaseWorker):
 
 	def _publish_chains_if_changed(self, force: bool = False) -> None:
 		payload = self._build_chain_list_payload()
-		sig = "|".join([str(x.get("key", "")) for x in payload])
+		sig = "|".join([
+			"%s:%s:%s:%s:%s:%s" % (
+				str(x.get("key", "")),
+				str(x.get("active", False)),
+				str(x.get("paused", False)),
+				str(x.get("step", 0)),
+				str(x.get("cycle_count", 0)),
+				str(x.get("step_time", 0.0)),
+			)
+			for x in payload
+		])
 		if force or sig != self._last_chain_sig:
 			self._last_chain_sig = sig
 			self.publish_value_as("script_worker", Commands.LIST_CHAINS, payload)
@@ -118,17 +128,26 @@ class ScriptWorker(BaseWorker):
 		"""
 		try:
 			raw_state = ctx.get_state()
-			safe_state = raw_state
-
+			safe_state = dict(raw_state) if isinstance(raw_state, dict) else {"state": raw_state}
+			safe_state.setdefault("chain_key", chain_key)
+			if ":" in chain_key:
+				script_name, instance_id = chain_key.split(":", 1)
+				safe_state.setdefault("script_name", script_name)
+				safe_state.setdefault("instance_id", instance_id)
 
 			self.publish_value_as(chain_key, Commands.UPDATE_CHAIN_STATE, safe_state)
 		except Exception:
 			err = "failed publishing chain state\n%s" % self._format_exc()
 			self.publish_error_as(chain_key, key=chain_key, action="publish_chain_state", error=err)
 
-	def _publish_chain_log(self, chain_key: str, message: str) -> None:
+	def _publish_chain_log(self, chain_key: str, message: str, level: str = "info") -> None:
 		try:
-			self.publish_value_as(chain_key, Commands.UPDATE_LOG, str(message))
+			payload = {"chain_key": chain_key, "step": 0, "step_desc": "", "level": str(level), "message": str(message)}
+			inst = self.chains.get(chain_key)
+			if inst is not None:
+				payload["step"] = int(getattr(inst.context, "step", 0))
+				payload["step_desc"] = str(getattr(inst.context, "step_desc", "") or "")
+			self.publish_value_as(chain_key, Commands.UPDATE_LOG, payload)
 		except Exception:
 			err = "failed publishing chain log\n%s" % self._format_exc()
 			self.publish_error_as(chain_key, key=chain_key, action="publish_chain_log", error=err)
@@ -237,7 +256,10 @@ class ScriptWorker(BaseWorker):
 						continue
 
 					if inst.paused:
-						#self._publish_chain_state(chain_key, inst.context)
+						now_ts = time.time()
+						if inst.context._step_started_ts <= 0:
+							inst.context._step_started_ts = now_ts
+						inst.context.step_elapsed_s = max(0.0, now_ts - inst.context._step_started_ts)
 						continue
 
 					if inst.next_tick_ts and now < inst.next_tick_ts:
@@ -248,11 +270,22 @@ class ScriptWorker(BaseWorker):
 					inst.context.cycle_count = inst.context.cycle_count + 1
 
 					try:
+						now_ts = time.time()
+						if inst.context._step_started_ts <= 0:
+							inst.context._step_started_ts = now_ts
+						inst.context.step_elapsed_s = max(0.0, now_ts - inst.context._step_started_ts)
+
 						start = time.time()
 						inst.fn(inst.context.public)
 						elapsed_ms = (time.time() - start) * 1000.0
-						inst.context.step_time =  round(elapsed_ms, 2)
-						inst.context.step = inst.context.next_step
+						inst.context.step_time = round(elapsed_ms, 2)
+
+						prev_step = int(getattr(inst.context, "step", 0))
+						next_step = int(getattr(inst.context, "next_step", prev_step))
+						if next_step != prev_step:
+							inst.context._step_started_ts = time.time()
+							inst.context.step_elapsed_s = 0.0
+						inst.context.step = next_step
 					except Exception:
 						err = "chain crashed chain_key=%s\n%s" % (chain_key, self._format_exc())
 						self.log.error("[run] %s" % err)
@@ -269,7 +302,7 @@ class ScriptWorker(BaseWorker):
 					self._publish_chain_state(chain_key, inst.context)
 
 				# Update UI once per loop
-				#self._publish_chains_if_changed(True)
+				self._publish_chains_if_changed(False)
 
 				# Sleep once per loop (prevents busy-loop and command latency problems)
 				if next_due_ts is None:
@@ -293,7 +326,14 @@ class ScriptWorker(BaseWorker):
 
 	def _cmd_set_hot_reload(self, payload: dict[str, Any]) -> None:
 		self.hot_reload_enabled = bool(payload.get("enabled", False))
-		self.log.info(f"[_cmd_set_hot_reload] enabled={self.hot_reload_enabled}")
+		if "interval" in payload:
+			try:
+				new_interval = float(payload.get("interval", self.reload_check_interval))
+				if new_interval > 0:
+					self.reload_check_interval = new_interval
+			except Exception:
+				pass
+		self.log.info(f"[_cmd_set_hot_reload] enabled={self.hot_reload_enabled} interval={self.reload_check_interval}")
 
 	def _cmd_list_scripts(self, payload: dict[str, Any]) -> None:
 		self._publish_scripts_if_changed(True)
@@ -348,6 +388,7 @@ class ScriptWorker(BaseWorker):
 		)
 
 		self.log.info(f"[_cmd_start_chain] started chain_key={chain_key}")
+		self._publish_chain_log(chain_key, "chain started", level="info")
 		self._publish_chains_if_changed(True)
 		self._publish_chain_state(chain_key, ctx)
 
@@ -383,6 +424,7 @@ class ScriptWorker(BaseWorker):
 		inst.paused = True
 		inst.context.paused = True
 		self.log.info(f"[_cmd_pause_chain] paused chain_key={chain_key}")
+		self._publish_chain_log(chain_key, "chain paused", level="info")
 		self._publish_chains_if_changed(True)
 		self._publish_chain_state(chain_key, inst.context)
 
@@ -401,6 +443,7 @@ class ScriptWorker(BaseWorker):
 		inst.context.paused = False
 		inst.next_tick_ts = 0.0
 		self.log.info(f"[_cmd_resume_chain] resumed chain_key={chain_key}")
+		self._publish_chain_log(chain_key, "chain resumed", level="info")
 		self._publish_chains_if_changed(True)
 		self._publish_chain_state(chain_key, inst.context)
 
@@ -474,4 +517,5 @@ class ScriptWorker(BaseWorker):
 			pass
 
 		self.log.info(f"[_stop_chain] stopped chain_key={chain_key} reason={reason}")
+		self._publish_chain_log(chain_key, "chain stopped: %s" % reason, level="info")
 		self._publish_chains_if_changed(True)

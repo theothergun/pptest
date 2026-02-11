@@ -42,9 +42,11 @@ class StepChainContext:
 		self.step = 0
 		self.next_step = 0
 		self.step_time = 0.0
+		self.step_elapsed_s = 0.0
 		self.cycle_time = 0.1
 		self.cycle_count = 0
 		self.paused = False
+		self._step_started_ts = 0.0
 
 		# Status / error reporting
 		self.error_flag = False
@@ -91,6 +93,7 @@ class StepChainContext:
 			"chain_id": self.chain_id,
 			"step": self.step,
 			"step_time": self.step_time,
+			"step_elapsed_s": self.step_elapsed_s,
 			"cycle_count": self.cycle_count,
 			"error_flag": self.error_flag,
 			"error_message": self.error_message,
@@ -138,6 +141,11 @@ class PublicStepChainContext:
 		return int(self._ctx.step)
 
 	@property
+	def data(self) -> Dict[str, Any]:
+		"""Compatibility alias for legacy scripts (mapped to vars)."""
+		return self._ctx._vars
+
+	@property
 	def step_desc(self) -> str:
 		return str(self._ctx.step_desc or "")
 
@@ -153,6 +161,60 @@ class PublicStepChainContext:
 	def log(self, message: str) -> None:
 		self.ui.log(message)
 
+	# -------------------- compatibility helpers for legacy scripts --------------------
+
+	def update_ui(self, key: str, value: Any) -> None:
+		self.ui.set(key, value)
+
+	def step_time_seconds(self) -> float:
+		return self.timing.step_seconds()
+
+	def step_time(self) -> float:
+		"""Method form used by legacy scripts: ctx.step_time()."""
+		return self.timing.step_seconds()
+
+	def timeout(self, seconds: float) -> bool:
+		return self.timing.timeout(seconds)
+
+	def input(self, key: str, default: Any = None) -> Any:
+		return self.values.by_key(key, default)
+
+	def output(self, key: str, value: Any) -> None:
+		self.ui.event("output", key=key, value=value)
+
+	def publish_event(self, name: str, **payload: Any) -> None:
+		self.ui.event(name, **payload)
+
+	def notify(self, message: str, type_: str = "info") -> None:
+		self.ui.notify(message, type_)
+
+	def set_state(self, key: str, value: Any) -> None:
+		"""Write one AppState/UI variable (state.<key>) through UiBridge."""
+		self.ui.set_state(key, value)
+
+	def set_state_many(self, **values: Any) -> None:
+		"""Write multiple AppState/UI variables in one call."""
+		self.ui.set_state_many(**values)
+
+
+	def update_state(self, key: str, value: Any) -> None:
+		"""Alias for non-programmer-friendly scripts."""
+		self.set_state(key, value)
+
+
+	def error(self, message: str) -> None:
+		self.flow.fail(message)
+
+	def alarm(self, message: str) -> None:
+		self.ui.log(message, level="warning")
+
+	def log_success(self, message: str) -> None:
+		self.ui.log(message, level="success")
+
+	def camera_capture(self, key: str, default: Any = None) -> Any:
+		# Best-effort placeholder: pull latest keyed value from bus mirror.
+		return self.values.by_key(key, default)
+
 	def set_cycle_time(self, seconds: float) -> None:
 		self.timing.set_cycle_time(seconds)
 
@@ -165,6 +227,7 @@ class PublicStepChainContext:
 			"chain_id": self._ctx.chain_id,
 			"step": self._ctx.step,
 			"cycle_count": self._ctx.cycle_count,
+			"step_elapsed_s": self._ctx.step_elapsed_s,
 			"error_flag": self._ctx.error_flag,
 			"error_message": self._ctx.error_message,
 			"step_desc": self.step_desc,

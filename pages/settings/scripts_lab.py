@@ -279,14 +279,18 @@ def build_page(ctx: PageContext) -> None:
 	# --------------------------
 	chain_cards: dict[str, dict] = {}
 
-	def _status_text(active: bool, paused: bool) -> str:
+	def _status_text(active: bool, paused: bool, crashed: bool = False) -> str:
+		if crashed:
+			return "Crashed"
 		if not active:
 			return "Stopped"
 		if paused:
 			return "Paused"
 		return "Running"
 
-	def _status_color(active: bool, paused: bool) -> str:
+	def _status_color(active: bool, paused: bool, crashed: bool = False) -> str:
+		if crashed:
+			return "red"
 		if not active:
 			return "red"
 		if paused:
@@ -370,6 +374,12 @@ def build_page(ctx: PageContext) -> None:
 					on_click=lambda ck=chain_key: worker_handle.send(Commands.RESUME_CHAIN, chain_key=ck),
 				).props("color=green flat dense")
 
+				btn_retry = ui.button(
+					"Retry",
+					icon="replay",
+					on_click=lambda ck=chain_key: worker_handle.send(Commands.RETRY_CHAIN, chain_key=ck),
+				).props("color=primary unelevated dense")
+
 				btn_start = ui.button(
 					"Start",
 					icon="play_arrow",
@@ -407,6 +417,7 @@ def build_page(ctx: PageContext) -> None:
 
 			"btn_pause": btn_pause,
 			"btn_resume": btn_resume,
+			"btn_retry": btn_retry,
 			"btn_start": btn_start,
 			"btn_stop": btn_stop,
 
@@ -433,6 +444,7 @@ def build_page(ctx: PageContext) -> None:
 			return
 		active = bool(chain.get("active", False))
 		paused = bool(chain.get("paused", False))
+		error_flag = bool(chain.get("error_flag", False))
 		step = chain.get("step", 0)
 		data = chain.get("data", {})
 		cycle_count = chain.get("cycle_count", 0)
@@ -445,8 +457,8 @@ def build_page(ctx: PageContext) -> None:
 		if "instance" in chain and chain.get("instance") is not None:
 			w["instance"] = chain.get("instance", w.get("instance", "default"))
 
-		status_text = _status_text(active, paused)
-		status_color = _status_color(active, paused)
+		status_text = _status_text(active, paused, error_flag)
+		status_color = _status_color(active, paused, error_flag)
 
 		w["badge"].text = status_text
 		try:
@@ -492,13 +504,15 @@ def build_page(ctx: PageContext) -> None:
 		# Button visibility rules:
 		# - Resume hidden unless paused
 		# - Start shown only when stopped
-		show_pause = active and (not paused)
-		show_resume = active and paused
+		show_pause = active and (not paused) and (not error_flag)
+		show_resume = active and paused and (not error_flag)
+		show_retry = active and paused and error_flag
 		show_start = not active
 		show_stop = active
 
 		_set_visible(w["btn_pause"], show_pause)
 		_set_visible(w["btn_resume"], show_resume)
+		_set_visible(w["btn_retry"], show_retry)
 		_set_visible(w["btn_start"], show_start)
 		_set_visible(w["btn_stop"], show_stop)
 
@@ -718,6 +732,31 @@ def build_page(ctx: PageContext) -> None:
 
 	latest_scripts = {"value": None}
 	latest_chains = {"value": None}
+	crash_dialog_seen: dict[str, str] = {}
+	active_crash_dialogs: dict[str, ui.dialog] = {}
+
+	def _show_crash_dialog(chain_key: str, message: str) -> None:
+		msg = str(message or "StepChain crashed.")
+		if chain_key in active_crash_dialogs:
+			return
+		sig = "%s|%s" % (chain_key, msg)
+		if crash_dialog_seen.get(chain_key) == sig:
+			return
+		crash_dialog_seen[chain_key] = sig
+
+		dlg = ui.dialog()
+		active_crash_dialogs[chain_key] = dlg
+		with dlg, ui.card().classes("w-[520px] max-w-full"):
+			ui.label("⚠️ StepChain stopped due to an error").classes("text-lg font-bold text-red-700")
+			ui.label("Chain: %s" % chain_key).classes("text-sm text-gray-700")
+			ui.label(msg).classes("text-sm")
+			ui.label("What should the operator do?").classes("text-sm font-semibold mt-2")
+			with ui.row().classes("w-full gap-2 mt-2"):
+				ui.button("Retry", icon="replay", on_click=lambda ck=chain_key, d=dlg: (worker_handle.send(Commands.RETRY_CHAIN, chain_key=ck), d.close())).props("color=primary")
+				ui.button("Stop chain", icon="stop", on_click=lambda ck=chain_key, d=dlg: (worker_handle.send(Commands.STOP_CHAIN, chain_key=ck), d.close())).props("color=negative")
+				ui.button("Close", on_click=dlg.close).props("flat")
+		dlg.on("hide", lambda e=None, ck=chain_key: active_crash_dialogs.pop(ck, None))
+		dlg.open()
 
 	def _drain_bus() -> None:
 		while True:
@@ -746,6 +785,18 @@ def build_page(ctx: PageContext) -> None:
 					step_desc = state.get("step_desc", "") or ""
 					merged_step_desc = ("%s %s" % (error_message, step_desc)).strip()
 
+					error_flag = bool(state.get("error_flag", False))
+					if error_flag:
+						_show_crash_dialog(chain_key, error_message)
+					else:
+						crash_dialog_seen.pop(chain_key, None)
+						dlg = active_crash_dialogs.pop(chain_key, None)
+						if dlg is not None:
+							try:
+								dlg.close()
+							except Exception:
+								pass
+
 					if chain_key in chain_cards:
 						_update_chain_card(
 							{
@@ -754,6 +805,8 @@ def build_page(ctx: PageContext) -> None:
 								"instance": state.get("instance_id", "default"),
 								"active": bool(state.get("active", True)),
 								"paused": bool(state.get("paused", False)),
+								"error_flag": bool(state.get("error_flag", False)),
+								"error_message": state.get("error_message", ""),
 								"step": state.get("step", 0),
 								"cycle_count": state.get("cycle_count", 0),
 								"step_desc": merged_step_desc,

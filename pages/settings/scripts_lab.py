@@ -733,24 +733,29 @@ def build_page(ctx: PageContext) -> None:
 	latest_scripts = {"value": None}
 	latest_chains = {"value": None}
 	crash_dialog_seen: dict[str, str] = {}
+	active_crash_dialogs: dict[str, ui.dialog] = {}
 
 	def _show_crash_dialog(chain_key: str, message: str) -> None:
 		msg = str(message or "StepChain crashed.")
+		if chain_key in active_crash_dialogs:
+			return
 		sig = "%s|%s" % (chain_key, msg)
 		if crash_dialog_seen.get(chain_key) == sig:
 			return
 		crash_dialog_seen[chain_key] = sig
 
 		dlg = ui.dialog()
+		active_crash_dialogs[chain_key] = dlg
 		with dlg, ui.card().classes("w-[520px] max-w-full"):
 			ui.label("⚠️ StepChain stopped due to an error").classes("text-lg font-bold text-red-700")
 			ui.label("Chain: %s" % chain_key).classes("text-sm text-gray-700")
 			ui.label(msg).classes("text-sm")
 			ui.label("What should the operator do?").classes("text-sm font-semibold mt-2")
 			with ui.row().classes("w-full gap-2 mt-2"):
-				ui.button("Retry", icon="replay", on_click=lambda ck=chain_key, d=dlg: (crash_dialog_seen.pop(ck, None), worker_handle.send(Commands.RETRY_CHAIN, chain_key=ck), d.close())).props("color=primary")
-				ui.button("Stop chain", icon="stop", on_click=lambda ck=chain_key, d=dlg: (crash_dialog_seen.pop(ck, None), worker_handle.send(Commands.STOP_CHAIN, chain_key=ck), d.close())).props("color=negative")
+				ui.button("Retry", icon="replay", on_click=lambda ck=chain_key, d=dlg: (worker_handle.send(Commands.RETRY_CHAIN, chain_key=ck), d.close())).props("color=primary")
+				ui.button("Stop chain", icon="stop", on_click=lambda ck=chain_key, d=dlg: (worker_handle.send(Commands.STOP_CHAIN, chain_key=ck), d.close())).props("color=negative")
 				ui.button("Close", on_click=dlg.close).props("flat")
+		dlg.on("hide", lambda e=None, ck=chain_key: active_crash_dialogs.pop(ck, None))
 		dlg.open()
 
 	def _drain_bus() -> None:
@@ -785,6 +790,12 @@ def build_page(ctx: PageContext) -> None:
 						_show_crash_dialog(chain_key, error_message)
 					else:
 						crash_dialog_seen.pop(chain_key, None)
+						dlg = active_crash_dialogs.pop(chain_key, None)
+						if dlg is not None:
+							try:
+								dlg.close()
+							except Exception:
+								pass
 
 					if chain_key in chain_cards:
 						_update_chain_card(

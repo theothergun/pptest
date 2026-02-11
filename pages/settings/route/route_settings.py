@@ -9,6 +9,7 @@ from pages.settings.route.route_add_dialog import create_add_route_dialog
 from pages.utils.expandable_list import ExpandableList
 from pages.utils.scroll_fx import generate_wrapper_id
 from services.app_config import get_app_config, save_app_config
+from services.i18n import t
 
 ROUTE_LIST = ExpandableList(scroller_id="routes-scroll", id_prefix ="route-card",
 							expanded_storage_key= "route_expanded_name",
@@ -47,9 +48,9 @@ def render(container: ui.element, ctx: PageContext) -> None:
 			# --- Sticky header (never scrolls) ---
 			with ui.column().classes("w-full shrink-0 bg-white z-10"):
 				with ui.row().classes("w-full items-center justify-between"):
-					ui.label("Route Settings").classes("text-2xl font-bold")
-					ui.button("Add route", on_click=open_add_dialog).props("color=primary")
-				ui.label("Add / Edit custom routes (including subfolders like packaging/packaging.py).").classes(
+					ui.label(t("route.settings_title", "Route Settings")).classes("text-2xl font-bold")
+					ui.button(t("route.add_route", "Add route"), on_click=open_add_dialog).props("color=primary")
+				ui.label(t("route.settings_subtitle", "Add / Edit custom routes (including subfolders like packaging/packaging.py).")).classes(
 					"text-sm text-gray-500"
 				)
 
@@ -67,7 +68,7 @@ def _render_routes(scroll_to: str | None = None, highlight: str | None = None) -
 	role_map = nav.route_roles or {}
 
 	if not routes:
-		ui.label("No custom routes configured yet.").classes("text-sm text-gray-500")
+		ui.label(t("route.none", "No custom routes configured yet.")).classes("text-sm text-gray-500")
 		return
 
 	# Enrich route dicts so UI can use route["roles"]
@@ -91,29 +92,29 @@ def _render_routes(scroll_to: str | None = None, highlight: str | None = None) -
 					ui.label(" · " + ", ".join(roles)).classes("text-xs text-gray-400 truncate")
 
 			with ui.row().classes("items-center gap-2 shrink-0"):
-				ui.button("Edit", on_click=toggle).props("flat color=primary")
-				ui.button("Delete", on_click=delete).props("flat color=negative")
+				ui.button(t("common.edit", "Edit"), on_click=toggle).props("flat color=primary")
+				ui.button(t("common.delete", "Delete"), on_click=delete).props("flat color=negative")
 
 	def render_editor(route: dict, idx: int, toggle: Callable[[], None], delete: Callable[[], None]) -> None:
 		key = route.get("key", "")
 		roles = route.get("roles", [])
 
 		with ui.row().classes("w-full items-center justify-between gap-3"):
-			ui.input("Route id", value=key).props("readonly borderless").classes("w-full flex-1")
+			ui.input(t("route.id", "Route id"), value=key).props("readonly borderless").classes("w-full flex-1")
 			ui.button(icon="close", on_click=toggle).props("dense flat round")
 
 		with ui.column().classes("w-full gap-2"):
 			with ui.row().classes("w-full items-center gap-3"):
-				label_input = ui.input("Label", value=route.get("label", "")).classes("flex-1")
-				icon_input = ui.input("Icon", value=route.get("icon", "")).classes("flex-1")
+				label_input = ui.input(t("common.label", "Label"), value=route.get("label", "")).classes("flex-1")
+				icon_input = ui.input(t("common.icon", "Icon"), value=route.get("icon", "")).classes("flex-1")
 
 			with ui.row().classes("w-full items-center gap-4"):
-				path_input = ui.input("File path", value=route.get("path", "")).classes("flex-1")
-				roles_input = ui.input("Allowed roles (comma separated)", value=", ".join(roles)).classes("flex-1")
+				path_input = ui.input(t("route.file_path", "File path"), value=route.get("path", "")).classes("flex-1")
+				roles_input = ui.input(t("route.allowed_roles", "Allowed roles (comma separated)"), value=", ".join(roles)).classes("flex-1")
 
 			with ui.row().classes("w-full items-center justify-end gap-2"):
 				ui.button(
-					"Save",
+					t("common.save", "Save"),
 					on_click=lambda i=idx, li=label_input, ii=icon_input, pi=path_input, ri=roles_input:
 						_update_route(i, li.value, ii.value, pi.value, ri.value),
 				).props("color=primary")
@@ -124,7 +125,7 @@ def _render_routes(scroll_to: str | None = None, highlight: str | None = None) -
 
 def _add_route(key: str,label: str,	icon: str, path: str, roles: str) -> bool:
 	if not key or not path:
-		ui.notify("Route key and file path are required.", type="negative")
+		ui.notify(t("route.validation.required", "Route key and file path are required."), type="negative")
 		return False
 
 	cfg = get_app_config()
@@ -153,7 +154,7 @@ def _add_route(key: str,label: str,	icon: str, path: str, roles: str) -> bool:
 
 	save_app_config(cfg)
 
-	ui.notify("Route added.", type="positive")
+	ui.notify(t("route.notify.added", "Route added."), type="positive")
 	wrapper_id = generate_wrapper_id(ROUTE_LIST.id_prefix, key)
 	_render_routes.refresh(scroll_to=wrapper_id, highlight=wrapper_id)
 	_notify_routes_changed()
@@ -166,7 +167,7 @@ def _delete_route(index: int) -> None:
 
 	routes = list(nav.custom_routes or [])
 	if index < 0 or index >= len(routes):
-		ui.notify("Route not found.", type="negative")
+		ui.notify(t("route.validation.not_found", "Route not found."), type="negative")
 		return
 	removed = routes.pop(index)
 	nav.custom_routes = routes
@@ -175,14 +176,14 @@ def _delete_route(index: int) -> None:
 		nav.route_roles.pop(key, None)
 
 	save_app_config(cfg)
-	ui.notify("Route removed.", type="positive")
+	ui.notify(t("route.notify.removed", "Route removed."), type="positive")
 	_render_routes.refresh(scroll_to=None, highlight=None)
 	_notify_routes_changed()
 
 
 def _update_route(index: int, label: str, icon: str, path: str, roles: str) -> None:
 	if not path:
-		ui.notify("File path is required.", type="negative")
+		ui.notify(t("route.validation.file_path_required", "File path is required."), type="negative")
 		return
 
 	cfg = get_app_config()
@@ -190,7 +191,7 @@ def _update_route(index: int, label: str, icon: str, path: str, roles: str) -> N
 
 	routes = list(nav.custom_routes or [])
 	if index < 0 or index >= len(routes):
-		ui.notify("Route not found.", type="negative")
+		ui.notify(t("route.validation.not_found", "Route not found."), type="negative")
 		return
 
 	current = routes[index]
@@ -209,7 +210,7 @@ def _update_route(index: int, label: str, icon: str, path: str, roles: str) -> N
 		nav.route_roles.pop(key, None)
 
 	save_app_config(cfg)
-	ui.notify("Route updated.", type="positive")
+	ui.notify(t("route.notify.updated", "Route updated."), type="positive")
 	_render_routes.refresh(scroll_to=None, highlight=None)
 	_notify_routes_changed()
 

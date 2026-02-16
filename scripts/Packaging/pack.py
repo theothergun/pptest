@@ -1,92 +1,288 @@
-import time
+import json
 from enum import StrEnum
 
 from services.workers.stepchain.context import PublicStepChainContext
+from services.workers.stepchain.apis.api_utils import to_int
 
-class UI(StrEnum) :
+
+# ------------------------------------------------------------------ UI keys (AppState)
+
+class UI_VAR(StrEnum):
 	PART_GOOD = "part_good"
 	PART_BAD = "part_bad"
-	SCANNER_1 = "scanner_1"
 
 	INSTRUCTION = "work_instruction"
 	FEEDBACK = "work_feedback"
-
 	INSTRUCTION_STATE = "work_instruction_state"
-	FEEDBACK_STATE =  "work_feedback_state"
+	FEEDBACK_STATE = "work_feedback_state"
 
 	ERRORS = "error_count"
-
 
 	CONTAINER = "container_number"
 	PART_NUMBER = "part_number"
 	DESCRIPTION = "description"
-	CURRENT_QTY =  "current_container_qty"
+	CURRENT_QTY = "current_container_qty"
 	MAX_QUANTITY = "max_container_qty"
 
 
+# ------------------------------------------------------------------ Worker IDs / constants
+
+class SCRIPT_VAR(StrEnum):
+	SCANNER_1 = "scanner1"
+	PLC = "twincat"
+	ITAC = "itac_main"
+
+	ITAC_GET_PACK_INFO = "NOXPackaging.getPackInfo"
+	ITAC_STATION = "6302028220"
+
+
+class STEP(object):
+	INIT = 0
+	WAIT_SCAN = 10
+	WAIT_BEFORE_MES = 15
+	GET_PACKINFO = 20
+	PLC_READ = 40
+	REST_CALL = 50
+	TCP_TEST = 60
+	DONE = 70
+
+
+# ------------------------------------------------------------------ Small helpers (script-local)
+
+def ui_wait(ctx: PublicStepChainContext, instruction: str, feedback: str) -> None:
+	ctx.ui.show(
+		instruction=instruction,
+		feedback=feedback,
+		instruction_state="info",
+		feedback_state="warn",
+	)
+
+
+def ui_ok(ctx: PublicStepChainContext, instruction: str, feedback: str) -> None:
+	ctx.ui.show(
+		instruction=instruction,
+		feedback=feedback,
+		instruction_state="ok",
+		feedback_state="ok",
+	)
+
+
+def ui_error(ctx: PublicStepChainContext, instruction: str, feedback: str) -> None:
+	ctx.ui.show(
+		instruction=instruction,
+		feedback=feedback,
+		instruction_state="error",
+		feedback_state="error",
+	)
+	ctx.ui.inc_state_int(UI_VAR.ERRORS, amount=1, default=0)
+
+
+def apply_packinfo_to_ui(ctx: PublicStepChainContext, out_args: list) -> None:
+	# Expected: [container, part_number, description, current_qty, max_qty, ...]
+	container = out_args[0] if len(out_args) > 0 else ""
+	part_number = out_args[1] if len(out_args) > 1 else ""
+	description = out_args[2] if len(out_args) > 2 else ""
+	current_qty = to_int(out_args[3] if len(out_args) > 3 else None, 0)
+	max_qty = to_int(out_args[4] if len(out_args) > 4 else None, 0)
+
+	ctx.set_state(UI_VAR.CONTAINER, container)
+	ctx.set_state(UI_VAR.PART_NUMBER, part_number)
+	ctx.set_state(UI_VAR.DESCRIPTION, description)
+	ctx.set_state(UI_VAR.CURRENT_QTY, current_qty)
+	ctx.set_state(UI_VAR.MAX_QUANTITY, max_qty)
+
+
+# ------------------------------------------------------------------ Main
 
 def main(ctx: PublicStepChainContext):
 	"""
-	Simple demo chain.
+	Packaging demo chain (rewritten to be script-author friendly):
 
-	Notes:
-	- Keep ctx.vars values JSON-safe (no objects, no ctx, no bus, no bridge).
-	- Avoid long blocking sleeps; keep them short since the worker is single-threaded per chain tick.
+	- No time.sleep() (uses ctx.wait() non-blocking).
+	- UI updates via ctx.ui.show(...) with named states (ok/warn/error/info/idle).
+	- iTAC result parsing via ctx.workers.itac_expect_ok(...).
+	- Robust int conversion via to_int(...).
 	"""
-	# cycle_time controls how often the worker calls this function again (seconds)
-	ctx.set_cycle_time(1)
+	#ctx.set_cycle_time(1)
+
 	step = ctx.step
-	print("current step %s" % step)
-	rid = ""
-	if step == 0:
-		# Initialize counters / state
-		ctx.vars.set("counter", 0)
-		ctx.set_step_desc("idle -> count")
-		ctx.goto(10)
-	elif step == 10:
-		ctx.set_state(UI.INSTRUCTION , "Please scan a part")
-		ctx.set_state(UI.FEEDBACK, "Waiting for rail in...")
-		ctx.set_state(UI.INSTRUCTION_STATE , 4)
-		ctx.set_state(UI.FEEDBACK_STATE, 2)
-		#= 888
-		#res = ctx.itac_station_setting("itac_main", ["WORKORDER_NUMBER"])
-		#print(res)
-		part_good = ctx.get_state( UI.PART_GOOD, 0)
-		ctx.set_state(UI.PART_GOOD ,  part_good +1  )
-		ctx.goto(20)
-		time.sleep(1)
-	elif step == 20:
-		ctx.set_state(UI.FEEDBACK, "Requesting feedback from mes...")
-		ctx.set_state(UI.INSTRUCTION_STATE , 4)
-		ctx.set_state(UI.FEEDBACK_STATE, 2)
-		ctx.goto(30)
-		res = ctx.itac_custom_function("itac_main", "NOXPackaging.getPackInfo",in_args=["6302028220" , True])
+	print(step)
+	if step == STEP.INIT:
+
+		ctx.set_step_desc("init")
+		ui_wait(ctx, "Please scan a part", "Waiting for rail in...")
+		ctx.goto(STEP.WAIT_SCAN)
+
+	elif step == STEP.WAIT_SCAN:
+		#	import time
+		#	time.sleep(2)
+		#res = ctx.ui.popup_confirm(
+		#	"delete_wofdg",
+		#	"Delete workorder?",
+		#	title="Confirm delete",
+		#	ok_text="Delete",
+		#	cancel_text="Cancel",
+		#)
+		#res = ctx.ui.popup_message(
+		#	"device_lost",
+		#	"Connection to device lost",
+		#	title="Device",
+		#	buttons=[
+		#		{"id": "retry", "text": "Retry"},
+		#		{"id": "cancel", "text": "Cancel"},
+		#	],
+		#	wait_step_desc="Device offline - waiting for operator...",
+		#)
+		#ans = ctx.ui.popup_input_text("enter_comment", "Please type in a text message", title="Comment")
+		#if ans is None:
+		#	return
+		#if not ans.get("ok"):
+		#	ctx.goto(0)
+		#	return
+		#comment = str(ans.get("value") or "")
+
+		#print(comment)
+		#return
+
+		#ans = ctx.ui.popup_input_number("enter_qty", "Please type in a number", title="Quantity", default=1)
+		#if ans is None:
+		#	return
+		#if not ans.get("ok"):
+		#	return
+		#qty_raw = ans.get("value")
+		#qty = int(qty_raw) if qty_raw is not None else 0
+		#print(qty)
+		#ctx.ui.popup_clear("choose_mode")
+		#ans = ctx.ui.popup_choose(
+		#	"choose_mode",
+		#	"Please choose from this list",
+		#	title="Mode",
+		#	options=[
+		#		{"id": "auto", "text": "Automatic"},
+		#		{"id": "manual", "text": "Manual"},
+		#		{"id": "service", "text": "Service"},
+		#	],
+		#	default="auto",
+		#)
+
+		if ans is None:
+			return
+		if not ans.get("ok"):
+			return
+		mode = str(ans.get("value") or "")
+		print(mode)
+		return
+		if res:
+			print(res.get("clicked"))
+		#res =None
 		print(res)
-		if res["result"]["return_value"] == 0:
-			res_vals = res["result"]["outArgs"]
-			ctx.set_state(UI.CONTAINER,res_vals[0])
-			ctx.set_state(UI.PART_NUMBER,res_vals[1])
-			ctx.set_state(UI.DESCRIPTION, res_vals[2])
-			print(int(res_vals[3].replace(".0","")))
-			print(int(res_vals[4].replace(".0", "")))
-			ctx.set_state(UI.CURRENT_QTY, int(res_vals[3].replace(".0","")))
-			#ctx.set_state(UI.CURRENT_QTY, 79)
-			ctx.set_state(UI.MAX_QUANTITY,  int(res_vals[4].replace(".0","")))
+		if res is None:
+			return  # keep waiting, do NOT advance step
+		if res is True:
+			ctx.goto(20)
+		else:
+			ctx.goto(0)
+
+		# Demo behavior: increment GOOD and then request pack info.
+		part_good = to_int(ctx.get_state(UI_VAR.PART_GOOD, 0), 0)
+		ctx.set_state(UI_VAR.PART_GOOD, part_good + 1)
+
+		ctx.set_step_desc("wait before mes")
+		ui_wait(ctx, "Please scan a part", "Preparing MES request...")
+		ctx.goto(STEP.WAIT_BEFORE_MES)
+
+	elif step == STEP.WAIT_BEFORE_MES:
+		# Non-blocking delay (no sleep)
+		if ctx.wait(1.0, STEP.GET_PACKINFO, desc="get pack info"):
+			return
+
+	elif step == STEP.GET_PACKINFO:
+		ctx.set_step_desc("get pack info")
+		ui_wait(ctx, "Please scan a part", "Requesting feedback from MES...")
+
+		res = ctx.itac_custom_function(
+			SCRIPT_VAR.ITAC,
+			SCRIPT_VAR.ITAC_GET_PACK_INFO,
+			in_args=[SCRIPT_VAR.ITAC_STATION, True],
+			timeout_s=10.0,
+		)
+
+		norm = ctx.workers.itac_expect_ok(res)
+		print(norm)
+		if not norm.get("ok"):
+			ui_error(ctx, "MES error", "getPackInfo failed: %s" % str(norm.get("error")))
+			ctx.goto(STEP.PLC_READ)
+			return
+
+		out_args = norm.get("out_args", [])
+		if not isinstance(out_args, list):
+			ui_error(ctx, "MES error", "Invalid out_args type")
+			ctx.goto(STEP.PLC_READ)
+			return
+
+		apply_packinfo_to_ui(ctx, out_args)
+		ui_ok(ctx, "MES OK", "Pack info loaded")
+		ctx.goto(STEP.PLC_READ)
+
+	elif step == STEP.PLC_READ:
+		ctx.set_step_desc("plc read")
+
+		# These reads are non-blocking (latest cached values). For strict sync: use ctx.wait_plc(...)
+		watchdog = ctx.read_plc(SCRIPT_VAR.PLC, "MAIN.watchdog", default=None)
+		ip_addr = ctx.read_plc(SCRIPT_VAR.PLC, "MAIN.currentIPAddress", default=None)
+		idx = ctx.read_plc(SCRIPT_VAR.PLC, "MAIN.idx", default=None)
+		is_mqtt = ctx.read_plc(SCRIPT_VAR.PLC, "MAIN.isMQTTSetup", default=None)
 
 
-	elif step == 30:
-		ctx.set_state(UI.FEEDBACK, "Mes ok ")
-		ctx.set_state(UI.INSTRUCTION_STATE , 1)
-		ctx.set_state(UI.FEEDBACK_STATE, 1)
-		# Notify / finish / reset
-		ctx.set_step_desc("demo chain finished (counter reached 5)")
-		time.sleep(0.05)
-		ctx.goto(0)
+		ctx.goto(STEP.REST_CALL)
+
+	elif step == STEP.REST_CALL:
+		ctx.set_step_desc("rest call")
+
+		res = ctx.rest_post_json("book_serial", path="", body={"a": 1}, timeout_s=2.0)
+
+		status = to_int(res.get("status"), 0)
+
+
+		body = res.get("body", "")
+
+		ctx.goto(STEP.TCP_TEST)
+
+	elif step == STEP.TCP_TEST:
+		ctx.set_step_desc("tcp test")
+
+		# Fire-and-forget send + read latest message (depends on your tcp_client worker behavior)
+		ctx.send_tcp(SCRIPT_VAR.SCANNER_1, "hello")
+		msg = ctx.read_tcp(SCRIPT_VAR.SCANNER_1, default=None, decode=True)
+		ctx.goto(STEP.DONE)
+
+
+	elif step == STEP.DONE:
+		ctx.set_step_desc("done -> reset")
+		ui_ok(ctx, "Done", "Cycle finished")
+		ctx.goto(STEP.INIT)
+		ctx.goto(STEP.DONE)
+		msg = "Something went really wrong"
+		#  "info"  # "positive" | "negative" | "warning" | "info"
+		#ctx.ui.notify(msg,type_="positive")
+		print(1)
+		ctx.log_error("ÄLARM!!!")
+		#ctx.fail("fdsaf")
+		ctx.log_success("super")
+
+		ctx.goto(100)
+	elif step == 100:
+		res = ctx.read_com("scanner_1")
+		print(res)
+
+		ctx.goto(10)
+
 
 	else:
-		# Unknown step: reset safely
-		ctx.set_step_desc("unknown step=%s; reset" % step)
-		ctx.goto(0)
+		ctx.set_step_desc("unknown step=%s -> reset" % str(step))
+		ui_error(ctx, "Script error", "Unknown step; resetting")
+		ctx.goto(STEP.INIT)
 
-# Export (your loader may look for main/chain/<basename>)
+
+# Export
 main = main

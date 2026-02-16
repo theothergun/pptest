@@ -6,4 +6,5 @@ class WorkerName:
     SCRIPT = "script_worker"
     TWINCAT = "twincat"
     ITAC = "itac"
+    COM_DEVICE = "com_device"
     # add more here

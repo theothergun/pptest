@@ -80,3 +80,14 @@ class TwinCatCommands(StrEnum):
 	DISCONNECT = "twincat.disconnect"
 	WRITE = "twincat.write"
 	ADD_PLC = "twincat.add_plc"
+	STOP = "twincat.stop"
+
+
+# ------------------------------------------------------------------ COM Device Worker
+
+class ComDeviceCommands(StrEnum):
+	ADD_DEVICE = "com.add_device"
+	REMOVE_DEVICE = "com.remove_device"
+	LIST_DEVICES = "com.list_devices"
+	SEND = "com.send"
+	STOP = "com.stop"

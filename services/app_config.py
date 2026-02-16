@@ -131,9 +131,10 @@ DEFAULT_CONFIG_PATH = get_config_path()
 
 WORKER_SCRIPT = "script_worker"
 WORKER_TCP = "tcp_client"
-WORKER_REST = "rest_worker"
-WORKER_TWINCAT = "twincat_worker"
+WORKER_REST = "rest_api"
+WORKER_TWINCAT = "twincat"
 WORKER_ITAC = "itac"
+WORKER_COM_DEVICE  = "com_device"
 
 
 # ------------------------------------------------------------------ Config models
@@ -169,6 +170,26 @@ class NavigationConfig:
 class UiConfig:
     navigation: NavigationConfig = field(default_factory=NavigationConfig)
 
+@dataclass
+class ComDeviceEntry:
+    device_id: str
+    port: str
+    baudrate: int = 115200
+    bytesize: int = 8
+    parity: str = "N"
+    stopbits: float = 1.0
+    timeout_s: float = 0.2
+    write_timeout_s: float = 0.5
+
+    mode: str = "line"		# "line" or "raw"
+    delimiter: str = "\\n"	# keep escaped form in JSON, decode in helper
+    encoding: str = "utf-8"
+
+    read_chunk_size: int = 256
+    max_line_len: int = 4096
+
+    reconnect_min_s: float = 0.5
+    reconnect_max_s: float = 5.0
 
 @dataclass
 class TcpClientEntry:
@@ -209,27 +230,27 @@ class TwincatEndpoint:
 
 @dataclass
 class ItacEndpoint:
-	name: str
-	base_url: str
-	station_number: str
-	client: str = "01"
-	registration_type: str = "S"
-	system_identifier: str = "nicegui"
-	station_password: str = ""
-	user: str = ""
-	password: str = ""
-	timeout_s: float = 10.0
-	verify_ssl: bool = True
-	auto_login: bool = True
-	force_locale: str = ""
+    name: str
+    base_url: str
+    station_number: str
+    client: str = "01"
+    registration_type: str = "S"
+    system_identifier: str = "nicegui"
+    station_password: str = ""
+    user: str = ""
+    password: str = ""
+    timeout_s: float = 10.0
+    verify_ssl: bool = True
+    auto_login: bool = True
+    force_locale: str = ""
 
 
 @dataclass
 class ProxyConfig:
-	enabled: bool = False
-	http: str = ""
-	https: str = ""
-	no_proxy: str = ""  # comma separated: "localhost,127.0.0.1,10.1.2.
+    enabled: bool = False
+    http: str = ""
+    https: str = ""
+    no_proxy: str = ""  # comma separated: "localhost,127.0.0.1,10.1.2.
 
 @dataclass
 class WorkersConfig:
@@ -361,8 +382,8 @@ def get_rest_api_endpoints(cfg: AppConfig) -> list[RestApiEndpoint]:
 
 
 def get_itac_endpoints(cfg: AppConfig) -> list[ItacEndpoint]:
-	raw = get_worker_config(cfg, WORKER_ITAC).get("endpoints", [])
-	return [ItacEndpoint(**e) for e in raw if isinstance(e, dict)]
+    raw = get_worker_config(cfg, WORKER_ITAC).get("endpoints", [])
+    return [ItacEndpoint(**e) for e in raw if isinstance(e, dict)]
 
 def get_twincat_plc_endpoints(cfg: AppConfig) -> list[TwincatEndpoint]:
     raw = get_worker_config(cfg, WORKER_TWINCAT).get("plc_endpoints", [])
@@ -380,3 +401,26 @@ def get_twincat_plc_endpoints(cfg: AppConfig) -> list[TwincatEndpoint]:
             )
         )
     return entries
+
+def get_com_device_entries(cfg: AppConfig) -> list[ComDeviceEntry]:
+    raw_devices = get_worker_config(cfg, WORKER_COM_DEVICE).get("devices", [])
+    entries: list[ComDeviceEntry] = []
+    for e in raw_devices:
+        if not isinstance(e, dict):
+            continue
+        if not e.get("device_id") and e.get("id"):
+            e = dict(e)
+            e["device_id"] = e.get("id")
+        if "delimiter" in e:
+            e = dict(e)
+            e["delimiter"] = _decode_escaped(e.get("delimiter", "\\n"))
+        entries.append(ComDeviceEntry(**e))
+    return entries
+
+
+def _decode_escaped(s: str) -> str:
+    # keep it simple: your configs use \n and \r most of the time
+    if s is None:
+        return ""
+    s = str(s)
+    return s.replace("\\r", "\r").replace("\\n", "\n").replace("\\t", "\t")

@@ -1,111 +1,111 @@
 {
   "app.title": {
-    "cs": "Shopfloor application",
-    "de": "Shopfloor application",
+    "cs": "Shopfloor aplikace",
+    "de": "Shopfloor-Anwendung",
     "en": "Shopfloor application",
-    "es-MX": "Shopfloor application",
-    "mk": "Shopfloor application",
-    "sk": "Shopfloor application",
-    "zh": "Shopfloor application"
+    "es-MX": "Aplicación Shopfloor",
+    "mk": "Shopfloor апликација",
+    "sk": "Shopfloor aplikácia",
+    "zh": "Shopfloor 应用"
   },
   "auto.2026_my_app": {
-    "cs": "© 2026 My App",
-    "de": "© 2026 My App",
+    "cs": "© 2026 Moje aplikace",
+    "de": "© 2026 Meine App",
     "en": "© 2026 My App",
-    "es-MX": "© 2026 My App",
-    "mk": "© 2026 My App",
-    "sk": "© 2026 My App",
-    "zh": "© 2026 My App"
+    "es-MX": "© 2026 Mi App",
+    "mk": "© 2026 Моја апликација",
+    "sk": "© 2026 Moja aplikácia",
+    "zh": "© 2026 我的应用"
   },
   "auto.add_client": {
-    "cs": "Add client",
-    "de": "Add client",
+    "cs": "Přidat Klient",
+    "de": "Hinzufügen Client",
     "en": "Add client",
-    "es-MX": "Add client",
-    "mk": "Add client",
-    "sk": "Add client",
-    "zh": "Add client"
+    "es-MX": "Agregar Cliente",
+    "mk": "Додај Клиент",
+    "sk": "Pridať Klient",
+    "zh": "添加客户端"
   },
   "auto.add_custom_routes_including_subfolders_like_packaging_packaging_py": {
-    "cs": "Add custom routes (including subfolders like packaging/packaging.py).",
-    "de": "Add custom routes (including subfolders like packaging/packaging.py).",
+    "cs": "Přidat vlastní trasy (včetně podsložek jako packaging/packaging.py).",
+    "de": "Benutzerdefinierte Routen hinzufügen (inkl. Unterordner wie packaging/packaging.py).",
     "en": "Add custom routes (including subfolders like packaging/packaging.py).",
-    "es-MX": "Add custom routes (including subfolders like packaging/packaging.py).",
-    "mk": "Add custom routes (including subfolders like packaging/packaging.py).",
-    "sk": "Add custom routes (including subfolders like packaging/packaging.py).",
-    "zh": "Add custom routes (including subfolders like packaging/packaging.py)."
+    "es-MX": "Agregar rutas personalizadas (incluye subcarpetas como packaging/packaging.py).",
+    "mk": "Додај сопствени рути (вкл. подпапки како packaging/packaging.py).",
+    "sk": "Pridať vlastné trasy (vrátane podpriečinkov ako packaging/packaging.py).",
+    "zh": "添加自定义路由（包括 packaging/packaging.py 等子文件夹）。"
   },
   "auto.add_edit_custom_routes_including_subfolders_like_packaging_packaging_py": {
-    "cs": "Add / Edit custom routes (including subfolders like packaging/packaging.py).",
-    "de": "Add / Edit custom routes (including subfolders like packaging/packaging.py).",
+    "cs": "Přidat/upravit vlastní trasy (včetně podsložek jako packaging/packaging.py).",
+    "de": "Benutzerdefinierte Routen hinzufügen/bearbeiten (inkl. Unterordner wie packaging/packaging.py).",
     "en": "Add / Edit custom routes (including subfolders like packaging/packaging.py).",
-    "es-MX": "Add / Edit custom routes (including subfolders like packaging/packaging.py).",
-    "mk": "Add / Edit custom routes (including subfolders like packaging/packaging.py).",
-    "sk": "Add / Edit custom routes (including subfolders like packaging/packaging.py).",
-    "zh": "Add / Edit custom routes (including subfolders like packaging/packaging.py)."
+    "es-MX": "Agregar/editar rutas personalizadas (incluye subcarpetas como packaging/packaging.py).",
+    "mk": "Додај/уреди сопствени рути (вкл. подпапки како packaging/packaging.py).",
+    "sk": "Pridať/upraviť vlastné trasy (vrátane podpriečinkov ako packaging/packaging.py).",
+    "zh": "添加/编辑自定义路由（包括 packaging/packaging.py 等子文件夹）。"
   },
   "auto.add_endpoint": {
-    "cs": "Add endpoint",
-    "de": "Add endpoint",
+    "cs": "Přidat Koncový bod",
+    "de": "Hinzufügen Endpunkt",
     "en": "Add endpoint",
-    "es-MX": "Add endpoint",
-    "mk": "Add endpoint",
-    "sk": "Add endpoint",
-    "zh": "Add endpoint"
+    "es-MX": "Agregar Endpoint",
+    "mk": "Додај Крајна точка",
+    "sk": "Pridať Koncový bod",
+    "zh": "添加端点"
   },
   "auto.add_key": {
-    "cs": "Add key",
-    "de": "Add key",
+    "cs": "Přidat Klíč",
+    "de": "Hinzufügen Schlüssel",
     "en": "Add key",
-    "es-MX": "Add key",
-    "mk": "Add key",
-    "sk": "Add key",
-    "zh": "Add key"
+    "es-MX": "Agregar Clave",
+    "mk": "Додај Клуч",
+    "sk": "Pridať Kľúč",
+    "zh": "添加键"
   },
   "auto.add_py_files_to_scripts_directory": {
-    "cs": "(Add .py files to 'scripts/' directory)",
-    "de": "(Add .py files to 'scripts/' directory)",
+    "cs": "(Přidat .py files to 'Skripty/' directory)",
+    "de": "(Hinzufügen .py files to 'Skripte/' directory)",
     "en": "(Add .py files to 'scripts/' directory)",
-    "es-MX": "(Add .py files to 'scripts/' directory)",
-    "mk": "(Add .py files to 'scripts/' directory)",
-    "sk": "(Add .py files to 'scripts/' directory)",
-    "zh": "(Add .py files to 'scripts/' directory)"
+    "es-MX": "(Agregar .py files to 'Scripts/' directory)",
+    "mk": "(Додај .py files to 'Скрипти/' directory)",
+    "sk": "(Pridať .py files to 'Skripty/' directory)",
+    "zh": "(添加 .py files to '脚本/' directory)"
   },
   "auto.add_rest_endpoint": {
-    "cs": "Add REST endpoint",
-    "de": "Add REST endpoint",
+    "cs": "Přidat REST Koncový bod",
+    "de": "Hinzufügen REST Endpunkt",
     "en": "Add REST endpoint",
-    "es-MX": "Add REST endpoint",
-    "mk": "Add REST endpoint",
-    "sk": "Add REST endpoint",
-    "zh": "Add REST endpoint"
+    "es-MX": "Agregar REST Endpoint",
+    "mk": "Додај REST Крајна точка",
+    "sk": "Pridať REST Koncový bod",
+    "zh": "添加 REST 端点"
   },
   "auto.add_route": {
-    "cs": "Add route",
-    "de": "Add route",
+    "cs": "Přidat Trasa",
+    "de": "Hinzufügen Route",
     "en": "Add route",
-    "es-MX": "Add route",
-    "mk": "Add route",
-    "sk": "Add route",
-    "zh": "Add route"
+    "es-MX": "Agregar Ruta",
+    "mk": "Додај Рута",
+    "sk": "Pridať Trasa",
+    "zh": "添加路由"
   },
   "auto.add_tcp_client": {
-    "cs": "Add TCP client",
-    "de": "Add TCP client",
+    "cs": "Přidat TCP Klient",
+    "de": "Hinzufügen TCP Client",
     "en": "Add TCP client",
-    "es-MX": "Add TCP client",
-    "mk": "Add TCP client",
-    "sk": "Add TCP client",
-    "zh": "Add TCP client"
+    "es-MX": "Agregar TCP Cliente",
+    "mk": "Додај TCP Клиент",
+    "sk": "Pridať TCP Klient",
+    "zh": "添加 TCP 客户端"
   },
   "auto.allowed_roles_comma_separated": {
-    "cs": "Allowed roles (comma separated)",
-    "de": "Allowed roles (comma separated)",
+    "cs": "Povolené role (oddělené čárkami)",
+    "de": "Erlaubte Rollen (durch Komma getrennt)",
     "en": "Allowed roles (comma separated)",
-    "es-MX": "Allowed roles (comma separated)",
-    "mk": "Allowed roles (comma separated)",
-    "sk": "Allowed roles (comma separated)",
-    "zh": "Allowed roles (comma separated)"
+    "es-MX": "Roles permitidos (separados por comas)",
+    "mk": "Дозволени улоги (разделени со запирки)",
+    "sk": "Povolené roly (oddelené čiarkami)",
+    "zh": "允许的角色（逗号分隔）"
   },
   "auto.apply_row": {
     "cs": "Apply row",
@@ -117,49 +117,49 @@
     "zh": "Apply row"
   },
   "auto.appstate_inspector": {
-    "cs": "AppState Inspector",
-    "de": "AppState Inspector",
+    "cs": "Inspektor AppState",
+    "de": "AppState-Inspektor",
     "en": "AppState Inspector",
-    "es-MX": "AppState Inspector",
-    "mk": "AppState Inspector",
-    "sk": "AppState Inspector",
-    "zh": "AppState Inspector"
+    "es-MX": "Inspector de AppState",
+    "mk": "Инспектор AppState",
+    "sk": "Inšpektor AppState",
+    "zh": "AppState 检查器"
   },
   "auto.assigned_failures": {
-    "cs": "Assigned Failures",
-    "de": "Assigned Failures",
+    "cs": "Přiřazené Poruchy",
+    "de": "Zugewiesene Fehler",
     "en": "Assigned Failures",
-    "es-MX": "Assigned Failures",
-    "mk": "Assigned Failures",
-    "sk": "Assigned Failures",
-    "zh": "Assigned Failures"
+    "es-MX": "Asignadas Fallos",
+    "mk": "Доделени Дефекти",
+    "sk": "Priradené Poruchy",
+    "zh": "已分配故障"
   },
   "auto.available_scripts": {
-    "cs": "Available Scripts",
-    "de": "Available Scripts",
+    "cs": "Available Skripty",
+    "de": "Available Skripte",
     "en": "Available Scripts",
     "es-MX": "Available Scripts",
-    "mk": "Available Scripts",
-    "sk": "Available Scripts",
-    "zh": "Available Scripts"
+    "mk": "Available Скрипти",
+    "sk": "Available Skripty",
+    "zh": "Available 脚本"
   },
   "auto.base_url": {
-    "cs": "Base URL",
-    "de": "Base URL",
+    "cs": "Základní URL",
+    "de": "Basis-URL",
     "en": "Base URL",
-    "es-MX": "Base URL",
-    "mk": "Base URL",
-    "sk": "Base URL",
-    "zh": "Base URL"
+    "es-MX": "URL base",
+    "mk": "Основна URL",
+    "sk": "Základná URL",
+    "zh": "基础 URL"
   },
   "auto.cancel": {
-    "cs": "Cancel",
-    "de": "Cancel",
+    "cs": "Zrušit",
+    "de": "Abbrechen",
     "en": "Cancel",
-    "es-MX": "Cancel",
-    "mk": "Cancel",
-    "sk": "Cancel",
-    "zh": "Cancel"
+    "es-MX": "Cancelar",
+    "mk": "Откажи",
+    "sk": "Zrušiť",
+    "zh": "取消"
   },
   "auto.catalogue_reloaded": {
     "cs": "Catalogue reloaded",
@@ -171,22 +171,22 @@
     "zh": "Catalogue reloaded"
   },
   "auto.chain_not_found": {
-    "cs": "Chain not found",
-    "de": "Chain not found",
+    "cs": "Řetězec ne nalezen",
+    "de": "Kette nicht gefunden",
     "en": "Chain not found",
-    "es-MX": "Chain not found",
-    "mk": "Chain not found",
-    "sk": "Chain not found",
-    "zh": "Chain not found"
+    "es-MX": "Cadena no encontrado",
+    "mk": "Синџир не пронајдено",
+    "sk": "Reťazec nie nájdené",
+    "zh": "链不找到"
   },
   "auto.chains": {
-    "cs": "Chains",
-    "de": "Chains",
+    "cs": "Řetězce",
+    "de": "Ketten",
     "en": "Chains",
-    "es-MX": "Chains",
-    "mk": "Chains",
-    "sk": "Chains",
-    "zh": "Chains"
+    "es-MX": "Cadenas",
+    "mk": "Синџири",
+    "sk": "Reťazce",
+    "zh": "链"
   },
   "auto.choose_an_action": {
     "cs": "Choose an action:",
@@ -198,22 +198,22 @@
     "zh": "Choose an action:"
   },
   "auto.clear_logs": {
-    "cs": "Clear logs",
-    "de": "Clear logs",
+    "cs": "Vyčistit Logy",
+    "de": "Leeren Protokolle",
     "en": "Clear logs",
-    "es-MX": "Clear logs",
-    "mk": "Clear logs",
-    "sk": "Clear logs",
-    "zh": "Clear logs"
+    "es-MX": "Limpiar Registros",
+    "mk": "Исчисти Логови",
+    "sk": "Vyčistiť Logy",
+    "zh": "清除日志"
   },
   "auto.clear_subscriber": {
-    "cs": "Clear subscriber",
-    "de": "Clear subscriber",
+    "cs": "Vyčistit Subscriber",
+    "de": "Leeren Subscriber",
     "en": "Clear subscriber",
-    "es-MX": "Clear subscriber",
-    "mk": "Clear subscriber",
-    "sk": "Clear subscriber",
-    "zh": "Clear subscriber"
+    "es-MX": "Limpiar Suscriptor",
+    "mk": "Исчисти Subscriber",
+    "sk": "Vyčistiť Subscriber",
+    "zh": "清除订阅者"
   },
   "auto.cleared_all_errors": {
     "cs": "Cleared all errors",
@@ -225,76 +225,76 @@
     "zh": "Cleared all errors"
   },
   "auto.client_id": {
-    "cs": "Client ID",
+    "cs": "Klient ID",
     "de": "Client ID",
     "en": "Client ID",
-    "es-MX": "Client ID",
-    "mk": "Client ID",
-    "sk": "Client ID",
-    "zh": "Client ID"
+    "es-MX": "Cliente ID",
+    "mk": "Клиент ID",
+    "sk": "Klient ID",
+    "zh": "客户端 ID"
   },
   "auto.client_id_already_exists": {
-    "cs": "Client ID already exists.",
+    "cs": "Klient ID already exists.",
     "de": "Client ID already exists.",
     "en": "Client ID already exists.",
-    "es-MX": "Client ID already exists.",
-    "mk": "Client ID already exists.",
-    "sk": "Client ID already exists.",
-    "zh": "Client ID already exists."
+    "es-MX": "Cliente ID already exists.",
+    "mk": "Клиент ID already exists.",
+    "sk": "Klient ID already exists.",
+    "zh": "客户端 ID already exists."
   },
   "auto.client_id_host_and_port_are_required": {
-    "cs": "Client ID, host, and port are required.",
-    "de": "Client ID, host, and port are required.",
+    "cs": "Je vyžadováno ID klienta, host a port.",
+    "de": "Client-ID, Host und Port sind erforderlich.",
     "en": "Client ID, host, and port are required.",
-    "es-MX": "Client ID, host, and port are required.",
-    "mk": "Client ID, host, and port are required.",
-    "sk": "Client ID, host, and port are required.",
-    "zh": "Client ID, host, and port are required."
+    "es-MX": "Se requieren ID de cliente, host y puerto.",
+    "mk": "Потребни се ID на клиент, хост и порт.",
+    "sk": "Vyžaduje sa ID klienta, host a port.",
+    "zh": "需要客户端 ID、主机和端口。"
   },
   "auto.client_not_found": {
-    "cs": "Client not found.",
-    "de": "Client not found.",
+    "cs": "Klient ne nalezen.",
+    "de": "Client nicht gefunden.",
     "en": "Client not found.",
-    "es-MX": "Client not found.",
-    "mk": "Client not found.",
-    "sk": "Client not found.",
-    "zh": "Client not found."
+    "es-MX": "Cliente no encontrado.",
+    "mk": "Клиент не пронајдено.",
+    "sk": "Klient nie nájdené.",
+    "zh": "客户端不找到."
   },
   "auto.close": {
-    "cs": "Close",
-    "de": "Close",
+    "cs": "Zavřít",
+    "de": "Schließen",
     "en": "Close",
-    "es-MX": "Close",
-    "mk": "Close",
-    "sk": "Close",
-    "zh": "Close"
+    "es-MX": "Cerrar",
+    "mk": "Затвори",
+    "sk": "Zavrieť",
+    "zh": "关闭"
   },
   "auto.config": {
-    "cs": "Config:",
-    "de": "Config:",
+    "cs": "Konfigurace:",
+    "de": "Konfiguration:",
     "en": "Config:",
-    "es-MX": "Config:",
-    "mk": "Config:",
-    "sk": "Config:",
-    "zh": "Config:"
+    "es-MX": "Configuración:",
+    "mk": "Конфигурација:",
+    "sk": "Konfigurácia:",
+    "zh": "配置:"
   },
   "auto.configure_rest_api_worker_endpoints": {
-    "cs": "Configure REST API worker endpoints.",
-    "de": "Configure REST API worker endpoints.",
+    "cs": "Konfigurovat REST API Worker Koncové body.",
+    "de": "Konfigurieren REST API Worker Endpunkte.",
     "en": "Configure REST API worker endpoints.",
-    "es-MX": "Configure REST API worker endpoints.",
-    "mk": "Configure REST API worker endpoints.",
-    "sk": "Configure REST API worker endpoints.",
-    "zh": "Configure REST API worker endpoints."
+    "es-MX": "Configurar REST API Worker Endpoints.",
+    "mk": "Конфигурирај REST API Воркер Крајни точки.",
+    "sk": "Konfigurovať REST API Worker Koncové body.",
+    "zh": "配置 REST API 工作器端点."
   },
   "auto.configure_tcp_client_worker_endpoints": {
-    "cs": "Configure TCP client worker endpoints.",
-    "de": "Configure TCP client worker endpoints.",
+    "cs": "Konfigurovat TCP Klient Worker Koncové body.",
+    "de": "Konfigurieren TCP Client Worker Endpunkte.",
     "en": "Configure TCP client worker endpoints.",
-    "es-MX": "Configure TCP client worker endpoints.",
-    "mk": "Configure TCP client worker endpoints.",
-    "sk": "Configure TCP client worker endpoints.",
-    "zh": "Configure TCP client worker endpoints."
+    "es-MX": "Configurar TCP Cliente Worker Endpoints.",
+    "mk": "Конфигурирај TCP Клиент Воркер Крајни точки.",
+    "sk": "Konfigurovať TCP Klient Worker Koncové body.",
+    "zh": "配置 TCP 客户端工作器端点."
   },
   "auto.containernumber": {
     "cs": "Containernumber",
@@ -306,220 +306,220 @@
     "zh": "Containernumber"
   },
   "auto.contains_ltc_data": {
-    "cs": "contains LTC data",
-    "de": "contains LTC data",
+    "cs": "obsahuje LTC data",
+    "de": "enthält LTC data",
     "en": "contains LTC data",
-    "es-MX": "contains LTC data",
-    "mk": "contains LTC data",
-    "sk": "contains LTC data",
-    "zh": "contains LTC data"
+    "es-MX": "contiene LTC data",
+    "mk": "содржи LTC data",
+    "sk": "obsahuje LTC data",
+    "zh": "包含 LTC data"
   },
   "auto.contains_the_counters": {
-    "cs": "contains the counters",
-    "de": "contains the counters",
+    "cs": "obsahuje  čítače",
+    "de": "enthält der Zähler",
     "en": "contains the counters",
-    "es-MX": "contains the counters",
-    "mk": "contains the counters",
-    "sk": "contains the counters",
-    "zh": "contains the counters"
+    "es-MX": "contiene la contadores",
+    "mk": "содржи  бројачи",
+    "sk": "obsahuje  počítadlá",
+    "zh": "包含计数器"
   },
   "auto.contains_vi_data": {
-    "cs": "contains VI data",
-    "de": "contains VI data",
+    "cs": "obsahuje VI data",
+    "de": "enthält VI data",
     "en": "contains VI data",
-    "es-MX": "contains VI data",
-    "mk": "contains VI data",
-    "sk": "contains VI data",
-    "zh": "contains VI data"
+    "es-MX": "contiene VI data",
+    "mk": "содржи VI data",
+    "sk": "obsahuje VI data",
+    "zh": "包含 VI data"
   },
   "auto.copy_from_optional": {
-    "cs": "Copy from (optional)",
-    "de": "Copy from (optional)",
+    "cs": "Kopírovat z (volitelné)",
+    "de": "Kopieren von (optional)",
     "en": "Copy from (optional)",
-    "es-MX": "Copy from (optional)",
-    "mk": "Copy from (optional)",
-    "sk": "Copy from (optional)",
-    "zh": "Copy from (optional)"
+    "es-MX": "Copiar de (opcional)",
+    "mk": "Копирај од (опционално)",
+    "sk": "Kopírovať z (voliteľné)",
+    "zh": "复制从 (可选)"
   },
   "auto.counters": {
-    "cs": "Counters",
-    "de": "Counters",
+    "cs": "Čítače",
+    "de": "Zähler",
     "en": "Counters",
-    "es-MX": "Counters",
-    "mk": "Counters",
-    "sk": "Counters",
-    "zh": "Counters"
+    "es-MX": "Contadores",
+    "mk": "Бројачи",
+    "sk": "Počítadlá",
+    "zh": "计数器"
   },
   "auto.create": {
-    "cs": "Create",
-    "de": "Create",
+    "cs": "Vytvořit",
+    "de": "Erstellen",
     "en": "Create",
-    "es-MX": "Create",
-    "mk": "Create",
-    "sk": "Create",
-    "zh": "Create"
+    "es-MX": "Crear",
+    "mk": "Креирај",
+    "sk": "Vytvoriť",
+    "zh": "创建"
   },
   "auto.create_config_set": {
-    "cs": "Create config set",
-    "de": "Create config set",
+    "cs": "Vytvořit Konfigurace set",
+    "de": "Erstellen Konfiguration set",
     "en": "Create config set",
-    "es-MX": "Create config set",
-    "mk": "Create config set",
-    "sk": "Create config set",
-    "zh": "Create config set"
+    "es-MX": "Crear Configuración set",
+    "mk": "Креирај Конфигурација set",
+    "sk": "Vytvoriť Konfigurácia set",
+    "zh": "创建配置 set"
   },
   "auto.create_key_value_translations_for_all_supported_languages": {
-    "cs": "Create key/value translations for all supported languages.",
-    "de": "Create key/value translations for all supported languages.",
+    "cs": "Vytvořit překlady klíč/hodnota pro všechny podporované jazyky.",
+    "de": "Schlüssel/Wert-Übersetzungen für alle unterstützten Sprachen erstellen.",
     "en": "Create key/value translations for all supported languages.",
-    "es-MX": "Create key/value translations for all supported languages.",
-    "mk": "Create key/value translations for all supported languages.",
-    "sk": "Create key/value translations for all supported languages.",
-    "zh": "Create key/value translations for all supported languages."
+    "es-MX": "Crear traducciones clave/valor para todos los idiomas compatibles.",
+    "mk": "Креирај преводи клуч/вредност за сите поддржани јазици.",
+    "sk": "Vytvoriť preklady kľúč/hodnota pre všetky podporované jazyky.",
+    "zh": "为所有支持的语言创建键/值翻译。"
   },
   "auto.current": {
-    "cs": "Current",
-    "de": "Current",
+    "cs": "Aktuální",
+    "de": "Aktuell",
     "en": "Current",
-    "es-MX": "Current",
-    "mk": "Current",
-    "sk": "Current",
-    "zh": "Current"
+    "es-MX": "Actual",
+    "mk": "Тековно",
+    "sk": "Aktuálne",
+    "zh": "当前"
   },
   "auto.current_step": {
-    "cs": "Current Step:",
-    "de": "Current Step:",
+    "cs": "Aktuální Krok:",
+    "de": "Aktuell Schritt:",
     "en": "Current Step:",
-    "es-MX": "Current Step:",
-    "mk": "Current Step:",
-    "sk": "Current Step:",
-    "zh": "Current Step:"
+    "es-MX": "Actual Paso:",
+    "mk": "Тековно Чекор:",
+    "sk": "Aktuálne Krok:",
+    "zh": "当前步骤:"
   },
   "auto.current_step_2": {
-    "cs": "Current step",
-    "de": "Current step",
+    "cs": "Aktuální Krok",
+    "de": "Aktuell Schritt",
     "en": "Current step",
-    "es-MX": "Current step",
-    "mk": "Current step",
-    "sk": "Current step",
-    "zh": "Current step"
+    "es-MX": "Actual Paso",
+    "mk": "Тековно Чекор",
+    "sk": "Aktuálne Krok",
+    "zh": "当前步骤"
   },
   "auto.cycles": {
-    "cs": "Cycles:",
-    "de": "Cycles:",
+    "cs": "Cykly:",
+    "de": "Zyklen:",
     "en": "Cycles:",
-    "es-MX": "Cycles:",
-    "mk": "Cycles:",
-    "sk": "Cycles:",
-    "zh": "Cycles:"
+    "es-MX": "Ciclos:",
+    "mk": "Циклуси:",
+    "sk": "Cykly:",
+    "zh": "循环:"
   },
   "auto.delete": {
-    "cs": "Delete",
-    "de": "Delete",
+    "cs": "Smazat",
+    "de": "Löschen",
     "en": "Delete",
-    "es-MX": "Delete",
-    "mk": "Delete",
-    "sk": "Delete",
-    "zh": "Delete"
+    "es-MX": "Eliminar",
+    "mk": "Избриши",
+    "sk": "Zmazať",
+    "zh": "删除"
   },
   "auto.delimiter": {
-    "cs": "Delimiter",
-    "de": "Delimiter",
+    "cs": "Oddělovač",
+    "de": "Trennzeichen",
     "en": "Delimiter",
-    "es-MX": "Delimiter",
-    "mk": "Delimiter",
-    "sk": "Delimiter",
-    "zh": "Delimiter"
+    "es-MX": "Delimitador",
+    "mk": "Разделувач",
+    "sk": "Oddeľovač",
+    "zh": "分隔符"
   },
   "auto.description": {
-    "cs": "Description",
-    "de": "Description",
+    "cs": "Popis",
+    "de": "Beschreibung",
     "en": "Description",
-    "es-MX": "Description",
-    "mk": "Description",
-    "sk": "Description",
-    "zh": "Description"
+    "es-MX": "Descripción",
+    "mk": "Опис",
+    "sk": "Popis",
+    "zh": "描述"
   },
   "auto.details": {
-    "cs": "Details",
+    "cs": "Detaily",
     "de": "Details",
     "en": "Details",
-    "es-MX": "Details",
-    "mk": "Details",
-    "sk": "Details",
-    "zh": "Details"
+    "es-MX": "Detalles",
+    "mk": "Детали",
+    "sk": "Detaily",
+    "zh": "详情"
   },
   "auto.display_name": {
-    "cs": "Display name",
-    "de": "Display name",
+    "cs": "Display Název",
+    "de": "Display Name",
     "en": "Display name",
-    "es-MX": "Display name",
-    "mk": "Display name",
-    "sk": "Display name",
-    "zh": "Display name"
+    "es-MX": "Display Nombre",
+    "mk": "Display Име",
+    "sk": "Display Názov",
+    "zh": "Display 名称"
   },
   "auto.edit": {
-    "cs": "Edit",
-    "de": "Edit",
+    "cs": "Upravit",
+    "de": "Bearbeiten",
     "en": "Edit",
-    "es-MX": "Edit",
-    "mk": "Edit",
-    "sk": "Edit",
-    "zh": "Edit"
+    "es-MX": "Editar",
+    "mk": "Уреди",
+    "sk": "Upraviť",
+    "zh": "编辑"
   },
   "auto.edit_script": {
-    "cs": "Edit Script",
-    "de": "Edit Script",
+    "cs": "Upravit Skript",
+    "de": "Bearbeiten Skript",
     "en": "Edit Script",
-    "es-MX": "Edit Script",
-    "mk": "Edit Script",
-    "sk": "Edit Script",
-    "zh": "Edit Script"
+    "es-MX": "Editar Script",
+    "mk": "Уреди Скрипта",
+    "sk": "Upraviť Skript",
+    "zh": "编辑脚本"
   },
   "auto.edit_selected_phrase": {
-    "cs": "Edit selected phrase",
-    "de": "Edit selected phrase",
+    "cs": "Upravit selected phrase",
+    "de": "Bearbeiten selected phrase",
     "en": "Edit selected phrase",
-    "es-MX": "Edit selected phrase",
-    "mk": "Edit selected phrase",
-    "sk": "Edit selected phrase",
-    "zh": "Edit selected phrase"
+    "es-MX": "Editar selected phrase",
+    "mk": "Уреди selected phrase",
+    "sk": "Upraviť selected phrase",
+    "zh": "编辑 selected phrase"
   },
   "auto.encoding": {
-    "cs": "Encoding",
-    "de": "Encoding",
+    "cs": "Kódování",
+    "de": "Kodierung",
     "en": "Encoding",
-    "es-MX": "Encoding",
-    "mk": "Encoding",
-    "sk": "Encoding",
-    "zh": "Encoding"
+    "es-MX": "Codificación",
+    "mk": "Енкодирање",
+    "sk": "Kódovanie",
+    "zh": "编码"
   },
   "auto.endpoint_name_already_exists": {
-    "cs": "Endpoint name already exists.",
-    "de": "Endpoint name already exists.",
+    "cs": "Koncový bod Název already exists.",
+    "de": "Endpunkt Name already exists.",
     "en": "Endpoint name already exists.",
-    "es-MX": "Endpoint name already exists.",
-    "mk": "Endpoint name already exists.",
-    "sk": "Endpoint name already exists.",
-    "zh": "Endpoint name already exists."
+    "es-MX": "Endpoint Nombre already exists.",
+    "mk": "Крајна точка Име already exists.",
+    "sk": "Koncový bod Názov already exists.",
+    "zh": "端点名称 already exists."
   },
   "auto.endpoint_not_found": {
-    "cs": "Endpoint not found.",
-    "de": "Endpoint not found.",
+    "cs": "Koncový bod ne nalezen.",
+    "de": "Endpunkt nicht gefunden.",
     "en": "Endpoint not found.",
-    "es-MX": "Endpoint not found.",
-    "mk": "Endpoint not found.",
-    "sk": "Endpoint not found.",
-    "zh": "Endpoint not found."
+    "es-MX": "Endpoint no encontrado.",
+    "mk": "Крајна точка не пронајдено.",
+    "sk": "Koncový bod nie nájdené.",
+    "zh": "端点不找到."
   },
   "auto.enter_a_username": {
-    "cs": "Enter a username",
-    "de": "Enter a username",
+    "cs": "Zadejte a Uživatelské jméno",
+    "de": "Eingeben a Benutzername",
     "en": "Enter a username",
-    "es-MX": "Enter a username",
-    "mk": "Enter a username",
-    "sk": "Enter a username",
-    "zh": "Enter a username"
+    "es-MX": "Ingresar a Usuario",
+    "mk": "Внесете a Корисничко име",
+    "sk": "Zadajte a Používateľské meno",
+    "zh": "输入 a 用户名"
   },
   "auto.example_page_title": {
     "cs": "example.page.title",
@@ -531,40 +531,40 @@
     "zh": "example.page.title"
   },
   "auto.example_report_card": {
-    "cs": "Example report card",
-    "de": "Example report card",
+    "cs": "Example Report card",
+    "de": "Example Bericht card",
     "en": "Example report card",
-    "es-MX": "Example report card",
-    "mk": "Example report card",
-    "sk": "Example report card",
-    "zh": "Example report card"
+    "es-MX": "Example Reporte card",
+    "mk": "Example Извештај card",
+    "sk": "Example Report card",
+    "zh": "Example 报表 card"
   },
   "auto.existing_clients": {
-    "cs": "Existing clients",
-    "de": "Existing clients",
+    "cs": "Existující Klienti",
+    "de": "Vorhandene Clients",
     "en": "Existing clients",
-    "es-MX": "Existing clients",
-    "mk": "Existing clients",
-    "sk": "Existing clients",
-    "zh": "Existing clients"
+    "es-MX": "Existentes Clientes",
+    "mk": "Постоечки Клиенти",
+    "sk": "Existujúce Klienti",
+    "zh": "现有客户端"
   },
   "auto.existing_custom_routes": {
-    "cs": "Existing custom routes",
-    "de": "Existing custom routes",
+    "cs": "Existující custom Trasy",
+    "de": "Vorhandene custom Routen",
     "en": "Existing custom routes",
-    "es-MX": "Existing custom routes",
-    "mk": "Existing custom routes",
-    "sk": "Existing custom routes",
-    "zh": "Existing custom routes"
+    "es-MX": "Existentes custom Rutas",
+    "mk": "Постоечки custom Рути",
+    "sk": "Existujúce custom Trasy",
+    "zh": "现有 custom 路由"
   },
   "auto.existing_endpoints": {
-    "cs": "Existing endpoints",
-    "de": "Existing endpoints",
+    "cs": "Existující Koncové body",
+    "de": "Vorhandene Endpunkte",
     "en": "Existing endpoints",
-    "es-MX": "Existing endpoints",
-    "mk": "Existing endpoints",
-    "sk": "Existing endpoints",
-    "zh": "Existing endpoints"
+    "es-MX": "Existentes Endpoints",
+    "mk": "Постоечки Крајни точки",
+    "sk": "Existujúce Koncové body",
+    "zh": "现有端点"
   },
   "auto.fail": {
     "cs": "FAIL",
@@ -576,13 +576,13 @@
     "zh": "FAIL"
   },
   "auto.failures": {
-    "cs": "Failures",
-    "de": "Failures",
+    "cs": "Poruchy",
+    "de": "Fehler",
     "en": "Failures",
-    "es-MX": "Failures",
-    "mk": "Failures",
-    "sk": "Failures",
-    "zh": "Failures"
+    "es-MX": "Fallos",
+    "mk": "Дефекти",
+    "sk": "Poruchy",
+    "zh": "故障"
   },
   "auto.failures_2": {
     "cs": "failures",
@@ -594,112 +594,112 @@
     "zh": "failures"
   },
   "auto.file_path": {
-    "cs": "File path",
-    "de": "File path",
+    "cs": "Soubor Cesta",
+    "de": "Datei Pfad",
     "en": "File path",
-    "es-MX": "File path",
-    "mk": "File path",
-    "sk": "File path",
-    "zh": "File path"
+    "es-MX": "Archivo Ruta",
+    "mk": "Датотека Патека",
+    "sk": "Súbor Cesta",
+    "zh": "文件路径"
   },
   "auto.file_path_e_g_packaging_packaging_py": {
-    "cs": "File path (e.g. packaging/packaging.py)",
-    "de": "File path (e.g. packaging/packaging.py)",
+    "cs": "Cesta k souboru (např. packaging/packaging.py)",
+    "de": "Dateipfad (z. B. packaging/packaging.py)",
     "en": "File path (e.g. packaging/packaging.py)",
-    "es-MX": "File path (e.g. packaging/packaging.py)",
-    "mk": "File path (e.g. packaging/packaging.py)",
-    "sk": "File path (e.g. packaging/packaging.py)",
-    "zh": "File path (e.g. packaging/packaging.py)"
+    "es-MX": "Ruta del archivo (p. ej., packaging/packaging.py)",
+    "mk": "Патека до датотека (на пр. packaging/packaging.py)",
+    "sk": "Cesta k súboru (napr. packaging/packaging.py)",
+    "zh": "文件路径（例如 packaging/packaging.py）"
   },
   "auto.file_path_is_required": {
-    "cs": "File path is required.",
-    "de": "File path is required.",
+    "cs": "Soubor Cesta je vyžadováno.",
+    "de": "Datei Pfad ist erforderlich.",
     "en": "File path is required.",
-    "es-MX": "File path is required.",
-    "mk": "File path is required.",
-    "sk": "File path is required.",
-    "zh": "File path is required."
+    "es-MX": "Archivo Ruta es requerido.",
+    "mk": "Датотека Патека е задолжително.",
+    "sk": "Súbor Cesta je vyžadované.",
+    "zh": "文件路径必填."
   },
   "auto.filter_key_contains": {
-    "cs": "Filter (key contains...)",
-    "de": "Filter (key contains...)",
+    "cs": "Filter (Klíč obsahuje...)",
+    "de": "Filter (Schlüssel enthält...)",
     "en": "Filter (key contains...)",
-    "es-MX": "Filter (key contains...)",
-    "mk": "Filter (key contains...)",
-    "sk": "Filter (key contains...)",
-    "zh": "Filter (key contains...)"
+    "es-MX": "Filter (Clave contiene...)",
+    "mk": "Filter (Клуч содржи...)",
+    "sk": "Filter (Kľúč obsahuje...)",
+    "zh": "Filter (键包含...)"
   },
   "auto.groups": {
-    "cs": "Groups",
-    "de": "Groups",
+    "cs": "Skupiny",
+    "de": "Gruppen",
     "en": "Groups",
-    "es-MX": "Groups",
-    "mk": "Groups",
-    "sk": "Groups",
-    "zh": "Groups"
+    "es-MX": "Grupos",
+    "mk": "Групи",
+    "sk": "Skupiny",
+    "zh": "分组"
   },
   "auto.headers_json": {
-    "cs": "Headers (JSON)",
-    "de": "Headers (JSON)",
+    "cs": "Hlavičky (JSON)",
+    "de": "Header (JSON)",
     "en": "Headers (JSON)",
-    "es-MX": "Headers (JSON)",
-    "mk": "Headers (JSON)",
-    "sk": "Headers (JSON)",
-    "zh": "Headers (JSON)"
+    "es-MX": "Encabezados (JSON)",
+    "mk": "Заглавија (JSON)",
+    "sk": "Hlavičky (JSON)",
+    "zh": "头 (JSON)"
   },
   "auto.headers_json_must_be_an_object": {
-    "cs": "Headers JSON must be an object.",
-    "de": "Headers JSON must be an object.",
+    "cs": "JSON hlaviček musí být objekt.",
+    "de": "Header-JSON muss ein Objekt sein.",
     "en": "Headers JSON must be an object.",
-    "es-MX": "Headers JSON must be an object.",
-    "mk": "Headers JSON must be an object.",
-    "sk": "Headers JSON must be an object.",
-    "zh": "Headers JSON must be an object."
+    "es-MX": "El JSON de encabezados debe ser un objeto.",
+    "mk": "JSON за заглавија мора да биде објект.",
+    "sk": "JSON hlavičiek musí byť objekt.",
+    "zh": "Headers JSON 必须是对象。"
   },
   "auto.headers_must_be_valid_json": {
-    "cs": "Headers must be valid JSON.",
-    "de": "Headers must be valid JSON.",
+    "cs": "Hlavičky musí být platné JSON.",
+    "de": "Header müssen gültiges JSON sein.",
     "en": "Headers must be valid JSON.",
-    "es-MX": "Headers must be valid JSON.",
-    "mk": "Headers must be valid JSON.",
-    "sk": "Headers must be valid JSON.",
-    "zh": "Headers must be valid JSON."
+    "es-MX": "Los encabezados deben ser JSON válido.",
+    "mk": "Заглавијата мора да бидат валиден JSON.",
+    "sk": "Hlavičky musia byť platné JSON.",
+    "zh": "Headers 必须是有效的 JSON。"
   },
   "auto.host": {
     "cs": "Host",
     "de": "Host",
     "en": "Host",
     "es-MX": "Host",
-    "mk": "Host",
+    "mk": "Хост",
     "sk": "Host",
-    "zh": "Host"
+    "zh": "主机"
   },
   "auto.icon": {
-    "cs": "Icon",
-    "de": "Icon",
+    "cs": "Ikona",
+    "de": "Symbol",
     "en": "Icon",
-    "es-MX": "Icon",
-    "mk": "Icon",
-    "sk": "Icon",
-    "zh": "Icon"
+    "es-MX": "Ícono",
+    "mk": "Икона",
+    "sk": "Ikona",
+    "zh": "图标"
   },
   "auto.icon_material_icon_name": {
-    "cs": "Icon (material icon name)",
-    "de": "Icon (material icon name)",
+    "cs": "Ikona (material Ikona Název)",
+    "de": "Symbol (material Symbol Name)",
     "en": "Icon (material icon name)",
-    "es-MX": "Icon (material icon name)",
-    "mk": "Icon (material icon name)",
-    "sk": "Icon (material icon name)",
-    "zh": "Icon (material icon name)"
+    "es-MX": "Ícono (material Ícono Nombre)",
+    "mk": "Икона (material Икона Име)",
+    "sk": "Ikona (material Ikona Názov)",
+    "zh": "图标 (material 图标名称)"
   },
   "auto.instance": {
     "cs": "Instance:",
-    "de": "Instance:",
+    "de": "Instanz:",
     "en": "Instance:",
-    "es-MX": "Instance:",
-    "mk": "Instance:",
-    "sk": "Instance:",
-    "zh": "Instance:"
+    "es-MX": "Instancia:",
+    "mk": "Инстанца:",
+    "sk": "Inštancia:",
+    "zh": "实例:"
   },
   "auto.instruction_comes_here": {
     "cs": "instruction comes here",
@@ -711,13 +711,13 @@
     "zh": "instruction comes here"
   },
   "auto.instruction_for_worker": {
-    "cs": "Instruction for worker",
-    "de": "Instruction for worker",
+    "cs": "Instruction for Worker",
+    "de": "Instruction for Worker",
     "en": "Instruction for worker",
-    "es-MX": "Instruction for worker",
-    "mk": "Instruction for worker",
-    "sk": "Instruction for worker",
-    "zh": "Instruction for worker"
+    "es-MX": "Instruction for Worker",
+    "mk": "Instruction for Воркер",
+    "sk": "Instruction for Worker",
+    "zh": "Instruction for 工作器"
   },
   "auto.ke_elektronik_shopfloorapp": {
     "cs": "KE-Elektronik-Shopfloorapp",
@@ -729,49 +729,49 @@
     "zh": "KE-Elektronik-Shopfloorapp"
   },
   "auto.label": {
-    "cs": "Label",
-    "de": "Label",
+    "cs": "Štítek",
+    "de": "Bezeichnung",
     "en": "Label",
-    "es-MX": "Label",
-    "mk": "Label",
-    "sk": "Label",
-    "zh": "Label"
+    "es-MX": "Etiqueta",
+    "mk": "Ознака",
+    "sk": "Štítok",
+    "zh": "标签"
   },
   "auto.language": {
-    "cs": "Language",
-    "de": "Language",
+    "cs": "Jazyk",
+    "de": "Sprache",
     "en": "Language",
-    "es-MX": "Language",
-    "mk": "Language",
-    "sk": "Language",
-    "zh": "Language"
+    "es-MX": "Idioma",
+    "mk": "Јазик",
+    "sk": "Jazyk",
+    "zh": "语言"
   },
   "auto.language_manager": {
-    "cs": "Language manager",
-    "de": "Language manager",
+    "cs": "Jazyk Správce",
+    "de": "Sprache Manager",
     "en": "Language manager",
-    "es-MX": "Language manager",
-    "mk": "Language manager",
-    "sk": "Language manager",
-    "zh": "Language manager"
+    "es-MX": "Idioma Administrador",
+    "mk": "Јазик Менаџер",
+    "sk": "Jazyk Správca",
+    "zh": "语言管理器"
   },
   "auto.languages": {
-    "cs": "Languages",
-    "de": "Languages",
+    "cs": "Jazyky",
+    "de": "Sprachen",
     "en": "Languages",
-    "es-MX": "Languages",
-    "mk": "Languages",
-    "sk": "Languages",
-    "zh": "Languages"
+    "es-MX": "Idiomas",
+    "mk": "Јазици",
+    "sk": "Jazyky",
+    "zh": "语言"
   },
   "auto.last_update": {
-    "cs": "Last update: -",
-    "de": "Last update: -",
+    "cs": "Poslední aktualizace: -",
+    "de": "Letzte Aktualisierung: -",
     "en": "Last update: -",
-    "es-MX": "Last update: -",
-    "mk": "Last update: -",
-    "sk": "Last update: -",
-    "zh": "Last update: -"
+    "es-MX": "Última actualización: -",
+    "mk": "Последно ажурирање: -",
+    "sk": "Posledná aktualizácia: -",
+    "zh": "最后更新：-"
   },
   "auto.leak_test": {
     "cs": "Leak Test",
@@ -784,111 +784,111 @@
   },
   "auto.log": {
     "cs": "Log",
-    "de": "Log",
+    "de": "Protokoll",
     "en": "Log",
-    "es-MX": "Log",
-    "mk": "Log",
+    "es-MX": "Registro",
+    "mk": "Лог",
     "sk": "Log",
-    "zh": "Log"
+    "zh": "日志"
   },
   "auto.login": {
-    "cs": "Login",
-    "de": "Login",
+    "cs": "Přihlášení",
+    "de": "Anmelden",
     "en": "Login",
-    "es-MX": "Login",
-    "mk": "Login",
-    "sk": "Login",
-    "zh": "Login"
+    "es-MX": "Iniciar sesión",
+    "mk": "Најава",
+    "sk": "Prihlásenie",
+    "zh": "登录"
   },
   "auto.logout": {
-    "cs": "Logout",
-    "de": "Logout",
+    "cs": "Odhlásit",
+    "de": "Abmelden",
     "en": "Logout",
-    "es-MX": "Logout",
-    "mk": "Logout",
-    "sk": "Logout",
-    "zh": "Logout"
+    "es-MX": "Cerrar sesión",
+    "mk": "Одјава",
+    "sk": "Odhlásiť",
+    "zh": "退出登录"
   },
   "auto.main_content_grows_to_fill_space": {
-    "cs": "Main content grows to fill space.",
-    "de": "Main content grows to fill space.",
+    "cs": "Hlavní obsah se roztahuje, aby vyplnil prostor.",
+    "de": "Hauptinhalt wächst, um den verfügbaren Platz zu füllen.",
     "en": "Main content grows to fill space.",
-    "es-MX": "Main content grows to fill space.",
-    "mk": "Main content grows to fill space.",
-    "sk": "Main content grows to fill space.",
-    "zh": "Main content grows to fill space."
+    "es-MX": "El contenido principal crece para llenar el espacio disponible.",
+    "mk": "Главната содржина се проширува за да го пополни просторот.",
+    "sk": "Hlavný obsah sa roztiahne a vyplní priestor.",
+    "zh": "主内容会扩展以填充空间。"
   },
   "auto.manage_application_settings_and_worker_configuration": {
-    "cs": "Manage application settings and worker configuration.",
-    "de": "Manage application settings and worker configuration.",
+    "cs": "Spravovat nastavení aplikace a konfiguraci workerů.",
+    "de": "Anwendungseinstellungen und Worker-Konfiguration verwalten.",
     "en": "Manage application settings and worker configuration.",
-    "es-MX": "Manage application settings and worker configuration.",
-    "mk": "Manage application settings and worker configuration.",
-    "sk": "Manage application settings and worker configuration.",
-    "zh": "Manage application settings and worker configuration."
+    "es-MX": "Administrar la configuración de la aplicación y de los workers.",
+    "mk": "Управувај со поставките на апликацијата и конфигурацијата на воркерите.",
+    "sk": "Spravovať nastavenia aplikácie a konfiguráciu workerov.",
+    "zh": "管理应用设置和工作器配置。"
   },
   "auto.max": {
     "cs": "Max",
     "de": "Max",
     "en": "Max",
-    "es-MX": "Max",
-    "mk": "Max",
+    "es-MX": "Máx",
+    "mk": "Макс",
     "sk": "Max",
-    "zh": "Max"
+    "zh": "最大"
   },
   "auto.missing_script_name_for_start": {
-    "cs": "Missing script name for start",
-    "de": "Missing script name for start",
+    "cs": "Missing Skript Název for Spustit",
+    "de": "Missing Skript Name for Starten",
     "en": "Missing script name for start",
-    "es-MX": "Missing script name for start",
-    "mk": "Missing script name for start",
-    "sk": "Missing script name for start",
-    "zh": "Missing script name for start"
+    "es-MX": "Missing Script Nombre for Iniciar",
+    "mk": "Missing Скрипта Име for Стартувај",
+    "sk": "Missing Skript Názov for Spustiť",
+    "zh": "Missing 脚本名称 for 启动"
   },
   "auto.mode": {
-    "cs": "Mode",
-    "de": "Mode",
+    "cs": "Režim",
+    "de": "Modus",
     "en": "Mode",
-    "es-MX": "Mode",
-    "mk": "Mode",
-    "sk": "Mode",
-    "zh": "Mode"
+    "es-MX": "Modo",
+    "mk": "Режим",
+    "sk": "Režim",
+    "zh": "模式"
   },
   "auto.multi_user_safe": {
-    "cs": "Multi-user safe",
-    "de": "Multi-user safe",
+    "cs": "Multi-user bezpečný",
+    "de": "Multi-user sicher",
     "en": "Multi-user safe",
-    "es-MX": "Multi-user safe",
-    "mk": "Multi-user safe",
-    "sk": "Multi-user safe",
-    "zh": "Multi-user safe"
+    "es-MX": "Multi-user seguro",
+    "mk": "Multi-user безбеден",
+    "sk": "Multi-user bezpečný",
+    "zh": "Multi-user 安全"
   },
   "auto.name": {
-    "cs": "Name",
+    "cs": "Název",
     "de": "Name",
     "en": "Name",
-    "es-MX": "Name",
-    "mk": "Name",
-    "sk": "Name",
-    "zh": "Name"
+    "es-MX": "Nombre",
+    "mk": "Име",
+    "sk": "Názov",
+    "zh": "名称"
   },
   "auto.name_and_base_url_are_required": {
-    "cs": "Name and base URL are required.",
-    "de": "Name and base URL are required.",
+    "cs": "Je vyžadován název a základní URL.",
+    "de": "Name und Basis-URL sind erforderlich.",
     "en": "Name and base URL are required.",
-    "es-MX": "Name and base URL are required.",
-    "mk": "Name and base URL are required.",
-    "sk": "Name and base URL are required.",
-    "zh": "Name and base URL are required."
+    "es-MX": "Se requieren el nombre y la URL base.",
+    "mk": "Потребни се име и основна URL.",
+    "sk": "Vyžaduje sa názov a základná URL.",
+    "zh": "需要名称和基础 URL。"
   },
   "auto.new_key": {
-    "cs": "New key",
-    "de": "New key",
+    "cs": "New Klíč",
+    "de": "New Schlüssel",
     "en": "New key",
-    "es-MX": "New key",
-    "mk": "New key",
-    "sk": "New key",
-    "zh": "New key"
+    "es-MX": "New Clave",
+    "mk": "New Клуч",
+    "sk": "New Kľúč",
+    "zh": "New 键"
   },
   "auto.nicegui_spa": {
     "cs": "NiceGUI SPA",
@@ -900,103 +900,103 @@
     "zh": "NiceGUI SPA"
   },
   "auto.no_active_errors": {
-    "cs": "No active errors 🎉",
-    "de": "No active errors 🎉",
+    "cs": "Žádné aktivní chyby 🎉",
+    "de": "Keine aktiven Fehler 🎉",
     "en": "No active errors 🎉",
-    "es-MX": "No active errors 🎉",
-    "mk": "No active errors 🎉",
-    "sk": "No active errors 🎉",
-    "zh": "No active errors 🎉"
+    "es-MX": "Sin errores activos 🎉",
+    "mk": "Нема активни грешки 🎉",
+    "sk": "Žiadne aktívne chyby 🎉",
+    "zh": "没有活动错误 🎉"
   },
   "auto.no_custom_routes_configured_yet": {
-    "cs": "No custom routes configured yet.",
-    "de": "No custom routes configured yet.",
+    "cs": "Zatím nejsou nakonfigurovány žádné vlastní trasy.",
+    "de": "Noch keine benutzerdefinierten Routen konfiguriert.",
     "en": "No custom routes configured yet.",
-    "es-MX": "No custom routes configured yet.",
-    "mk": "No custom routes configured yet.",
-    "sk": "No custom routes configured yet.",
-    "zh": "No custom routes configured yet."
+    "es-MX": "Aún no hay rutas personalizadas configuradas.",
+    "mk": "Сѐ уште нема конфигурирани сопствени рути.",
+    "sk": "Zatiaľ nie sú nakonfigurované žiadne vlastné trasy.",
+    "zh": "尚未配置自定义路由。"
   },
   "auto.no_key_selected": {
-    "cs": "No key selected",
-    "de": "No key selected",
+    "cs": "Není vybrán žádný klíč",
+    "de": "Kein Schlüssel ausgewählt",
     "en": "No key selected",
-    "es-MX": "No key selected",
-    "mk": "No key selected",
-    "sk": "No key selected",
-    "zh": "No key selected"
+    "es-MX": "Ninguna clave seleccionada",
+    "mk": "Нема избран клуч",
+    "sk": "Nie je vybraný žiadny kľúč",
+    "zh": "未选择键"
   },
   "auto.no_rest_api_endpoints_configured_yet": {
-    "cs": "No REST API endpoints configured yet.",
-    "de": "No REST API endpoints configured yet.",
+    "cs": "Zatím nejsou nakonfigurovány žádné koncové body REST API.",
+    "de": "Noch keine REST-API-Endpunkte konfiguriert.",
     "en": "No REST API endpoints configured yet.",
-    "es-MX": "No REST API endpoints configured yet.",
-    "mk": "No REST API endpoints configured yet.",
-    "sk": "No REST API endpoints configured yet.",
-    "zh": "No REST API endpoints configured yet."
+    "es-MX": "Aún no hay endpoints de API REST configurados.",
+    "mk": "Сѐ уште нема конфигурирани REST API крајни точки.",
+    "sk": "Zatiaľ nie sú nakonfigurované žiadne koncové body REST API.",
+    "zh": "尚未配置 REST API 端点。"
   },
   "auto.no_running_chains": {
-    "cs": "No running chains",
-    "de": "No running chains",
+    "cs": "Žádné běžící řetězce",
+    "de": "Keine laufenden Ketten",
     "en": "No running chains",
-    "es-MX": "No running chains",
-    "mk": "No running chains",
-    "sk": "No running chains",
-    "zh": "No running chains"
+    "es-MX": "No hay cadenas en ejecución",
+    "mk": "Нема синџири што работат",
+    "sk": "Žiadne bežiace reťazce",
+    "zh": "没有正在运行的链"
   },
   "auto.no_running_chains_2": {
-    "cs": "No running chains.",
-    "de": "No running chains.",
+    "cs": "Žádné běžící řetězce.",
+    "de": "Keine laufenden Ketten.",
     "en": "No running chains.",
-    "es-MX": "No running chains.",
-    "mk": "No running chains.",
-    "sk": "No running chains.",
-    "zh": "No running chains."
+    "es-MX": "No hay cadenas en ejecución.",
+    "mk": "Нема синџири што работат.",
+    "sk": "Žiadne bežiace reťazce.",
+    "zh": "没有正在运行的链。"
   },
   "auto.no_running_scripts": {
-    "cs": "No running scripts.",
-    "de": "No running scripts.",
+    "cs": "Žádné běžící skripty.",
+    "de": "Keine laufenden Skripte.",
     "en": "No running scripts.",
-    "es-MX": "No running scripts.",
-    "mk": "No running scripts.",
-    "sk": "No running scripts.",
-    "zh": "No running scripts."
+    "es-MX": "No hay scripts en ejecución.",
+    "mk": "Нема скрипти што се извршуваат.",
+    "sk": "Žiadne bežiace skripty.",
+    "zh": "没有正在运行的脚本。"
   },
   "auto.no_scripts_found": {
-    "cs": "No scripts found",
-    "de": "No scripts found",
+    "cs": "Nenalezeny žádné skripty",
+    "de": "Keine Skripte gefunden",
     "en": "No scripts found",
-    "es-MX": "No scripts found",
-    "mk": "No scripts found",
-    "sk": "No scripts found",
-    "zh": "No scripts found"
+    "es-MX": "No se encontraron scripts",
+    "mk": "Не се пронајдени скрипти",
+    "sk": "Nenašli sa žiadne skripty",
+    "zh": "未找到脚本"
   },
   "auto.no_tcp_clients_configured_yet": {
-    "cs": "No TCP clients configured yet.",
-    "de": "No TCP clients configured yet.",
+    "cs": "Zatím nejsou nakonfigurováni žádní TCP klienti.",
+    "de": "Noch keine TCP-Clients konfiguriert.",
     "en": "No TCP clients configured yet.",
-    "es-MX": "No TCP clients configured yet.",
-    "mk": "No TCP clients configured yet.",
-    "sk": "No TCP clients configured yet.",
-    "zh": "No TCP clients configured yet."
+    "es-MX": "Aún no hay clientes TCP configurados.",
+    "mk": "Сѐ уште нема конфигурирани TCP клиенти.",
+    "sk": "Zatiaľ nie sú nakonfigurovaní žiadni TCP klienti.",
+    "zh": "尚未配置 TCP 客户端。"
   },
   "auto.no_workers_are_enabled": {
-    "cs": "No workers are enabled.",
-    "de": "No workers are enabled.",
+    "cs": "Nejsou povoleni žádní workeři.",
+    "de": "Keine Worker sind aktiviert.",
     "en": "No workers are enabled.",
-    "es-MX": "No workers are enabled.",
-    "mk": "No workers are enabled.",
-    "sk": "No workers are enabled.",
-    "zh": "No workers are enabled."
+    "es-MX": "No hay workers habilitados.",
+    "mk": "Нема овозможени воркери.",
+    "sk": "Nie sú povolení žiadni workeri.",
+    "zh": "未启用任何工作器。"
   },
   "auto.nothing_to_save": {
-    "cs": "Nothing to save",
-    "de": "Nothing to save",
+    "cs": "Nothing to Uložit",
+    "de": "Nothing to Speichern",
     "en": "Nothing to save",
-    "es-MX": "Nothing to save",
-    "mk": "Nothing to save",
-    "sk": "Nothing to save",
-    "zh": "Nothing to save"
+    "es-MX": "Nothing to Guardar",
+    "mk": "Nothing to Зачувај",
+    "sk": "Nothing to Uložiť",
+    "zh": "Nothing to 保存"
   },
   "auto.p_n": {
     "cs": "P/N:",
@@ -1008,13 +1008,13 @@
     "zh": "P/N:"
   },
   "auto.packaging_station": {
-    "cs": "📦 packaging Station",
-    "de": "📦 packaging Station",
+    "cs": "📦 Balení – stanice",
+    "de": "📦 Verpackungsstation",
     "en": "📦 packaging Station",
-    "es-MX": "📦 packaging Station",
-    "mk": "📦 packaging Station",
-    "sk": "📦 packaging Station",
-    "zh": "📦 packaging Station"
+    "es-MX": "📦 Estación de empaquetado",
+    "mk": "📦 Станица за пакување",
+    "sk": "📦 Baliaca stanica",
+    "zh": "📦 包装工位"
   },
   "auto.partnumber": {
     "cs": "Partnumber",
@@ -1035,22 +1035,22 @@
     "zh": "PASS"
   },
   "auto.password": {
-    "cs": "Password",
-    "de": "Password",
+    "cs": "Heslo",
+    "de": "Passwort",
     "en": "Password",
-    "es-MX": "Password",
-    "mk": "Password",
-    "sk": "Password",
-    "zh": "Password"
+    "es-MX": "Contraseña",
+    "mk": "Лозинка",
+    "sk": "Heslo",
+    "zh": "密码"
   },
   "auto.pause": {
-    "cs": "Pause",
+    "cs": "Pozastavit",
     "de": "Pause",
     "en": "Pause",
-    "es-MX": "Pause",
-    "mk": "Pause",
-    "sk": "Pause",
-    "zh": "Pause"
+    "es-MX": "Pausar",
+    "mk": "Паузирај",
+    "sk": "Pozastaviť",
+    "zh": "暂停"
   },
   "auto.picture_area": {
     "cs": "Picture area",
@@ -1062,157 +1062,157 @@
     "zh": "Picture area"
   },
   "auto.please_enter_a_translation_key": {
-    "cs": "Please enter a translation key.",
-    "de": "Please enter a translation key.",
+    "cs": "Zadejte prosím překladový klíč.",
+    "de": "Bitte einen Übersetzungsschlüssel eingeben.",
     "en": "Please enter a translation key.",
-    "es-MX": "Please enter a translation key.",
-    "mk": "Please enter a translation key.",
-    "sk": "Please enter a translation key.",
-    "zh": "Please enter a translation key."
+    "es-MX": "Por favor ingresa una clave de traducción.",
+    "mk": "Ве молам внесете клуч за превод.",
+    "sk": "Zadajte prosím prekladový kľúč.",
+    "zh": "请输入翻译键。"
   },
   "auto.please_select_a_script": {
-    "cs": "Please select a script",
-    "de": "Please select a script",
+    "cs": "Prosím vyberte skript",
+    "de": "Bitte ein Skript auswählen",
     "en": "Please select a script",
-    "es-MX": "Please select a script",
-    "mk": "Please select a script",
-    "sk": "Please select a script",
-    "zh": "Please select a script"
+    "es-MX": "Por favor selecciona un script",
+    "mk": "Ве молам изберете скрипта",
+    "sk": "Prosím vyberte skript",
+    "zh": "请选择脚本"
   },
   "auto.please_select_a_script_leaf_first": {
-    "cs": "Please select a script leaf first",
-    "de": "Please select a script leaf first",
+    "cs": "Prosím nejprve vyberte list skriptu",
+    "de": "Bitte zuerst ein Skript-Blatt auswählen",
     "en": "Please select a script leaf first",
-    "es-MX": "Please select a script leaf first",
-    "mk": "Please select a script leaf first",
-    "sk": "Please select a script leaf first",
-    "zh": "Please select a script leaf first"
+    "es-MX": "Por favor primero selecciona una hoja de script",
+    "mk": "Ве молам прво изберете лист од скрипта",
+    "sk": "Prosím najprv vyberte list skriptu",
+    "zh": "请先选择脚本叶节点"
   },
   "auto.port": {
     "cs": "Port",
     "de": "Port",
     "en": "Port",
-    "es-MX": "Port",
-    "mk": "Port",
+    "es-MX": "Puerto",
+    "mk": "Порт",
     "sk": "Port",
-    "zh": "Port"
+    "zh": "端口"
   },
   "auto.process_state_and_error_comes_here": {
-    "cs": "process state and error comes here",
-    "de": "process state and error comes here",
+    "cs": "process state a error comes here",
+    "de": "process state und error comes here",
     "en": "process state and error comes here",
-    "es-MX": "process state and error comes here",
-    "mk": "process state and error comes here",
-    "sk": "process state and error comes here",
-    "zh": "process state and error comes here"
+    "es-MX": "process state y error comes here",
+    "mk": "process state и error comes here",
+    "sk": "process state a error comes here",
+    "zh": "process state 和 error comes here"
   },
   "auto.random_error_added": {
-    "cs": "Random error added",
-    "de": "Random error added",
+    "cs": "Random error přidáno",
+    "de": "Random error hinzugefügt",
     "en": "Random error added",
-    "es-MX": "Random error added",
-    "mk": "Random error added",
-    "sk": "Random error added",
-    "zh": "Random error added"
+    "es-MX": "Random error agregado",
+    "mk": "Random error додадено",
+    "sk": "Random error pridané",
+    "zh": "Random error 已添加"
   },
   "auto.reconnect_max_s": {
-    "cs": "Reconnect max (s)",
-    "de": "Reconnect max (s)",
+    "cs": "Reconnect Max (s)",
+    "de": "Reconnect Max (s)",
     "en": "Reconnect max (s)",
-    "es-MX": "Reconnect max (s)",
-    "mk": "Reconnect max (s)",
-    "sk": "Reconnect max (s)",
-    "zh": "Reconnect max (s)"
+    "es-MX": "Reconnect Máx (s)",
+    "mk": "Reconnect Макс (s)",
+    "sk": "Reconnect Max (s)",
+    "zh": "Reconnect 最大 (s)"
   },
   "auto.reconnect_min_s": {
-    "cs": "Reconnect min (s)",
-    "de": "Reconnect min (s)",
+    "cs": "Reconnect Min (s)",
+    "de": "Reconnect Min (s)",
     "en": "Reconnect min (s)",
-    "es-MX": "Reconnect min (s)",
-    "mk": "Reconnect min (s)",
-    "sk": "Reconnect min (s)",
-    "zh": "Reconnect min (s)"
+    "es-MX": "Reconnect Mín (s)",
+    "mk": "Reconnect Мин (s)",
+    "sk": "Reconnect Min (s)",
+    "zh": "Reconnect 最小 (s)"
   },
   "auto.refresh_catalogue_starting": {
-    "cs": "refresh catalogue starting ...",
-    "de": "refresh catalogue starting ...",
+    "cs": "Obnovit catalogue starting ...",
+    "de": "Aktualisieren catalogue starting ...",
     "en": "refresh catalogue starting ...",
-    "es-MX": "refresh catalogue starting ...",
-    "mk": "refresh catalogue starting ...",
-    "sk": "refresh catalogue starting ...",
-    "zh": "refresh catalogue starting ..."
+    "es-MX": "Actualizar catalogue starting ...",
+    "mk": "Освежи catalogue starting ...",
+    "sk": "Obnoviť catalogue starting ...",
+    "zh": "刷新 catalogue starting ..."
   },
   "auto.refresh_list": {
-    "cs": "Refresh List",
-    "de": "Refresh List",
+    "cs": "Obnovit List",
+    "de": "Aktualisieren List",
     "en": "Refresh List",
-    "es-MX": "Refresh List",
-    "mk": "Refresh List",
-    "sk": "Refresh List",
-    "zh": "Refresh List"
+    "es-MX": "Actualizar List",
+    "mk": "Освежи List",
+    "sk": "Obnoviť List",
+    "zh": "刷新 List"
   },
   "auto.refresh_now": {
-    "cs": "Refresh Now",
-    "de": "Refresh Now",
+    "cs": "Obnovit Now",
+    "de": "Aktualisieren Now",
     "en": "Refresh Now",
-    "es-MX": "Refresh Now",
-    "mk": "Refresh Now",
-    "sk": "Refresh Now",
-    "zh": "Refresh Now"
+    "es-MX": "Actualizar Now",
+    "mk": "Освежи Now",
+    "sk": "Obnoviť Now",
+    "zh": "刷新 Now"
   },
   "auto.refresh_now_2": {
-    "cs": "Refresh now",
-    "de": "Refresh now",
+    "cs": "Obnovit now",
+    "de": "Aktualisieren now",
     "en": "Refresh now",
-    "es-MX": "Refresh now",
-    "mk": "Refresh now",
-    "sk": "Refresh now",
-    "zh": "Refresh now"
+    "es-MX": "Actualizar now",
+    "mk": "Освежи now",
+    "sk": "Obnoviť now",
+    "zh": "刷新 now"
   },
   "auto.reload_all_scripts": {
-    "cs": "Reload All Scripts",
-    "de": "Reload All Scripts",
+    "cs": "Znovu načíst All Skripty",
+    "de": "Neu laden All Skripte",
     "en": "Reload All Scripts",
-    "es-MX": "Reload All Scripts",
-    "mk": "Reload All Scripts",
-    "sk": "Reload All Scripts",
-    "zh": "Reload All Scripts"
+    "es-MX": "Recargar All Scripts",
+    "mk": "Превчитај All Скрипти",
+    "sk": "Znovu načítať All Skripty",
+    "zh": "重新加载 All 脚本"
   },
   "auto.reload_script": {
-    "cs": "Reload Script",
-    "de": "Reload Script",
+    "cs": "Znovu načíst Skript",
+    "de": "Neu laden Skript",
     "en": "Reload Script",
-    "es-MX": "Reload Script",
-    "mk": "Reload Script",
-    "sk": "Reload Script",
-    "zh": "Reload Script"
+    "es-MX": "Recargar Script",
+    "mk": "Превчитај Скрипта",
+    "sk": "Znovu načítať Skript",
+    "zh": "重新加载脚本"
   },
   "auto.reports": {
-    "cs": "Reports",
-    "de": "Reports",
+    "cs": "Reporty",
+    "de": "Berichte",
     "en": "Reports",
-    "es-MX": "Reports",
-    "mk": "Reports",
-    "sk": "Reports",
-    "zh": "Reports"
+    "es-MX": "Reportes",
+    "mk": "Извештаи",
+    "sk": "Reporty",
+    "zh": "报表"
   },
   "auto.reset": {
-    "cs": "Reset",
-    "de": "Reset",
+    "cs": "Resetovat",
+    "de": "Zurücksetzen",
     "en": "Reset",
-    "es-MX": "Reset",
-    "mk": "Reset",
-    "sk": "Reset",
-    "zh": "Reset"
+    "es-MX": "Restablecer",
+    "mk": "Ресетирај",
+    "sk": "Resetovať",
+    "zh": "重置"
   },
   "auto.reset_publisher": {
-    "cs": "Reset publisher",
-    "de": "Reset publisher",
+    "cs": "Resetovat Publisher",
+    "de": "Zurücksetzen Publisher",
     "en": "Reset publisher",
-    "es-MX": "Reset publisher",
-    "mk": "Reset publisher",
-    "sk": "Reset publisher",
-    "zh": "Reset publisher"
+    "es-MX": "Restablecer Publicador",
+    "mk": "Ресетирај Publisher",
+    "sk": "Resetovať Publisher",
+    "zh": "重置发布者"
   },
   "auto.rest_api": {
     "cs": "REST API",
@@ -1233,139 +1233,139 @@
     "zh": "REST APIs"
   },
   "auto.rest_endpoint_added": {
-    "cs": "REST endpoint added.",
-    "de": "REST endpoint added.",
+    "cs": "REST Koncový bod přidáno.",
+    "de": "REST Endpunkt hinzugefügt.",
     "en": "REST endpoint added.",
-    "es-MX": "REST endpoint added.",
-    "mk": "REST endpoint added.",
-    "sk": "REST endpoint added.",
-    "zh": "REST endpoint added."
+    "es-MX": "REST Endpoint agregado.",
+    "mk": "REST Крајна точка додадено.",
+    "sk": "REST Koncový bod pridané.",
+    "zh": "REST 端点已添加."
   },
   "auto.rest_endpoint_removed": {
-    "cs": "REST endpoint removed.",
-    "de": "REST endpoint removed.",
+    "cs": "REST Koncový bod odebráno.",
+    "de": "REST Endpunkt entfernt.",
     "en": "REST endpoint removed.",
-    "es-MX": "REST endpoint removed.",
-    "mk": "REST endpoint removed.",
-    "sk": "REST endpoint removed.",
-    "zh": "REST endpoint removed."
+    "es-MX": "REST Endpoint eliminado.",
+    "mk": "REST Крајна точка отстрането.",
+    "sk": "REST Koncový bod odstránené.",
+    "zh": "REST 端点已移除."
   },
   "auto.rest_endpoint_updated": {
-    "cs": "REST endpoint updated.",
-    "de": "REST endpoint updated.",
+    "cs": "REST Koncový bod aktualizováno.",
+    "de": "REST Endpunkt aktualisiert.",
     "en": "REST endpoint updated.",
-    "es-MX": "REST endpoint updated.",
-    "mk": "REST endpoint updated.",
-    "sk": "REST endpoint updated.",
-    "zh": "REST endpoint updated."
+    "es-MX": "REST Endpoint actualizado.",
+    "mk": "REST Крајна точка ажурирано.",
+    "sk": "REST Koncový bod aktualizované.",
+    "zh": "REST 端点已更新."
   },
   "auto.resume": {
-    "cs": "Resume",
-    "de": "Resume",
+    "cs": "Pokračovat",
+    "de": "Fortsetzen",
     "en": "Resume",
-    "es-MX": "Resume",
-    "mk": "Resume",
-    "sk": "Resume",
-    "zh": "Resume"
+    "es-MX": "Reanudar",
+    "mk": "Продолжи",
+    "sk": "Pokračovať",
+    "zh": "继续"
   },
   "auto.retry": {
-    "cs": "Retry",
-    "de": "Retry",
+    "cs": "Zkusit znovu",
+    "de": "Erneut versuchen",
     "en": "Retry",
-    "es-MX": "Retry",
-    "mk": "Retry",
-    "sk": "Retry",
-    "zh": "Retry"
+    "es-MX": "Reintentar",
+    "mk": "Обиди се повторно",
+    "sk": "Skúsiť znova",
+    "zh": "重试"
   },
   "auto.route_added": {
-    "cs": "Route added.",
-    "de": "Route added.",
+    "cs": "Trasa přidáno.",
+    "de": "Route hinzugefügt.",
     "en": "Route added.",
-    "es-MX": "Route added.",
-    "mk": "Route added.",
-    "sk": "Route added.",
-    "zh": "Route added."
+    "es-MX": "Ruta agregado.",
+    "mk": "Рута додадено.",
+    "sk": "Trasa pridané.",
+    "zh": "路由已添加."
   },
   "auto.route_id": {
-    "cs": "Route id",
-    "de": "Route id",
+    "cs": "Trasa ID",
+    "de": "Route ID",
     "en": "Route id",
-    "es-MX": "Route id",
-    "mk": "Route id",
-    "sk": "Route id",
-    "zh": "Route id"
+    "es-MX": "Ruta ID",
+    "mk": "Рута ID",
+    "sk": "Trasa ID",
+    "zh": "路由 ID"
   },
   "auto.route_key_and_file_path_are_required": {
-    "cs": "Route key and file path are required.",
-    "de": "Route key and file path are required.",
+    "cs": "Je vyžadován klíč trasy a cesta k souboru.",
+    "de": "Route-Schlüssel und Dateipfad sind erforderlich.",
     "en": "Route key and file path are required.",
-    "es-MX": "Route key and file path are required.",
-    "mk": "Route key and file path are required.",
-    "sk": "Route key and file path are required.",
-    "zh": "Route key and file path are required."
+    "es-MX": "Se requieren la clave de ruta y la ruta del archivo.",
+    "mk": "Потребни се клуч за рута и патека до датотека.",
+    "sk": "Vyžaduje sa kľúč trasy a cesta k súboru.",
+    "zh": "需要路由键和文件路径。"
   },
   "auto.route_key_e_g_packaging": {
-    "cs": "Route key (e.g. packaging)",
-    "de": "Route key (e.g. packaging)",
+    "cs": "Klíč trasy (např. packaging)",
+    "de": "Route-Schlüssel (z. B. packaging)",
     "en": "Route key (e.g. packaging)",
-    "es-MX": "Route key (e.g. packaging)",
-    "mk": "Route key (e.g. packaging)",
-    "sk": "Route key (e.g. packaging)",
-    "zh": "Route key (e.g. packaging)"
+    "es-MX": "Clave de ruta (p. ej., packaging)",
+    "mk": "Клуч за рута (на пр. packaging)",
+    "sk": "Kľúč trasy (napr. packaging)",
+    "zh": "路由键（例如 packaging）"
   },
   "auto.route_not_found": {
-    "cs": "Route not found.",
-    "de": "Route not found.",
+    "cs": "Trasa ne nalezen.",
+    "de": "Route nicht gefunden.",
     "en": "Route not found.",
-    "es-MX": "Route not found.",
-    "mk": "Route not found.",
-    "sk": "Route not found.",
-    "zh": "Route not found."
+    "es-MX": "Ruta no encontrado.",
+    "mk": "Рута не пронајдено.",
+    "sk": "Trasa nie nájdené.",
+    "zh": "路由不找到."
   },
   "auto.route_removed": {
-    "cs": "Route removed.",
-    "de": "Route removed.",
+    "cs": "Trasa odebráno.",
+    "de": "Route entfernt.",
     "en": "Route removed.",
-    "es-MX": "Route removed.",
-    "mk": "Route removed.",
-    "sk": "Route removed.",
-    "zh": "Route removed."
+    "es-MX": "Ruta eliminado.",
+    "mk": "Рута отстрането.",
+    "sk": "Trasa odstránené.",
+    "zh": "路由已移除."
   },
   "auto.route_settings": {
-    "cs": "Route Settings",
-    "de": "Route Settings",
+    "cs": "Trasa Nastavení",
+    "de": "Route Einstellungen",
     "en": "Route Settings",
-    "es-MX": "Route Settings",
-    "mk": "Route Settings",
-    "sk": "Route Settings",
-    "zh": "Route Settings"
+    "es-MX": "Ruta Configuración",
+    "mk": "Рута Поставки",
+    "sk": "Trasa Nastavenia",
+    "zh": "路由设置"
   },
   "auto.route_updated": {
-    "cs": "Route updated.",
-    "de": "Route updated.",
+    "cs": "Trasa aktualizováno.",
+    "de": "Route aktualisiert.",
     "en": "Route updated.",
-    "es-MX": "Route updated.",
-    "mk": "Route updated.",
-    "sk": "Route updated.",
-    "zh": "Route updated."
+    "es-MX": "Ruta actualizado.",
+    "mk": "Рута ажурирано.",
+    "sk": "Trasa aktualizované.",
+    "zh": "路由已更新."
   },
   "auto.routes": {
-    "cs": "Routes",
-    "de": "Routes",
+    "cs": "Trasy",
+    "de": "Routen",
     "en": "Routes",
-    "es-MX": "Routes",
-    "mk": "Routes",
-    "sk": "Routes",
-    "zh": "Routes"
+    "es-MX": "Rutas",
+    "mk": "Рути",
+    "sk": "Trasy",
+    "zh": "路由"
   },
   "auto.running_chains": {
-    "cs": "Running Chains",
-    "de": "Running Chains",
+    "cs": "Running Řetězce",
+    "de": "Running Ketten",
     "en": "Running Chains",
-    "es-MX": "Running Chains",
-    "mk": "Running Chains",
-    "sk": "Running Chains",
-    "zh": "Running Chains"
+    "es-MX": "Running Cadenas",
+    "mk": "Running Синџири",
+    "sk": "Running Reťazce",
+    "zh": "Running 链"
   },
   "auto.s_n": {
     "cs": "S/N:",
@@ -1377,40 +1377,40 @@
     "zh": "S/N:"
   },
   "auto.save": {
-    "cs": "Save",
-    "de": "Save",
+    "cs": "Uložit",
+    "de": "Speichern",
     "en": "Save",
-    "es-MX": "Save",
-    "mk": "Save",
-    "sk": "Save",
-    "zh": "Save"
+    "es-MX": "Guardar",
+    "mk": "Зачувај",
+    "sk": "Uložiť",
+    "zh": "保存"
   },
   "auto.save_all": {
-    "cs": "Save all",
-    "de": "Save all",
+    "cs": "Uložit all",
+    "de": "Speichern all",
     "en": "Save all",
-    "es-MX": "Save all",
-    "mk": "Save all",
-    "sk": "Save all",
-    "zh": "Save all"
+    "es-MX": "Guardar all",
+    "mk": "Зачувај all",
+    "sk": "Uložiť all",
+    "zh": "保存 all"
   },
   "auto.save_reload": {
-    "cs": "Save + Reload",
-    "de": "Save + Reload",
+    "cs": "Uložit + znovu načíst",
+    "de": "Speichern + Neu laden",
     "en": "Save + Reload",
-    "es-MX": "Save + Reload",
-    "mk": "Save + Reload",
-    "sk": "Save + Reload",
-    "zh": "Save + Reload"
+    "es-MX": "Guardar + Recargar",
+    "mk": "Зачувај + превчитај",
+    "sk": "Uložiť + znovu načítať",
+    "zh": "保存并重新加载"
   },
   "auto.save_startup_scripts": {
-    "cs": "Save startup scripts",
-    "de": "Save startup scripts",
+    "cs": "Uložit startup Skripty",
+    "de": "Speichern startup Skripte",
     "en": "Save startup scripts",
-    "es-MX": "Save startup scripts",
-    "mk": "Save startup scripts",
-    "sk": "Save startup scripts",
-    "zh": "Save startup scripts"
+    "es-MX": "Guardar startup Scripts",
+    "mk": "Зачувај startup Скрипти",
+    "sk": "Uložiť startup Skripty",
+    "zh": "保存 startup 脚本"
   },
   "auto.scrap": {
     "cs": "SCRAP",
@@ -1422,139 +1422,139 @@
     "zh": "SCRAP"
   },
   "auto.script_chains": {
-    "cs": "Script Chains",
-    "de": "Script Chains",
+    "cs": "Skript Řetězce",
+    "de": "Skript Ketten",
     "en": "Script Chains",
-    "es-MX": "Script Chains",
-    "mk": "Script Chains",
-    "sk": "Script Chains",
-    "zh": "Script Chains"
+    "es-MX": "Script Cadenas",
+    "mk": "Скрипта Синџири",
+    "sk": "Skript Reťazce",
+    "zh": "脚本链"
   },
   "auto.script_logs_last_100": {
-    "cs": "Script Logs (last 100)",
-    "de": "Script Logs (last 100)",
+    "cs": "Skript Logy (Poslední 100)",
+    "de": "Skript Protokolle (Letzte 100)",
     "en": "Script Logs (last 100)",
-    "es-MX": "Script Logs (last 100)",
-    "mk": "Script Logs (last 100)",
-    "sk": "Script Logs (last 100)",
-    "zh": "Script Logs (last 100)"
+    "es-MX": "Script Registros (Última 100)",
+    "mk": "Скрипта Логови (Последно 100)",
+    "sk": "Skript Logy (Posledná 100)",
+    "zh": "脚本日志 (最后 100)"
   },
   "auto.script_worker_is_not_running": {
-    "cs": "Script worker is not running.",
-    "de": "Script worker is not running.",
+    "cs": "Skript Worker je ne running.",
+    "de": "Skript Worker ist nicht running.",
     "en": "Script worker is not running.",
-    "es-MX": "Script worker is not running.",
-    "mk": "Script worker is not running.",
-    "sk": "Script worker is not running.",
-    "zh": "Script worker is not running."
+    "es-MX": "Script Worker es no running.",
+    "mk": "Скрипта Воркер е не running.",
+    "sk": "Skript Worker je nie running.",
+    "zh": "脚本工作器不 running."
   },
   "auto.script_worker_not_available": {
-    "cs": "Script worker not available",
-    "de": "Script worker not available",
+    "cs": "Skript Worker ne available",
+    "de": "Skript Worker nicht available",
     "en": "Script worker not available",
-    "es-MX": "Script worker not available",
-    "mk": "Script worker not available",
-    "sk": "Script worker not available",
-    "zh": "Script worker not available"
+    "es-MX": "Script Worker no available",
+    "mk": "Скрипта Воркер не available",
+    "sk": "Skript Worker nie available",
+    "zh": "脚本工作器不 available"
   },
   "auto.scripts": {
-    "cs": "Scripts",
-    "de": "Scripts",
+    "cs": "Skripty",
+    "de": "Skripte",
     "en": "Scripts",
     "es-MX": "Scripts",
-    "mk": "Scripts",
-    "sk": "Scripts",
-    "zh": "Scripts"
+    "mk": "Скрипти",
+    "sk": "Skripty",
+    "zh": "脚本"
   },
   "auto.scripts_lab": {
-    "cs": "Scripts Lab",
-    "de": "Scripts Lab",
+    "cs": "Skripty Lab",
+    "de": "Skripte Lab",
     "en": "Scripts Lab",
     "es-MX": "Scripts Lab",
-    "mk": "Scripts Lab",
-    "sk": "Scripts Lab",
-    "zh": "Scripts Lab"
+    "mk": "Скрипти Lab",
+    "sk": "Skripty Lab",
+    "zh": "脚本 Lab"
   },
   "auto.scripts_lab_2": {
-    "cs": "📜 Scripts Lab",
-    "de": "📜 Scripts Lab",
+    "cs": "📜 Laboratoř skriptů",
+    "de": "📜 Skript-Labor",
     "en": "📜 Scripts Lab",
-    "es-MX": "📜 Scripts Lab",
-    "mk": "📜 Scripts Lab",
-    "sk": "📜 Scripts Lab",
-    "zh": "📜 Scripts Lab"
+    "es-MX": "📜 Laboratorio de scripts",
+    "mk": "📜 Лабораторија за скрипти",
+    "sk": "📜 Laboratórium skriptov",
+    "zh": "📜 脚本实验室"
   },
   "auto.select_a_key_in_table_first": {
-    "cs": "Select a key in table first.",
-    "de": "Select a key in table first.",
+    "cs": "Nejprve vyberte klíč v tabulce.",
+    "de": "Bitte zuerst einen Schlüssel in der Tabelle auswählen.",
     "en": "Select a key in table first.",
-    "es-MX": "Select a key in table first.",
-    "mk": "Select a key in table first.",
-    "sk": "Select a key in table first.",
-    "zh": "Select a key in table first."
+    "es-MX": "Primero selecciona una clave en la tabla.",
+    "mk": "Прво изберете клуч во табелата.",
+    "sk": "Najprv vyberte kľúč v tabuľke.",
+    "zh": "请先在表格中选择一个键。"
   },
   "auto.select_a_script_first": {
-    "cs": "Select a script first",
-    "de": "Select a script first",
+    "cs": "Nejprve vyberte skript",
+    "de": "Bitte zuerst ein Skript auswählen",
     "en": "Select a script first",
-    "es-MX": "Select a script first",
-    "mk": "Select a script first",
-    "sk": "Select a script first",
-    "zh": "Select a script first"
+    "es-MX": "Primero selecciona un script",
+    "mk": "Прво изберете скрипта",
+    "sk": "Najprv vyberte skript",
+    "zh": "请先选择脚本"
   },
   "auto.select_a_script_from_the_tree": {
-    "cs": "Select a script from the tree",
-    "de": "Select a script from the tree",
+    "cs": "Vyberte skript ze stromu",
+    "de": "Ein Skript aus dem Baum auswählen",
     "en": "Select a script from the tree",
-    "es-MX": "Select a script from the tree",
-    "mk": "Select a script from the tree",
-    "sk": "Select a script from the tree",
-    "zh": "Select a script from the tree"
+    "es-MX": "Selecciona un script del árbol",
+    "mk": "Изберете скрипта од дрвото",
+    "sk": "Vyberte skript zo stromu",
+    "zh": "从树中选择脚本"
   },
   "auto.select_scripts_to_auto_start_default_instance": {
-    "cs": "Select scripts to auto-start (default instance).",
-    "de": "Select scripts to auto-start (default instance).",
+    "cs": "Vyberte skripty pro automatické spuštění (výchozí instance).",
+    "de": "Skripte für Autostart auswählen (Standardinstanz).",
     "en": "Select scripts to auto-start (default instance).",
-    "es-MX": "Select scripts to auto-start (default instance).",
-    "mk": "Select scripts to auto-start (default instance).",
-    "sk": "Select scripts to auto-start (default instance).",
-    "zh": "Select scripts to auto-start (default instance)."
+    "es-MX": "Selecciona scripts para iniciar automáticamente (instancia predeterminada).",
+    "mk": "Изберете скрипти за авто-старт (стандардна инстанца).",
+    "sk": "Vyberte skripty na automatické spustenie (predvolená inštancia).",
+    "zh": "选择要自动启动的脚本（默认实例）。"
   },
   "auto.set_name": {
-    "cs": "Set name",
-    "de": "Set name",
+    "cs": "Set Název",
+    "de": "Set Name",
     "en": "Set name",
-    "es-MX": "Set name",
-    "mk": "Set name",
-    "sk": "Set name",
-    "zh": "Set name"
+    "es-MX": "Set Nombre",
+    "mk": "Set Име",
+    "sk": "Set Názov",
+    "zh": "Set 名称"
   },
   "auto.settings": {
-    "cs": "Settings",
-    "de": "Settings",
+    "cs": "Nastavení",
+    "de": "Einstellungen",
     "en": "Settings",
-    "es-MX": "Settings",
-    "mk": "Settings",
-    "sk": "Settings",
-    "zh": "Settings"
+    "es-MX": "Configuración",
+    "mk": "Поставки",
+    "sk": "Nastavenia",
+    "zh": "设置"
   },
   "auto.shopfloor_application": {
-    "cs": "Shopfloor application",
-    "de": "Shopfloor application",
+    "cs": "Shopfloor aplikace",
+    "de": "Shopfloor-Anwendung",
     "en": "Shopfloor application",
-    "es-MX": "Shopfloor application",
-    "mk": "Shopfloor application",
-    "sk": "Shopfloor application",
-    "zh": "Shopfloor application"
+    "es-MX": "Aplicación Shopfloor",
+    "mk": "Shopfloor апликација",
+    "sk": "Shopfloor aplikácia",
+    "zh": "Shopfloor 应用"
   },
   "auto.sign_in": {
-    "cs": "Sign in",
-    "de": "Sign in",
+    "cs": "Přihlásit se",
+    "de": "Anmelden",
     "en": "Sign in",
-    "es-MX": "Sign in",
-    "mk": "Sign in",
-    "sk": "Sign in",
-    "zh": "Sign in"
+    "es-MX": "Iniciar sesión",
+    "mk": "Најава",
+    "sk": "Prihlásiť sa",
+    "zh": "登录"
   },
   "auto.ssl_off": {
     "cs": "SSL off",
@@ -1566,211 +1566,211 @@
     "zh": "SSL off"
   },
   "auto.start": {
-    "cs": "Start",
-    "de": "Start",
+    "cs": "Spustit",
+    "de": "Starten",
     "en": "Start",
-    "es-MX": "Start",
-    "mk": "Start",
-    "sk": "Start",
-    "zh": "Start"
+    "es-MX": "Iniciar",
+    "mk": "Стартувај",
+    "sk": "Spustiť",
+    "zh": "启动"
   },
   "auto.start_a_chain_by_selecting_a_script_on_the_left": {
-    "cs": "Start a chain by selecting a script on the left",
-    "de": "Start a chain by selecting a script on the left",
+    "cs": "Spusťte řetězec výběrem skriptu vlevo",
+    "de": "Eine Kette starten, indem links ein Skript ausgewählt wird",
     "en": "Start a chain by selecting a script on the left",
-    "es-MX": "Start a chain by selecting a script on the left",
-    "mk": "Start a chain by selecting a script on the left",
-    "sk": "Start a chain by selecting a script on the left",
-    "zh": "Start a chain by selecting a script on the left"
+    "es-MX": "Inicia una cadena seleccionando un script a la izquierda",
+    "mk": "Стартувај синџир со избор на скрипта лево",
+    "sk": "Spustite reťazec výberom skriptu vľavo",
+    "zh": "通过在左侧选择脚本来启动链"
   },
   "auto.start_on_startup": {
-    "cs": "Start on startup",
-    "de": "Start on startup",
+    "cs": "Spustit při startu",
+    "de": "Beim Start automatisch starten",
     "en": "Start on startup",
-    "es-MX": "Start on startup",
-    "mk": "Start on startup",
-    "sk": "Start on startup",
-    "zh": "Start on startup"
+    "es-MX": "Iniciar al arrancar",
+    "mk": "Стартувај при стартување",
+    "sk": "Spustiť pri štarte",
+    "zh": "开机启动"
   },
   "auto.start_publishing": {
-    "cs": "Start publishing",
-    "de": "Start publishing",
+    "cs": "Spustit publishing",
+    "de": "Starten publishing",
     "en": "Start publishing",
-    "es-MX": "Start publishing",
-    "mk": "Start publishing",
-    "sk": "Start publishing",
-    "zh": "Start publishing"
+    "es-MX": "Iniciar publishing",
+    "mk": "Стартувај publishing",
+    "sk": "Spustiť publishing",
+    "zh": "启动 publishing"
   },
   "auto.start_selected": {
-    "cs": "Start Selected",
-    "de": "Start Selected",
+    "cs": "Spustit Selected",
+    "de": "Starten Selected",
     "en": "Start Selected",
-    "es-MX": "Start Selected",
-    "mk": "Start Selected",
-    "sk": "Start Selected",
-    "zh": "Start Selected"
+    "es-MX": "Iniciar Selected",
+    "mk": "Стартувај Selected",
+    "sk": "Spustiť Selected",
+    "zh": "启动 Selected"
   },
   "auto.startup_scripts_updated": {
-    "cs": "Startup scripts updated.",
-    "de": "Startup scripts updated.",
+    "cs": "Startup Skripty aktualizováno.",
+    "de": "Startup Skripte aktualisiert.",
     "en": "Startup scripts updated.",
-    "es-MX": "Startup scripts updated.",
-    "mk": "Startup scripts updated.",
-    "sk": "Startup scripts updated.",
-    "zh": "Startup scripts updated."
+    "es-MX": "Startup Scripts actualizado.",
+    "mk": "Startup Скрипти ажурирано.",
+    "sk": "Startup Skripty aktualizované.",
+    "zh": "Startup 脚本已更新."
   },
   "auto.step_text": {
-    "cs": "Step Text:",
-    "de": "Step Text:",
+    "cs": "Krok Text:",
+    "de": "Schritt Text:",
     "en": "Step Text:",
-    "es-MX": "Step Text:",
-    "mk": "Step Text:",
-    "sk": "Step Text:",
-    "zh": "Step Text:"
+    "es-MX": "Paso Text:",
+    "mk": "Чекор Text:",
+    "sk": "Krok Text:",
+    "zh": "步骤 Text:"
   },
   "auto.stepchain_stopped_due_to_an_error": {
-    "cs": "⚠️ StepChain stopped due to an error",
-    "de": "⚠️ StepChain stopped due to an error",
+    "cs": "⚠️ StepChain se zastavil kvůli chybě",
+    "de": "⚠️ StepChain wegen eines Fehlers gestoppt",
     "en": "⚠️ StepChain stopped due to an error",
-    "es-MX": "⚠️ StepChain stopped due to an error",
-    "mk": "⚠️ StepChain stopped due to an error",
-    "sk": "⚠️ StepChain stopped due to an error",
-    "zh": "⚠️ StepChain stopped due to an error"
+    "es-MX": "⚠️ StepChain se detuvo por un error",
+    "mk": "⚠️ StepChain запрен поради грешка",
+    "sk": "⚠️ StepChain sa zastavil kvôli chybe",
+    "zh": "⚠️ StepChain 因错误已停止"
   },
   "auto.stop": {
-    "cs": "Stop",
-    "de": "Stop",
+    "cs": "Zastavit",
+    "de": "Stoppen",
     "en": "Stop",
-    "es-MX": "Stop",
-    "mk": "Stop",
-    "sk": "Stop",
-    "zh": "Stop"
+    "es-MX": "Detener",
+    "mk": "Стопирај",
+    "sk": "Zastaviť",
+    "zh": "停止"
   },
   "auto.stop_chain": {
-    "cs": "Stop chain",
-    "de": "Stop chain",
+    "cs": "Zastavit Řetězec",
+    "de": "Stoppen Kette",
     "en": "Stop chain",
-    "es-MX": "Stop chain",
-    "mk": "Stop chain",
-    "sk": "Stop chain",
-    "zh": "Stop chain"
+    "es-MX": "Detener Cadena",
+    "mk": "Стопирај Синџир",
+    "sk": "Zastaviť Reťazec",
+    "zh": "停止链"
   },
   "auto.stop_publishing": {
-    "cs": "Stop publishing",
-    "de": "Stop publishing",
+    "cs": "Zastavit publishing",
+    "de": "Stoppen publishing",
     "en": "Stop publishing",
-    "es-MX": "Stop publishing",
-    "mk": "Stop publishing",
-    "sk": "Stop publishing",
-    "zh": "Stop publishing"
+    "es-MX": "Detener publishing",
+    "mk": "Стопирај publishing",
+    "sk": "Zastaviť publishing",
+    "zh": "停止 publishing"
   },
   "auto.tcp_client_added": {
-    "cs": "TCP client added.",
-    "de": "TCP client added.",
+    "cs": "TCP Klient přidáno.",
+    "de": "TCP Client hinzugefügt.",
     "en": "TCP client added.",
-    "es-MX": "TCP client added.",
-    "mk": "TCP client added.",
-    "sk": "TCP client added.",
-    "zh": "TCP client added."
+    "es-MX": "TCP Cliente agregado.",
+    "mk": "TCP Клиент додадено.",
+    "sk": "TCP Klient pridané.",
+    "zh": "TCP 客户端已添加."
   },
   "auto.tcp_client_removed": {
-    "cs": "TCP client removed.",
-    "de": "TCP client removed.",
+    "cs": "TCP Klient odebráno.",
+    "de": "TCP Client entfernt.",
     "en": "TCP client removed.",
-    "es-MX": "TCP client removed.",
-    "mk": "TCP client removed.",
-    "sk": "TCP client removed.",
-    "zh": "TCP client removed."
+    "es-MX": "TCP Cliente eliminado.",
+    "mk": "TCP Клиент отстрането.",
+    "sk": "TCP Klient odstránené.",
+    "zh": "TCP 客户端已移除."
   },
   "auto.tcp_client_updated": {
-    "cs": "TCP client updated.",
-    "de": "TCP client updated.",
+    "cs": "TCP Klient aktualizováno.",
+    "de": "TCP Client aktualisiert.",
     "en": "TCP client updated.",
-    "es-MX": "TCP client updated.",
-    "mk": "TCP client updated.",
-    "sk": "TCP client updated.",
-    "zh": "TCP client updated."
+    "es-MX": "TCP Cliente actualizado.",
+    "mk": "TCP Клиент ажурирано.",
+    "sk": "TCP Klient aktualizované.",
+    "zh": "TCP 客户端已更新."
   },
   "auto.tcp_clients": {
-    "cs": "TCP Clients",
+    "cs": "TCP Klienti",
     "de": "TCP Clients",
     "en": "TCP Clients",
-    "es-MX": "TCP Clients",
-    "mk": "TCP Clients",
-    "sk": "TCP Clients",
-    "zh": "TCP Clients"
+    "es-MX": "TCP Clientes",
+    "mk": "TCP Клиенти",
+    "sk": "TCP Klienti",
+    "zh": "TCP 客户端"
   },
   "auto.timeout_s": {
-    "cs": "Timeout (s)",
+    "cs": "Časový limit (s)",
     "de": "Timeout (s)",
     "en": "Timeout (s)",
-    "es-MX": "Timeout (s)",
-    "mk": "Timeout (s)",
-    "sk": "Timeout (s)",
-    "zh": "Timeout (s)"
+    "es-MX": "Tiempo de espera (s)",
+    "mk": "Тајмаут (s)",
+    "sk": "Časový limit (s)",
+    "zh": "超时 (s)"
   },
   "auto.toggle_nav": {
-    "cs": "Toggle Nav",
-    "de": "Toggle Nav",
+    "cs": "Přepnout Nav",
+    "de": "Umschalten Nav",
     "en": "Toggle Nav",
-    "es-MX": "Toggle Nav",
-    "mk": "Toggle Nav",
-    "sk": "Toggle Nav",
-    "zh": "Toggle Nav"
+    "es-MX": "Alternar Nav",
+    "mk": "Преклопи Nav",
+    "sk": "Prepnúť Nav",
+    "zh": "切换 Nav"
   },
   "auto.total_bad": {
-    "cs": "Total bad",
-    "de": "Total bad",
+    "cs": "Celkem Špatné",
+    "de": "Gesamt Schlecht",
     "en": "Total bad",
-    "es-MX": "Total bad",
-    "mk": "Total bad",
-    "sk": "Total bad",
-    "zh": "Total bad"
+    "es-MX": "Total Malos",
+    "mk": "Вкупно Лоши",
+    "sk": "Celkom Zlé",
+    "zh": "总计不良"
   },
   "auto.total_good": {
-    "cs": "Total good",
-    "de": "Total good",
+    "cs": "Celkem Dobré",
+    "de": "Gesamt Gut",
     "en": "Total good",
-    "es-MX": "Total good",
-    "mk": "Total good",
-    "sk": "Total good",
-    "zh": "Total good"
+    "es-MX": "Total Buenos",
+    "mk": "Вкупно Добри",
+    "sk": "Celkom Dobré",
+    "zh": "总计良品"
   },
   "auto.translations_saved": {
-    "cs": "Translations saved.",
-    "de": "Translations saved.",
+    "cs": "Překlady uloženy.",
+    "de": "Übersetzungen gespeichert.",
     "en": "Translations saved.",
-    "es-MX": "Translations saved.",
-    "mk": "Translations saved.",
-    "sk": "Translations saved.",
-    "zh": "Translations saved."
+    "es-MX": "Traducciones guardadas.",
+    "mk": "Преводи зачувани.",
+    "sk": "Preklady uložené.",
+    "zh": "翻译已保存."
   },
   "auto.username": {
-    "cs": "Username",
-    "de": "Username",
+    "cs": "Uživatelské jméno",
+    "de": "Benutzername",
     "en": "Username",
-    "es-MX": "Username",
-    "mk": "Username",
-    "sk": "Username",
-    "zh": "Username"
+    "es-MX": "Usuario",
+    "mk": "Корисничко име",
+    "sk": "Používateľské meno",
+    "zh": "用户名"
   },
   "auto.viewer": {
-    "cs": "Viewer",
-    "de": "Viewer",
+    "cs": "Prohlížeč",
+    "de": "Betrachter",
     "en": "Viewer",
-    "es-MX": "Viewer",
-    "mk": "Viewer",
-    "sk": "Viewer",
-    "zh": "Viewer"
+    "es-MX": "Visor",
+    "mk": "Прегледувач",
+    "sk": "Prehliadač",
+    "zh": "查看器"
   },
   "auto.visibility_changed_re_render_page_to_reflect_it": {
-    "cs": "Visibility changed; re-render page to reflect it.",
-    "de": "Visibility changed; re-render page to reflect it.",
+    "cs": "Viditelnost změněna; znovu vykreslete stránku, aby se to projevilo.",
+    "de": "Sichtbarkeit geändert; Seite neu rendern, um dies anzuzeigen.",
     "en": "Visibility changed; re-render page to reflect it.",
-    "es-MX": "Visibility changed; re-render page to reflect it.",
-    "mk": "Visibility changed; re-render page to reflect it.",
-    "sk": "Visibility changed; re-render page to reflect it.",
-    "zh": "Visibility changed; re-render page to reflect it."
+    "es-MX": "La visibilidad cambió; vuelve a renderizar la página para reflejarlo.",
+    "mk": "Видливоста е променета; повторно прикажете ја страницата за да се одрази.",
+    "sk": "Viditeľnosť sa zmenila; znovu vykreslite stránku, aby sa to prejavilo.",
+    "zh": "可见性已更改；重新渲染页面以反映更改。"
   },
   "auto.visual_control": {
     "cs": "Visual control",
@@ -1791,57 +1791,57 @@
     "zh": "Visual Inspection"
   },
   "auto.workerbus_demo_publisher_bus_subscriber_uibridge_page": {
-    "cs": "WorkerBus Demo (Publisher -> Bus -> Subscriber -> UiBridge -> Page)",
-    "de": "WorkerBus Demo (Publisher -> Bus -> Subscriber -> UiBridge -> Page)",
+    "cs": "Ukázka WorkerBus (Publisher -> Bus -> Subscriber -> UiBridge -> Stránka)",
+    "de": "WorkerBus-Demo (Publisher -> Bus -> Subscriber -> UiBridge -> Seite)",
     "en": "WorkerBus Demo (Publisher -> Bus -> Subscriber -> UiBridge -> Page)",
-    "es-MX": "WorkerBus Demo (Publisher -> Bus -> Subscriber -> UiBridge -> Page)",
-    "mk": "WorkerBus Demo (Publisher -> Bus -> Subscriber -> UiBridge -> Page)",
-    "sk": "WorkerBus Demo (Publisher -> Bus -> Subscriber -> UiBridge -> Page)",
-    "zh": "WorkerBus Demo (Publisher -> Bus -> Subscriber -> UiBridge -> Page)"
+    "es-MX": "Demo de WorkerBus (Publisher -> Bus -> Subscriber -> UiBridge -> Página)",
+    "mk": "Демо WorkerBus (Publisher -> Bus -> Subscriber -> UiBridge -> Страница)",
+    "sk": "Ukážka WorkerBus (Publisher -> Bus -> Subscriber -> UiBridge -> Stránka)",
+    "zh": "WorkerBus 演示（Publisher -> Bus -> Subscriber -> UiBridge -> 页面）"
   },
   "auto.workers": {
-    "cs": "Workers",
-    "de": "Workers",
+    "cs": "Workeři",
+    "de": "Worker",
     "en": "Workers",
     "es-MX": "Workers",
-    "mk": "Workers",
-    "sk": "Workers",
-    "zh": "Workers"
+    "mk": "Воркери",
+    "sk": "Workeri",
+    "zh": "工作器"
   },
   "header.logout": {
-    "cs": "Logout",
-    "de": "Logout",
+    "cs": "Odhlásit",
+    "de": "Abmelden",
     "en": "Logout",
-    "es-MX": "Logout",
-    "mk": "Logout",
-    "sk": "Logout",
-    "zh": "Logout"
+    "es-MX": "Cerrar sesión",
+    "mk": "Одјава",
+    "sk": "Odhlásiť",
+    "zh": "退出登录"
   },
   "header.toggle_nav": {
-    "cs": "Toggle Nav",
-    "de": "Toggle Nav",
+    "cs": "Přepnout Nav",
+    "de": "Umschalten Nav",
     "en": "Toggle Nav",
-    "es-MX": "Toggle Nav",
-    "mk": "Toggle Nav",
-    "sk": "Toggle Nav",
-    "zh": "Toggle Nav"
+    "es-MX": "Alternar Nav",
+    "mk": "Преклопи Nav",
+    "sk": "Prepnúť Nav",
+    "zh": "切换 Nav"
   },
   "settings.subtitle": {
-    "cs": "Manage application settings and worker configuration.",
-    "de": "Manage application settings and worker configuration.",
+    "cs": "Spravovat nastavení aplikace a konfiguraci workerů.",
+    "de": "Anwendungseinstellungen und Worker-Konfiguration verwalten.",
     "en": "Manage application settings and worker configuration.",
-    "es-MX": "Manage application settings and worker configuration.",
-    "mk": "Manage application settings and worker configuration.",
-    "sk": "Manage application settings and worker configuration.",
-    "zh": "Manage application settings and worker configuration."
+    "es-MX": "Administrar la configuración de la aplicación y de los workers.",
+    "mk": "Управувај со поставките на апликацијата и конфигурацијата на воркерите.",
+    "sk": "Spravovať nastavenia aplikácie a konfiguráciu workerov.",
+    "zh": "管理应用设置和工作器配置。"
   },
   "settings.title": {
-    "cs": "Settings",
-    "de": "Settings",
+    "cs": "Nastavení",
+    "de": "Einstellungen",
     "en": "Settings",
-    "es-MX": "Settings",
-    "mk": "Settings",
-    "sk": "Settings",
-    "zh": "Settings"
+    "es-MX": "Configuración",
+    "mk": "Поставки",
+    "sk": "Nastavenia",
+    "zh": "设置"
   }
 }

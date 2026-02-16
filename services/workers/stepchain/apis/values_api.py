@@ -21,30 +21,42 @@ class ValuesApi:
         source_data = self._ctx.data.get(src, {})
         last_id = self._ctx._last_seen_by_source.get(src, "")
         if last_id and last_id in source_data:
-            return source_data[last_id]
+            value = source_data[last_id]
+            if isinstance(value, dict) and "__last__" in value:
+                return value.get("__last__")
+            return value
         if source_data:
-            # stable best-effort fallback
             any_key = next(iter(source_data))
-            return source_data.get(any_key)
+            value = source_data.get(any_key)
+            if isinstance(value, dict) and "__last__" in value:
+                return value.get("__last__")
+            return value
         return default
+
 
     def get(self, source: str, source_id: str, default: Any = None) -> Any:
         return self._ctx.data.get(str(source), {}).get(str(source_id), default)
 
     def by_key(self, key: str, default: Any = None) -> Any:
         target = str(key)
+
         # Search most recent payload per source first
         for source in list(self._ctx.data.keys()):
             payload = self.last(source, default=None)
+            if isinstance(payload, dict) and "__last__" in payload:
+                payload = payload.get("__last__")
             if isinstance(payload, dict) and payload.get("key") == target:
                 return payload.get("value", default)
 
         # Fallback to full scan
         for source_data in self._ctx.data.values():
             for payload in source_data.values():
+                if isinstance(payload, dict) and "__last__" in payload:
+                    payload = payload.get("__last__")
                 if isinstance(payload, dict) and payload.get("key") == target:
                     return payload.get("value", default)
         return default
+
 
 
     def state(self, key: str, default: Any = None) -> Any:

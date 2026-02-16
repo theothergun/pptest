@@ -69,7 +69,10 @@ class ScriptWorker(BaseWorker):
 			Topics.WRITE_FINISHED,
 			Topics.WRITE_ERROR,
 			Topics.ERROR,
+			Topics.TOPIC_MODAL_RESPONSE,
 		]))
+
+
 
 		# Mirror UI/AppState updates into each chain context so scripts can read state.* values.
 		self.ui_state_sub = self.add_subscription(self.bridge.subscribe_many(["state", "state.*"]))
@@ -191,6 +194,17 @@ class ScriptWorker(BaseWorker):
 				msg = self.bus_sub.queue.get_nowait()
 			except queue.Empty:
 				break
+
+			if str(getattr(msg, "topic", "") or "") == Topics.TOPIC_MODAL_RESPONSE:
+				payload = getattr(msg, "payload", None) or {}
+				request_id = payload.get("request_id")
+				chain_id = payload.get("chain_id")
+				result = payload.get("result")
+
+				inst = self.chains.get(str(chain_id or ""))
+				if inst and request_id is not None:
+					inst.context._modal_set_result_for_request(str(request_id), result)
+				continue
 
 			for inst in self.chains.values():
 				if not inst.active:
@@ -564,6 +578,7 @@ class ScriptWorker(BaseWorker):
 		except Exception:
 			err = "reload_script failed\n%s" % self._format_exc()
 			self.publish_error_as(f"script:{script_name}", key=f"script:{script_name}", action="reload_script", error=err)
+
 
 	def _cmd_reload_all(self, payload: dict[str, Any]) -> None:
 		try:

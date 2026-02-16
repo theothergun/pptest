@@ -35,3 +35,7 @@ class WorkerTopics(StrEnum):
 	WORKER_STATUS_CHANGED = "WORKER_STATUS_CHANGED"
 	WRITE_FINISHED = "WRITE_FINISHED"
 	WRITE_ERROR = "WRITE_ERROR"
+
+	TOPIC_MODAL_REQUEST =  "ui.modal.request"
+	TOPIC_MODAL_RESPONSE = "ui.modal.response"
+	TOPIC_MODAL_CLOSE = "ui.modal.close"

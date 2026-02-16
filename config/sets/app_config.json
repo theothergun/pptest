@@ -11,7 +11,7 @@
     "json_path": "config/app_config.json"
   },
   "proxy": {
-    "enabled": true,
+    "enabled": false,
     "http": "http://192.168.1.26:3128",
     "https": "http://192.168.1.26:3128",
     "no_proxy": "localhost,127.0.0.1,10.1.2.3"
@@ -126,6 +126,18 @@
   },
   "workers": {
     "configs": {
+      "com_device": {
+        "devices": [
+          {
+            "baudrate": 115200,
+            "delimiter": "\r\n",
+            "device_id": "scanner_1",
+            "encoding": "utf-8",
+            "mode": "line",
+            "port": "COM5"
+          }
+        ]
+      },
       "itac": {
         "endpoints": [
           {
@@ -167,7 +179,7 @@
         "auto_start_chains": [
           {
             "instance_id": "default",
-            "script_name": "Packaging/pack"
+            "script_name": "examples/popups"
           }
         ]
       },
@@ -198,26 +210,25 @@
             "plc_ip": "192.168.0.50",
             "subscriptions": [
               {
-                "cycle_ms": 500,
                 "name": "MAIN.currentIPAddress",
                 "plc_type": "STRING",
-                "string_len": 64,
-                "trans_mode": "server_cycle"
+                "string_len": 64
               },
               {
                 "name": "MAIN.watchdog",
-                "plc_type": "UINT",
-                "trans_mode": "on_change"
+                "plc_type": "UINT"
+              },
+              {
+                "name": "MAIN.test",
+                "plc_type": "STRING"
               },
               {
                 "name": "MAIN.idx",
-                "plc_type": "INT",
-                "trans_mode": "on_change"
+                "plc_type": "INT"
               },
               {
                 "name": "MAIN.isMQTTSetup",
-                "plc_type": "BOOL",
-                "trans_mode": "on_change"
+                "plc_type": "BOOL"
               }
             ]
           }
@@ -228,8 +239,9 @@
       "script_worker",
       "twincat",
       "tcp_client",
-      "twincat",
-      "itac"
+      "itac",
+      "rest_api",
+      "com_device"
     ]
   }
 }

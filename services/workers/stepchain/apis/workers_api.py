@@ -6,13 +6,12 @@ import uuid
 import queue
 from typing import Any, Callable, Optional
 
-from services.worker_commands import TcpClientCommands, TwinCatCommands
+from services.worker_commands import TcpClientCommands, TwinCatCommands, RestApiCommands
 
-# If your iTAC worker uses a different enum name/path, adjust this import only.
-from services.worker_commands import ItacCommands  # type: ignore
-
+from services.worker_commands import ItacCommands
 from services.worker_topics import WorkerTopics
-
+from services.worker_commands import ComDeviceCommands
+from services.workers.stepchain.apis.api_utils import to_int
 
 class WorkersApi:
 	"""
@@ -31,22 +30,35 @@ class WorkersApi:
 	# --------------------------- generic reads ---------------------------
 
 	def get(self, worker: str, source_id: str, key: str, default: Any = None) -> Any:
-		payload = self._ctx.data.get(str(worker), {}).get(str(source_id))
-		if isinstance(payload, dict) and payload.get("key") == str(key):
-			return payload.get("value", default)
+		worker_s = str(worker)
+		source_id_s = str(source_id)
+		key_s = str(key)
 
-		# Fallback: scan this worker/source cache for the requested key.
-		source_data = self._ctx.data.get(str(worker), {})
-		for entry in source_data.values():
-			if isinstance(entry, dict) and entry.get("key") == str(key):
+		bucket = self._ctx.data.get(worker_s, {}).get(source_id_s)
+
+		if isinstance(bucket, dict) and bucket.get("key") == key_s:
+			return bucket.get("value", default)
+
+		if isinstance(bucket, dict) and key_s in bucket:
+			entry = bucket.get(key_s)
+			if isinstance(entry, dict) and "value" in entry:
 				return entry.get("value", default)
+			return entry
+
+		if isinstance(bucket, dict):
+			for entry in bucket.values():
+				if isinstance(entry, dict) and entry.get("key") == key_s:
+					return entry.get("value", default)
+
 		return default
 
 	def latest(self, worker: str, source_id: str, default: Any = None) -> Any:
-		payload = self._ctx.data.get(str(worker), {}).get(str(source_id), default)
-		if isinstance(payload, dict) and "value" in payload:
-			return payload.get("value", default)
-		return payload
+		bucket = self._ctx.data.get(str(worker), {}).get(str(source_id), default)
+		if isinstance(bucket, dict) and "__last__" in bucket:
+			bucket = bucket.get("__last__")
+		if isinstance(bucket, dict) and "value" in bucket:
+			return bucket.get("value", default)
+		return bucket
 
 	# -------------------------- bus wait helper --------------------------
 
@@ -58,13 +70,6 @@ class WorkersApi:
 		key_predicate: Callable[[str], bool],
 		timeout_s: float,
 	) -> dict:
-		"""
-		Block until we receive a WorkerTopics.VALUE_CHANGED from (source, source_id)
-		where key_predicate(payload["key"]) is True.
-
-		Returns the message payload dict (usually {"key":..., "value":...}).
-		On timeout returns {"error":"timeout", ... }.
-		"""
 		if timeout_s <= 0:
 			timeout_s = 0.01
 
@@ -79,7 +84,6 @@ class WorkersApi:
 		deadline = time.time() + float(timeout_s)
 
 		try:
-			# Subscribe to VALUE_CHANGED (and ERROR for better diagnostics)
 			sub = bus.subscribe_many([WorkerTopics.VALUE_CHANGED, WorkerTopics.ERROR])
 
 			while True:
@@ -97,7 +101,6 @@ class WorkersApi:
 				except queue.Empty:
 					continue
 
-				# Defensive: ignore unknown shapes
 				msg_source = getattr(msg, "source", None)
 				msg_source_id = getattr(msg, "source_id", None)
 				msg_topic = getattr(msg, "topic", None)
@@ -110,9 +113,7 @@ class WorkersApi:
 				if not isinstance(msg_payload, dict):
 					continue
 
-				# If the worker reports an error for this source_id while waiting, surface it.
 				if msg_topic == WorkerTopics.ERROR:
-					# Payload contract: { "key": str|None, "action": str, "error": str }
 					return {
 						"error": "worker_error",
 						"source": str(source),
@@ -184,16 +185,110 @@ class WorkersApi:
 	def plc_value(self, client_id: str, name: str, default: Any = None) -> Any:
 		return self.get("twincat", str(client_id), str(name), default)
 
+	def plc_wait_value(self, client_id: str, name: str, default: Any = None, timeout_s: float = 1.0) -> Any:
+		cid = str(client_id or "")
+		var = str(name or "")
+		if not cid or not var:
+			return default
+
+		cached = self.get("twincat", cid, var, default=None)
+		if cached is not None:
+			return cached
+
+		msg_payload = self._wait_for_bus_value(
+			source="twincat",
+			source_id=cid,
+			key_predicate=lambda k: k == var,
+			timeout_s=float(timeout_s),
+		)
+
+		if msg_payload.get("error") in ("worker_error", "timeout"):
+			return default
+
+		return msg_payload.get("value", default)
+
+	# ----------------------------- REST sync ----------------------------
+
+	def rest_request(
+		self,
+		endpoint: str,
+		*,
+		method: str = "GET",
+		path: str | None = None,
+		url: str | None = None,
+		params: dict[str, Any] | None = None,
+		headers: dict[str, Any] | None = None,
+		json_body: Any = None,
+		data: Any = None,
+		timeout_s: float = 10.0,
+	) -> dict:
+		if not callable(getattr(self._ctx, "send_cmd", None)):
+			return {"error": "no_send_cmd"}
+
+		if RestApiCommands is None:
+			return {"error": "no_rest_commands"}
+
+		ep = str(endpoint or "")
+		if not ep:
+			return {"error": "missing_endpoint"}
+
+		request_id = uuid.uuid4().hex
+		self._ctx.send_cmd("rest_api", RestApiCommands.REQUEST, {
+			"endpoint": ep,
+			"request_id": request_id,
+			"method": str(method or "GET").upper(),
+			"path": path,
+			"url": url,
+			"params": params if isinstance(params, dict) else None,
+			"headers": headers if isinstance(headers, dict) else None,
+			"json": json_body,
+			"data": data,
+			"timeout_s": float(timeout_s),
+		})
+
+		expected_key = "rest.%s.result.%s" % (ep, request_id)
+
+		msg_payload = self._wait_for_bus_value(
+			source="rest_api",
+			source_id=ep,
+			key_predicate=lambda k: k == expected_key,
+			timeout_s=float(timeout_s),
+		)
+
+		if msg_payload.get("error") == "worker_error":
+			return msg_payload
+
+		if msg_payload.get("error") == "timeout":
+			msg_payload["expected_key"] = expected_key
+			msg_payload["request_id"] = request_id
+			msg_payload["endpoint"] = ep
+			return msg_payload
+
+		value = msg_payload.get("value")
+		if isinstance(value, dict):
+			value.setdefault("_meta", {})
+			if isinstance(value.get("_meta"), dict):
+				value["_meta"].update({
+					"endpoint": ep,
+					"request_id": request_id,
+					"key": expected_key,
+				})
+			return value
+
+		return {
+			"value": value,
+			"_meta": {"endpoint": ep, "request_id": request_id, "key": expected_key},
+		}
+
+	def rest_get(self, endpoint: str, path: str, params: dict[str, Any] | None = None, timeout_s: float = 10.0) -> dict:
+		return self.rest_request(endpoint, method="GET", path=path, params=params, timeout_s=timeout_s)
+
+	def rest_post_json(self, endpoint: str, path: str, body: Any, timeout_s: float = 10.0) -> dict:
+		return self.rest_request(endpoint, method="POST", path=path, json_body=body, timeout_s=timeout_s)
+
 	# ----------------------------- iTAC sync ----------------------------
 
 	def itac_station_setting(self, connection_id: str, keys: list[str], timeout_s: float = 5.0) -> dict:
-		"""
-		Synchronous wrapper:
-			res = ctx.itac_station_setting("itac_main", ["WORKORDER_NUMBER"])
-			# res is the raw JSON dict returned by iTAC (your worker's parsed resp.json()).
-
-		This blocks on a WorkerBus subscription queue (NOT ctx.data) to avoid deadlocks/timeouts.
-		"""
 		if not callable(getattr(self._ctx, "send_cmd", None)):
 			return {"error": "no_send_cmd"}
 
@@ -202,6 +297,9 @@ class WorkersApi:
 			return {"error": "missing_connection_id"}
 
 		request_id = uuid.uuid4().hex
+		if ItacCommands is None:
+			return {"error": "no_itac_commands"}
+
 		self._ctx.send_cmd("itac", ItacCommands.GET_STATION_SETTING, {
 			"connection_id": cid,
 			"station_setting_keys": keys if isinstance(keys, list) else [],
@@ -217,21 +315,17 @@ class WorkersApi:
 			timeout_s=float(timeout_s),
 		)
 
-		# Worker error surfaced
 		if msg_payload.get("error") == "worker_error":
 			return msg_payload
 
-		# Timeout surfaced
 		if msg_payload.get("error") == "timeout":
 			msg_payload["expected_key"] = expected_key
 			msg_payload["request_id"] = request_id
 			msg_payload["connection_id"] = cid
 			return msg_payload
 
-		# Normal VALUE_CHANGED payload: {"key":..., "value":...}
 		value = msg_payload.get("value")
 		if isinstance(value, dict):
-			# Optionally enrich without losing raw response
 			value.setdefault("_meta", {})
 			if isinstance(value["_meta"], dict):
 				value["_meta"].update({
@@ -259,6 +353,9 @@ class WorkersApi:
 			return {"error": "missing_connection_id"}
 
 		request_id = uuid.uuid4().hex
+		if ItacCommands is None:
+			return {"error": "no_itac_commands"}
+
 		self._ctx.send_cmd("itac", ItacCommands.CALL_CUSTOM_FUNCTION, {
 			"connection_id": cid,
 			"method_name": str(method_name or ""),
@@ -313,6 +410,9 @@ class WorkersApi:
 			return {"error": "missing_connection_id"}
 
 		request_id = uuid.uuid4().hex
+		if ItacCommands is None:
+			return {"error": "no_itac_commands"}
+
 		self._ctx.send_cmd("itac", ItacCommands.RAW_CALL, {
 			"connection_id": cid,
 			"function_name": str(function_name or ""),
@@ -357,3 +457,89 @@ class WorkersApi:
 				"key": expected_key,
 			},
 		}
+
+	# ---------------------- iTAC ergonomics helpers ----------------------
+
+	def itac_expect_ok(self, res: Any) -> dict:
+		"""
+		Normalize common iTAC worker response shape into:
+		{
+			"ok": bool,
+			"return_value": int,
+			"out_args": list,
+			"error": str|None,
+			"raw": <original dict>
+		}
+
+		Expected success shape (typical):
+			{ "result": { "return_value": 0, "outArgs": [...] } }
+		"""
+		out = {
+			"ok": False,
+			"return_value": -1,
+			"out_args": [],
+			"error": None,
+			"raw": res,
+		}
+
+		if not isinstance(res, dict):
+			out["error"] = "itac_response_not_dict"
+			return out
+
+		# worker-level error/timeout passthrough
+		if "error" in res and res.get("error"):
+			out["error"] = str(res.get("error"))
+			return out
+
+		result = res.get("result")
+		if not isinstance(result, dict):
+			out["error"] = "missing_result"
+			return out
+
+		rv = to_int(result.get("return_value", -1), -1)
+		out["return_value"] = rv
+
+		args = result.get("outArgs")
+		if isinstance(args, list):
+			out["out_args"] = args
+		elif args is None:
+			out["out_args"] = []
+		else:
+			out["out_args"] = [args]
+
+		out["ok"] = (rv == 0)
+		if not out["ok"]:
+			out["error"] = "itac_return_value_%s" % str(rv)
+
+		return out
+
+
+
+	def com_last(self, device_id: str, default: Any = None) -> Any:
+		return self.get("com_device", str(device_id), "line", default)
+
+	def com_wait(self, device_id: str, timeout_s: float = 2.0, default: Any = None) -> Any:
+		did = str(device_id or "")
+		if not did:
+			return default
+
+		msg = self._wait_for_bus_value(
+			source="com_device",
+			source_id=did,
+			key_predicate=lambda k: k == "line",
+			timeout_s=float(timeout_s),
+		)
+
+		if msg.get("error") in ("worker_error", "timeout"):
+			return default
+
+		return msg.get("value", default)
+
+	def com_send(self, device_id: str, data: Any, add_delimiter: bool = False) -> None:
+		if not callable(getattr(self._ctx, "send_cmd", None)):
+			return
+		self._ctx.send_cmd("com_device", ComDeviceCommands.SEND, {
+			"device_id": str(device_id),
+			"data": data,
+			"add_delimiter": bool(add_delimiter),
+		})

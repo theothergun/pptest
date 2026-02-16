@@ -11,6 +11,7 @@ from layout.router import navigate, get_initial_route_from_url
 from layout.header import build_header
 from layout.drawer import build_drawer
 from layout.errors_state import refresh_errors_count
+from layout.modal_manager import install_modal_manager
 
 from services.ui_bridge import UiBridge
 from services.worker_registry import WorkerRegistry
@@ -23,6 +24,7 @@ from services.app_config import (
 	get_script_auto_start_chains,
 	get_twincat_plc_endpoints,
 	get_itac_endpoints,
+	get_com_device_entries
 )
 
 from services.worker_commands import (
@@ -30,7 +32,8 @@ from services.worker_commands import (
 	ScriptWorkerCommands as ScriptCommands,
 	RestApiCommands as RestCommands,
 	TwinCatCommands,
-	ItacCommands
+	ItacCommands,
+
 )
 
 from services.app_state import AppState
@@ -43,9 +46,32 @@ from loguru import logger
 # GLOBAL BACKEND (PROCESS LIFETIME)
 # ------------------------------------------------------------------
 
-setup_logging(app_name="mes_app", log_level="DEBUG")
+setup_logging(app_name="mes_app", log_level="INFO")
 logger.info("Starting NiceGUI")
 bootstrap_defaults()
+
+def _apply_proxy_env(cfg) -> None:
+	# process-local; affects only this app process
+	try:
+		p = getattr(cfg, "proxy", None)
+		if not p or not getattr(p, "enabled", False):
+			return
+
+		if getattr(p, "http", ""):
+			os.environ["HTTP_PROXY"] = p.http
+			os.environ["http_proxy"] = p.http
+
+		if getattr(p, "https", ""):
+			os.environ["HTTPS_PROXY"] = p.https
+			os.environ["https_proxy"] = p.https
+
+		if getattr(p, "no_proxy", ""):
+			os.environ["NO_PROXY"] = p.no_proxy
+			os.environ["no_proxy"] = p.no_proxy
+
+	except Exception:
+		# keep it non-fatal; logging optional
+		return
 
 APP_CONFIG = load_app_config()
 _apply_proxy_env(APP_CONFIG)
@@ -53,7 +79,6 @@ _apply_proxy_env(APP_CONFIG)
 GLOBAL_WORKER_BUS = WorkerBus()
 GLOBAL_BRIDGE = UiBridge()
 GLOBAL_APP_STATE = AppState()
-
 GLOBAL_WORKERS = WorkerRegistry(GLOBAL_BRIDGE, GLOBAL_WORKER_BUS)
 
 
@@ -64,12 +89,16 @@ from services.workers.tcp_client_worker import TcpClientWorker
 from services.workers.twincat_worker import TwinCatWorker
 from services.workers.script_worker import ScriptWorker
 from services.workers.itac_worker import ItacWorker
+from services.workers.rest_api_worker import RestApiWorker
+from services.workers.com_device_worker import ComDeviceWorker
 
 WORKER_CATALOG = {
 	WorkerName.TCP_CLIENT: TcpClientWorker,
 	WorkerName.TWINCAT: TwinCatWorker,
     WorkerName.SCRIPT: ScriptWorker,
-	WorkerName.ITAC : ItacWorker
+	WorkerName.ITAC : ItacWorker,
+	WorkerName.REST_API : RestApiWorker,
+	WorkerName.COM_DEVICE: ComDeviceWorker
 }
 
 for worker_name in APP_CONFIG.workers.enabled_workers:
@@ -83,6 +112,34 @@ for worker_name in APP_CONFIG.workers.enabled_workers:
 # ------------------------------------------------------------------
 # Bootstrap worker configs
 # ------------------------------------------------------------------
+
+from services.worker_commands import ComDeviceCommands
+
+com_handle = GLOBAL_WORKERS.get(WorkerName.COM_DEVICE)
+if com_handle:
+		for e in get_com_device_entries(APP_CONFIG):
+			try:
+				com_handle.send(
+					ComDeviceCommands.ADD_DEVICE,
+					device_id=e.device_id,
+					port=e.port,
+					baudrate=e.baudrate,
+					bytesize=e.bytesize,
+					parity=e.parity,
+					stopbits=e.stopbits,
+					timeout_s=e.timeout_s,
+					write_timeout_s=e.write_timeout_s,
+					mode=e.mode,
+					delimiter=e.delimiter,  # already decoded to real "\n" or "\r\n"
+					encoding=e.encoding,
+					read_chunk_size=e.read_chunk_size,
+					max_line_len=e.max_line_len,
+					reconnect_min_s=e.reconnect_min_s,
+					reconnect_max_s=e.reconnect_max_s,
+				)
+			except Exception:
+				logger.exception("Failed to add com device")
+
 
 tcp_handle = GLOBAL_WORKERS.get(WorkerName.TCP_CLIENT)
 if tcp_handle:
@@ -193,7 +250,7 @@ def index():
 	ctx.worker_bus = GLOBAL_WORKER_BUS
 	ctx.workers = GLOBAL_WORKERS
 	ctx.bridge = GLOBAL_BRIDGE
-
+	ctx.modal_manager = install_modal_manager(GLOBAL_WORKER_BUS)
 	refresh_errors_count(ctx)
 
 	# UI flush loop
@@ -306,6 +363,7 @@ def index():
 	)
 	initial = get_initial_route_from_url(default_route)
 	navigate(ctx, initial)
+
 
 
 ui.run(

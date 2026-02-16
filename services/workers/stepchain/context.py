@@ -1,3 +1,4 @@
+# services/workers/stepchain/context.py
 from __future__ import annotations
 
 import copy
@@ -15,285 +16,385 @@ from services.workers.stepchain.apis.workers_api import WorkersApi
 
 
 class StepChainContext:
-	"""
-	Internal engine context for one running step chain instance.
+    """
+    Internal engine context for one running step chain instance.
 
-	IMPORTANT:
-	- This object is owned by the runtime.
-	- User scripts MUST NOT receive this object directly.
-	- Scripts should receive `public`, which exposes a stable, limited API.
-	"""
+    IMPORTANT:
+    - This object is owned by the runtime.
+    - User scripts MUST NOT receive this object directly.
+    - Scripts should receive `public`, which exposes a stable, limited API.
+    """
 
-	def __init__(
-		self,
-		chain_id: str,
-		worker_bus: Any,
-		bridge: Any,
-		state: Any,
-		send_cmd: Any = None,
-	) -> None:
-		self.chain_id = str(chain_id or uuid.uuid4())
-		self.worker_bus = worker_bus
-		self.bridge = bridge
-		self.state = state
-		self.send_cmd = send_cmd
+    def __init__(
+        self,
+        chain_id: str,
+        worker_bus: Any,
+        bridge: Any,
+        state: Any,
+        send_cmd: Any = None,
+    ) -> None:
+        self.chain_id = str(chain_id or uuid.uuid4())
+        self.worker_bus = worker_bus
+        self.bridge = bridge
+        self.state = state
+        self.send_cmd = send_cmd
 
-		# Runtime input snapshots (bus values)
-		self.data: Dict[str, Dict[str, Any]] = {}
+        self.data: Dict[str, Dict[str, Any]] = {}
 
-		# Engine state (managed by runtime)
-		self.step = 0
-		self.next_step = 0
-		self.step_time = 0.0
-		self.step_elapsed_s = 0.0
-		self.cycle_time = 0.1
-		self.cycle_count = 0
-		self.paused = False
-		self._step_started_ts = 0.0
+        self.step = 0
+        self.next_step = 0
+        self.step_time = 0.0
+        self.step_elapsed_s = 0.0
+        self.cycle_time = 0.1
+        self.cycle_count = 0
+        self.paused = False
+        self._step_started_ts = 0.0
 
-		# Status / error reporting
-		self.error_flag = False
-		self.error_message = ""
-		self.step_desc = ""
+        self.error_flag = False
+        self.error_message = ""
+        self.step_desc = ""
 
-		# Script-owned variables (persist across ticks)
-		self._vars: Dict[str, Any] = {}
+        self._vars: Dict[str, Any] = {}
+        self._ui_state: Optional[Dict[str, Any]] = None
+        self._app_state: Dict[str, Any] = {}
+        self._last_seen_by_source: Dict[str, str] = {}
+        self._public: Optional[PublicStepChainContext] = None
 
-		# Script-owned UI state (persist across ticks; diffed before publishing)
-		self._ui_state: Optional[Dict[str, Any]] = None
+        self._modal_pending = {}  # key -> request_id
+        self._modal_result_by_key = {}  # key -> ANY result (bool/dict/str/...)
+        self._modal_key_by_request_id = {}  # request_id -> key
 
-		# Latest AppState values mirrored from UiBridge state.* events
-		self._app_state: Dict[str, Any] = {}
+        logger.bind(component="StepChainContext", chain_id=self.chain_id).debug("created")
 
-		# Computed helpers for "last" lookup
-		self._last_seen_by_source: Dict[str, str] = {}
+    def _modal_is_pending(self, key: str) -> bool:
+        return str(key) in self._modal_pending
 
-		# Cached public API wrapper
-		self._public: Optional[PublicStepChainContext] = None
+    def _modal_mark_pending(self, key: str, request_id: str) -> None:
+        k = str(key)
+        rid = str(request_id)
+        self._modal_pending[k] = rid
+        self._modal_key_by_request_id[rid] = k
 
-		logger.bind(component="StepChainContext", chain_id=self.chain_id).debug("created")
+    def _modal_clear_pending(self, key: str) -> None:
+        k = str(key)
+        rid = self._modal_pending.pop(k, None)
+        if rid:
+            self._modal_key_by_request_id.pop(rid, None)
 
-	@property
-	def public(self) -> "PublicStepChainContext":
-		"""Public, script-safe API wrapper."""
-		if self._public is None:
-			self._public = PublicStepChainContext(self)
-		return self._public
+    def _modal_get_result_for_key(self, key: str):
+        k = str(key)
+        if k in self._modal_result_by_key:
+            return self._modal_result_by_key.pop(k)
+        return None
 
-	def _update_bus_value(self, source: str, source_id: str, payload: Any) -> None:
-		"""Runtime hook: called by ScriptWorker when a VALUE_CHANGED event arrives."""
-		source = str(source or "unknown")
-		source_id = str(source_id or "")
 
-		if source not in self.data:
-			self.data[source] = {}
+    def _modal_set_result_for_request(self, request_id: str, result) -> None:
+        key = self._modal_key_by_request_id.get(str(request_id))
+        if not key:
+            return
 
-		self.data[source][source_id] = payload
-		self._last_seen_by_source[source] = source_id
+        # store whatever came back (bool, dict, ...)
+        self._modal_result_by_key[key] = result
+        self._modal_clear_pending(key)
 
-	def _update_app_state(self, key: str, value: Any) -> None:
-		key_s = str(key or "").strip()
-		if not key_s:
-			return
-		self._app_state[key_s] = value
+        def _modal_reset(self, key: Optional[str] = None) -> None:
+            """
+            Clear modal pending/result state.
 
-	def _replace_app_state(self, values: Dict[str, Any]) -> None:
-		if not isinstance(values, dict):
-			return
-		self._app_state = dict(values)
+            If key is None: clears ALL modal state.
+            If key is provided: clears only that key.
 
-	def get_state(self) -> Dict[str, Any]:
-		"""State exported to UI; includes runtime state, vars, and ui_state."""
-		ui_state = self._ui_state if isinstance(self._ui_state, dict) else {}
+            Does not talk to UI. Use UiApi.popup_clear(...) to also close UI popup.
+            """
+            if key is None:
+                self._modal_pending.clear()
+                self._modal_result_by_key.clear()
+                self._modal_key_by_request_id.clear()
+                return
 
-		return {
-			"chain_id": self.chain_id,
-			"step": self.step,
-			"step_time": self.step_time,
-			"step_elapsed_s": self.step_elapsed_s,
-			"cycle_count": self.cycle_count,
-			"error_flag": self.error_flag,
-			"error_message": self.error_message,
-			"step_desc": self.public.step_desc,
-			"paused": self.paused,
-			"data": copy.deepcopy(self._vars),
-			"ui_state": copy.deepcopy(ui_state),
-			"app_state": copy.deepcopy(self._app_state),
-		}
+            k = str(key or "").strip()
+            if not k:
+                return
+
+            # clear pending mapping
+            req_id = self._modal_pending.pop(k, None)
+            if req_id:
+                self._modal_key_by_request_id.pop(req_id, None)
+
+            # clear any stored result
+            self._modal_result_by_key.pop(k, None)
+
+    @property
+    def public(self) -> "PublicStepChainContext":
+        """Public, script-safe API wrapper."""
+        if self._public is None:
+            self._public = PublicStepChainContext(self)
+        return self._public
+
+    def _update_bus_value(self, source: str, source_id: str, payload: Any) -> None:
+        source = str(source or "unknown")
+        source_id = str(source_id or "")
+
+        if source not in self.data:
+            self.data[source] = {}
+
+        if isinstance(payload, dict) and "key" in payload and "value" in payload:
+            k = str(payload.get("key") or "")
+            if k:
+                existing = self.data[source].get(source_id)
+                if not isinstance(existing, dict) or ("key" in existing and "value" in existing):
+                    existing = {}
+                existing[k] = payload
+                existing["__last__"] = payload
+                self.data[source][source_id] = existing
+            else:
+                self.data[source][source_id] = payload
+        else:
+            self.data[source][source_id] = payload
+
+        self._last_seen_by_source[source] = source_id
+
+    def _update_app_state(self, key: str, value: Any) -> None:
+        key_s = str(key or "").strip()
+        if not key_s:
+            return
+        self._app_state[key_s] = value
+
+    def _replace_app_state(self, values: Dict[str, Any]) -> None:
+        if not isinstance(values, dict):
+            return
+        self._app_state = dict(values)
+
+    def get_state(self) -> Dict[str, Any]:
+        """State exported to UI; includes runtime state, vars, and ui_state."""
+        ui_state = self._ui_state if isinstance(self._ui_state, dict) else {}
+
+        return {
+            "chain_id": self.chain_id,
+            "step": self.step,
+            "step_time": self.step_time,
+            "step_elapsed_s": self.step_elapsed_s,
+            "cycle_count": self.cycle_count,
+            "error_flag": self.error_flag,
+            "error_message": self.error_message,
+            "step_desc": self.public.step_desc,
+            "paused": self.paused,
+            "data": copy.deepcopy(self._vars),
+            "ui_state": copy.deepcopy(ui_state),
+            "app_state": copy.deepcopy(self._app_state),
+        }
 
 
 class PublicStepChainContext:
-	"""Stable, script-facing context (public API)."""
+    """Stable, script-facing context (public API)."""
 
-	def __init__(self, ctx: StepChainContext) -> None:
-		self._ctx = ctx
+    def __init__(self, ctx: StepChainContext) -> None:
+        self._ctx = ctx
 
-		self.values = ValuesApi(ctx)
-		self.vars = VarsApi(ctx)
-		self.ui = UiApi(ctx)
-		self.flow = FlowApi(ctx)
-		self.timing = TimingApi(ctx)
-		self.workers = WorkersApi(ctx)
-		self.worker = self.workers  # alias
+        self.values = ValuesApi(ctx)
+        self.vars = VarsApi(ctx)
+        self.ui = UiApi(ctx)
+        self.flow = FlowApi(ctx)
+        self.timing = TimingApi(ctx)
+        self.workers = WorkersApi(ctx)
+        self.worker = self.workers  # alias
 
-	@property
-	def chain_id(self) -> str:
-		return self._ctx.chain_id
+    @property
+    def chain_id(self) -> str:
+        return self._ctx.chain_id
 
-	@property
-	def cycle_count(self) -> int:
-		return int(self._ctx.cycle_count)
+    @property
+    def cycle_count(self) -> int:
+        return int(self._ctx.cycle_count)
 
-	@property
-	def paused(self) -> bool:
-		return bool(self._ctx.paused)
+    @property
+    def paused(self) -> bool:
+        return bool(self._ctx.paused)
 
-	@property
-	def error_flag(self) -> bool:
-		return bool(self._ctx.error_flag)
+    @property
+    def error_flag(self) -> bool:
+        return bool(self._ctx.error_flag)
 
-	@property
-	def error_message(self) -> str:
-		return str(self._ctx.error_message or "")
+    @property
+    def error_message(self) -> str:
+        return str(self._ctx.error_message or "")
 
-	@property
-	def step(self) -> int:
-		return int(self._ctx.step)
+    @property
+    def step(self) -> int:
+        return int(self._ctx.step)
 
-	@property
-	def data(self) -> Dict[str, Any]:
-		"""Compatibility alias for legacy scripts (mapped to vars)."""
-		return self._ctx._vars
+    @property
+    def data(self) -> Dict[str, Any]:
+        """Compatibility alias for legacy scripts (mapped to vars)."""
+        return self._ctx._vars
 
-	@property
-	def step_desc(self) -> str:
-		return str(self._ctx.step_desc or "")
+    @property
+    def step_desc(self) -> str:
+        return str(self._ctx.step_desc or "")
 
-	def goto(self, step: int, desc: str = "") -> None:
-		self.flow.goto(step=step, desc=desc)
+    def goto(self, step: int, desc: str = "") -> None:
+        self.flow.goto(step=step, desc=desc)
 
-	def fail(self, message: str) -> None:
-		self.flow.fail(message)
+    # -------------------- ergonomics: non-blocking wait --------------------
 
-	def clear_error(self) -> None:
-		self.flow.clear_error()
+    def wait(self, seconds: float, next_step: int, desc: str = "") -> bool:
+        """
+        Non-blocking wait using the engine's step timer.
 
-	def log(self, message: str) -> None:
-		self.ui.log(message)
+        Usage pattern:
+            # In a dedicated WAIT step:
+            if ctx.wait(1.0, STEP.NEXT):
+                return  # optional; once it jumps you're done
 
-	# -------------------- compatibility helpers for legacy scripts --------------------
+        Returns True if the jump happened.
+        """
+        if self.timing.timeout(seconds):
+            self.flow.goto(next_step, desc=desc)
+            return True
+        return False
 
-	def update_ui(self, key: str, value: Any) -> None:
-		self.ui.set(key, value)
+    def notify(self, message: str, type_: str = "info") -> None:
+        self.ui.notify(message, type_)
 
-	def step_time_seconds(self) -> float:
-		return self.timing.step_seconds()
+    def notify_positive(self, message: str) -> None:
+        self.ui.notify(message, "positive")
 
-	def step_time(self) -> float:
-		"""Method form used by legacy scripts: ctx.step_time()."""
-		return self.timing.step_seconds()
+    def notify_negative(self, message: str) -> None:
+        self.ui.notify(message, "negative")
 
-	def timeout(self, seconds: float) -> bool:
-		return self.timing.timeout(seconds)
+    def notify_warning(self, message: str) -> None:
+        self.ui.notify(message, "warning")
 
-	def input(self, key: str, default: Any = None) -> Any:
-		return self.values.by_key(key, default)
+    def notify_info(self, message: str) -> None:
+        self.ui.notify(message, "info")
 
-	def output(self, key: str, value: Any) -> None:
-		self.ui.event("output", key=key, value=value)
+    def set_state(self, key: str, value: Any) -> None:
+        self.ui.set_state(key, value)
 
-	def publish_event(self, name: str, **payload: Any) -> None:
-		self.ui.event(name, **payload)
+    def get_state_var(self, key: str, default: Any = None) -> Any:
+        return self.values.state(key, default)
 
-	def notify(self, message: str, type_: str = "info") -> None:
-		self.ui.notify(message, type_)
+    def get_state(self, key: str, default: Any = None) -> Any:
+        return self.get_state_var(key, default)
 
-	def set_state(self, key: str, value: Any) -> None:
-		"""Write one AppState/UI variable (state.<key>) through UiBridge."""
-		self.ui.set_state(key, value)
+    def state(self, key: str, default: Any = None) -> Any:
+        return self.get_state_var(key, default)
 
-	def get_state_var(self, key: str, default: Any = None) -> Any:
-		"""Read one mirrored AppState value by key."""
-		return self.values.state(key, default)
+    def set_state_many(self, **values: Any) -> None:
+        self.ui.set_state_many(**values)
 
-	def get_state(self, key: str, default: Any = None) -> Any:
-		"""Alias for get_state_var (simpler script syntax)."""
-		return self.get_state_var(key, default)
+    def update_state(self, key: str, value: Any) -> None:
+        self.set_state(key, value)
 
-	def state(self, key: str, default: Any = None) -> Any:
-		"""Shortest read helper: ctx.state("work_feedback")."""
-		return self.get_state_var(key, default)
+    # -------------------- iTAC (IMSApi REST) helpers --------------------
 
-	def set_state_many(self, **values: Any) -> None:
-		"""Write multiple AppState/UI variables in one call."""
-		self.ui.set_state_many(**values)
+    def itac_station_setting(self, connection_id: str, keys: Any, timeout_s: float = 5.0) -> Any:
+        return self.workers.itac_station_setting(connection_id, keys, timeout_s=timeout_s)
 
+    def itac_custom_function(self, connection_id: str, method_name: str, in_args: Any = None, timeout_s: float = 10.0) -> Any:
+        return self.workers.itac_custom_function(connection_id, method_name, in_args=in_args, timeout_s=timeout_s)
 
-	def update_state(self, key: str, value: Any) -> None:
-		"""Alias for non-programmer-friendly scripts."""
-		self.set_state(key, value)
+    def itac_raw_call(self, connection_id: str, function_name: str, body: Any = None, timeout_s: float = 10.0) -> Any:
+        return self.workers.itac_raw_call(connection_id, function_name, body=body, timeout_s=timeout_s)
 
-	# -------------------- iTAC (IMSApi REST) helpers --------------------
+    # -------------------- simplified worker IO for non-programmers --------------------
 
-	def itac_station_setting(self, connection_id: str, keys: Any, timeout_s: float = 5.0) -> Any:
-		return self.workers.itac_station_setting(connection_id, keys, timeout_s=timeout_s)
+    def read_com(self, client_id: str, default: Any = None) -> Any:
+        return self.workers.com_last(client_id, default=default)
 
-	def itac_custom_function(self, connection_id: str, method_name: str, in_args: Any = None, timeout_s: float = 10.0) -> Any:
-		return self.workers.itac_custom_function(connection_id, method_name, in_args=in_args, timeout_s=timeout_s)
+    def send_com(self, client_id: str, data:str , add_delimiter:bool=True) -> Any:
+         self.workers.com_send(client_id, data , add_delimiter=add_delimiter)
 
-	def itac_raw_call(self, connection_id: str, function_name: str, body: Any = None, timeout_s: float = 10.0) -> Any:
-		return self.workers.itac_raw_call(connection_id, function_name, body=body, timeout_s=timeout_s)
+    def com_wait(self, client_id: str, timeout_s: float = 10.0,default: Any = None) -> Any:
+         self.workers.com_wait(client_id, timeout_s=timeout_s ,default=default)
 
+    def send_tcp(self, client_id: str, data: Any) -> None:
+        self.workers.tcp_send(client_id, data)
 
+    def read_tcp(self, client_id: str, default: Any = None, decode: bool = True) -> Any:
+        return self.workers.tcp_message(client_id, default=default, decode=decode)
 
-	# -------------------- simplified worker IO for non-programmers --------------------
+    def write_plc(self, client_id: str, name: str, value: Any) -> None:
+        self.workers.plc_write(client_id, name, value)
 
-	def send_tcp(self, client_id: str, data: Any) -> None:
-		self.workers.tcp_send(client_id, data)
+    def read_plc(self, client_id: str, name: str, default: Any = None) -> Any:
+        return self.workers.plc_value(client_id, name, default)
 
-	def read_tcp(self, client_id: str, default: Any = None, decode: bool = True) -> Any:
-		return self.workers.tcp_message(client_id, default=default, decode=decode)
+    def wait_plc(self, client_id: str, name: str, default: Any = None, timeout_s: float = 1.0) -> Any:
+        return self.workers.plc_wait_value(client_id, name, default=default, timeout_s=timeout_s)
 
-	def write_plc(self, client_id: str, name: str, value: Any) -> None:
-		self.workers.plc_write(client_id, name, value)
+    def rest_request(
+        self,
+        endpoint: str,
+        method: str = "GET",
+        path: str | None = None,
+        url: str | None = None,
+        params: dict[str, Any] | None = None,
+        headers: dict[str, Any] | None = None,
+        json_body: Any = None,
+        data: Any = None,
+        timeout_s: float = 10.0,
+    ) -> dict:
+        return self.workers.rest_request(
+            endpoint,
+            method=str(method or "GET"),
+            path=path,
+            url=url,
+            params=params,
+            headers=headers,
+            json_body=json_body,
+            data=data,
+            timeout_s=timeout_s,
+        )
 
-	def read_plc(self, client_id: str, name: str, default: Any = None) -> Any:
-		return self.workers.plc_value(client_id, name, default)
+    def rest_get(self, endpoint: str, path: str, params: dict[str, Any] | None = None, timeout_s: float = 10.0) -> dict:
+        return self.workers.rest_get(endpoint, path, params=params, timeout_s=timeout_s)
 
-	def read_worker_value(self, worker: str, source_id: str, key: str, default: Any = None) -> Any:
-		return self.workers.get(worker, source_id, key, default)
+    def rest_post_json(self, endpoint: str, path: str, body: Any, timeout_s: float = 10.0) -> dict:
+        return self.workers.rest_post_json(endpoint, path, body, timeout_s=timeout_s)
 
-	def error(self, message: str) -> None:
-		self.flow.fail(message)
+    def read_worker_value(self, worker: str, source_id: str, key: str, default: Any = None) -> Any:
+        return self.workers.get(worker, source_id, key, default)
 
-	def alarm(self, message: str) -> None:
-		self.ui.log(message, level="warning")
+    def error(self, message: str) -> None:
+        self.flow.fail(message)
 
-	def log_success(self, message: str) -> None:
-		self.ui.log(message, level="success")
+    def log_error(self, message: str) -> None:
+        logger.error(message)
 
-	def camera_capture(self, key: str, default: Any = None) -> Any:
-		# Best-effort placeholder: pull latest keyed value from bus mirror.
-		return self.values.by_key(key, default)
+    def log_success(self, message: str) -> None:
+        logger.success(message)
 
-	def set_cycle_time(self, seconds: float) -> None:
-		self.timing.set_cycle_time(seconds)
+    def log_info(self, message: str) -> None:
+        logger.info(message)
 
-	def set_step_desc(self, value: str) -> None:
-		self._ctx.step_desc = value
+    def log_debug(self, message: str) -> None:
+        logger.debug(message)
 
-	def snapshot(self) -> Dict[str, Any]:
-		ui_state = self._ctx._ui_state if isinstance(self._ctx._ui_state, dict) else {}
-		return {
-			"chain_id": self._ctx.chain_id,
-			"step": self._ctx.step,
-			"cycle_count": self._ctx.cycle_count,
-			"step_elapsed_s": self._ctx.step_elapsed_s,
-			"error_flag": self._ctx.error_flag,
-			"error_message": self._ctx.error_message,
-			"step_desc": self.step_desc,
-			"paused": self._ctx.paused,
-			"vars": self.vars.as_dict(),
-			"ui_state": dict(ui_state),
-			"app_state": self.values.state_all(),
-		}
+    def log_warning(self, message: str) -> None:
+        logger.warning(message)
+
+    def camera_capture(self, key: str, default: Any = None) -> Any:
+        return self.values.by_key(key, default)
+
+    def set_cycle_time(self, seconds: float) -> None:
+        self.timing.set_cycle_time(seconds)
+
+    def set_step_desc(self, value: str) -> None:
+        self._ctx.step_desc = value
+
+    def snapshot(self) -> Dict[str, Any]:
+        ui_state = self._ctx._ui_state if isinstance(self._ctx._ui_state, dict) else {}
+        return {
+            "chain_id": self._ctx.chain_id,
+            "step": self._ctx.step,
+            "cycle_count": self._ctx.cycle_count,
+            "step_elapsed_s": self._ctx.step_elapsed_s,
+            "error_flag": self._ctx.error_flag,
+            "error_message": self._ctx.error_message,
+            "step_desc": self.step_desc,
+            "paused": self._ctx.paused,
+            "vars": self.vars.as_dict(),
+            "ui_state": dict(ui_state),
+            "app_state": self.values.state_all(),
+        }

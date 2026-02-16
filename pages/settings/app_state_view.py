@@ -3,6 +3,8 @@ from __future__ import annotations
 
 import json
 import time
+from decimal import Decimal
+import ast
 from typing import Any, Dict, List, Tuple
 
 from nicegui import ui
@@ -32,7 +34,7 @@ def render(container: ui.element, ctx: PageContext) -> None:
 	ui.context.client.on_disconnect(cleanup)
 
 	def build_content(_parent: ui.element) -> None:
-		with ui.column().classes("w-full h-screen box-border gap-3 px-6 pb-6 pt-2 overflow-hidden"):
+		with ui.column().classes("w-full box-border gap-3 px-2 pb-2 pt-1"):
 			ui.label("AppState Inspector").classes("text-xl font-semibold")
 
 			with ui.row().classes("w-full items-center gap-3"):
@@ -61,21 +63,85 @@ def render(container: ui.element, ctx: PageContext) -> None:
 				with ui.card().classes("w-[900px] max-w-[95vw]"):
 					dlg_title = ui.label("Details").classes("text-lg font-semibold")
 					code = ui.code("").classes("w-full max-h-[70vh] overflow-auto")
-					with ui.row().classes("w-full justify-end"):
+					with ui.row().classes("w-full justify-end gap-2"):
+						ui.button("Edit value", on_click=lambda: open_edit_dialog()).props("color=primary")
 						ui.button("Close", on_click=dlg.close).props("outline")
+
+			selected_key: Dict[str, str] = {"key": ""}
+
+			edit_dlg = ui.dialog()
+			with edit_dlg:
+				with ui.card().classes("w-[900px] max-w-[95vw]"):
+					edit_title = ui.label("Edit value").classes("text-lg font-semibold")
+					edit_hint = ui.label("").classes("text-sm text-gray-500")
+					edit_input = ui.textarea(label="New value").props("autogrow outlined").classes("w-full")
+					with ui.row().classes("w-full justify-end gap-2"):
+						ui.button("Cancel", on_click=edit_dlg.close).props("outline")
+						ui.button("Save", on_click=lambda: save_edit()).props("color=primary")
+
+			def _extract_clicked_row(args: Any) -> Dict[str, Any] | None:
+				try:
+					if isinstance(args, dict):
+						return args
+					if isinstance(args, (list, tuple)):
+						# NiceGUI/Quasar often sends [evt, row, index]
+						for item in args:
+							if isinstance(item, dict) and "key" in item:
+								return item
+					return None
+				except Exception:
+					return None
 
 			def open_details(row: Dict[str, Any]) -> None:
 				try:
 					key = row.get("key", "")
+					selected_key["key"] = key
 					dlg_title.set_text("Details: %s" % key)
 					raw = _get_state_value(ctx.state, key)
 					code.set_content(_safe_format_value(raw, max_len=20000))
 					dlg.open()
 				except Exception:
-					# Keep it quiet; inspector must not crash the UI
-					pass
+					ui.notify("Cannot open details for selected row.", type="negative")
 
-			table.on("rowClick", lambda e: open_details(e.args))
+			def open_edit_dialog() -> None:
+				try:
+					key = selected_key.get("key", "")
+					if not key:
+						ui.notify("Select a row first.", type="warning")
+						return
+					raw = _get_state_value(ctx.state, key)
+					edit_title.set_text("Edit: %s" % key)
+					edit_hint.set_text("Type follows current value type: %s" % type(raw).__name__)
+					edit_input.value = _safe_format_value(raw, max_len=20000)
+					edit_dlg.open()
+				except Exception as ex:
+					ui.notify("Cannot open editor: %s" % ex, type="negative")
+
+			def save_edit() -> None:
+				key = selected_key.get("key", "")
+				if not key:
+					ui.notify("Select a row first.", type="warning")
+					return
+				current = _get_state_value(ctx.state, key)
+				text = str(edit_input.value or "")
+				try:
+					new_value = _coerce_from_text(text, current)
+					_set_state_value(ctx.state, key, new_value)
+					edit_dlg.close()
+					dlg.close()
+					refresh_table(force=True)
+					ui.notify("Updated '%s'" % key, type="positive")
+				except Exception as ex:
+					ui.notify("Update failed: %s" % ex, type="negative")
+
+			def on_row_click(e: Any) -> None:
+				row = _extract_clicked_row(getattr(e, "args", None))
+				if row is None:
+					ui.notify("Row click payload not recognized.", type="warning")
+					return
+				open_details(row)
+
+			table.on("rowClick", on_row_click)
 
 			last_snapshot: Dict[str, str] = {}
 
@@ -216,6 +282,85 @@ def _get_state_value(state: Any, key: str) -> Any:
 	except Exception:
 		pass
 	return None
+
+
+def _set_state_value(state: Any, key: str, value: Any) -> None:
+	# Prefer attribute assignment to keep dataclass behavior.
+	try:
+		if hasattr(state, key):
+			setattr(state, key, value)
+			return
+	except Exception:
+		pass
+	try:
+		if isinstance(state, dict):
+			state[key] = value
+			return
+	except Exception:
+		pass
+	try:
+		if hasattr(state, "__dict__") and isinstance(state.__dict__, dict):
+			state.__dict__[key] = value
+			return
+	except Exception:
+		pass
+	raise ValueError("Key '%s' is not writable" % key)
+
+
+def _coerce_from_text(text: str, current_value: Any) -> Any:
+	s = text.strip()
+	t = type(current_value)
+
+	if current_value is None:
+		if s.lower() in ("none", "null", ""):
+			return None
+		try:
+			return ast.literal_eval(s)
+		except Exception:
+			return s
+
+	if t is str:
+		return text
+	if t is bool:
+		v = s.lower()
+		if v in ("true", "1", "yes", "on"):
+			return True
+		if v in ("false", "0", "no", "off"):
+			return False
+		raise ValueError("Boolean expected: true/false")
+	if t is int:
+		return int(s)
+	if t is float:
+		return float(s)
+	if isinstance(current_value, Decimal):
+		return Decimal(s)
+	if isinstance(current_value, (list, dict, tuple, set)):
+		try:
+			parsed = json.loads(s)
+		except Exception:
+			parsed = ast.literal_eval(s)
+		if isinstance(current_value, list):
+			if not isinstance(parsed, list):
+				raise ValueError("List expected")
+			return parsed
+		if isinstance(current_value, dict):
+			if not isinstance(parsed, dict):
+				raise ValueError("Dict expected")
+			return parsed
+		if isinstance(current_value, tuple):
+			if not isinstance(parsed, (list, tuple)):
+				raise ValueError("Tuple/list expected")
+			return tuple(parsed)
+		if isinstance(current_value, set):
+			if not isinstance(parsed, (list, tuple, set)):
+				raise ValueError("Set/list expected")
+			return set(parsed)
+
+	# fallback for custom values: try python literal, then raw string
+	try:
+		return ast.literal_eval(s)
+	except Exception:
+		return text
 
 
 def _safe_format_value(value: Any, max_depth: int = 6, max_len: int = 4000) -> str:

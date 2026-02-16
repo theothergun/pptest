@@ -130,11 +130,20 @@
         "devices": [
           {
             "baudrate": 115200,
+            "bytesize": 8,
             "delimiter": "\r\n",
             "device_id": "scanner_1",
             "encoding": "utf-8",
+            "max_line_len": 4096,
             "mode": "line",
-            "port": "COM5"
+            "parity": "N",
+            "port": "COM5",
+            "read_chunk_size": 256,
+            "reconnect_max_s": 5.0,
+            "reconnect_min_s": 0.5,
+            "stopbits": 1.0,
+            "timeout_s": 0.2,
+            "write_timeout_s": 0.5
           }
         ]
       },

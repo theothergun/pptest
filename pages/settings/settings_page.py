@@ -8,6 +8,9 @@ from pages.settings.tcp_client import tcp_settings
 from pages.settings.rest_api import rest_api_settings
 from pages.settings import scripts_lab
 from pages.settings import language_manager
+from pages.settings import twincat_settings
+from pages.settings import itac_settings
+from pages.settings import com_device_settings
 
 from services.app_config import (
 	list_config_sets,
@@ -28,10 +31,10 @@ def render(container: ui.element, ctx: PageContext) -> None:
 
 			# Left side (title + subtitle)
 			with ui.column().classes("gap-0"):
-				ui.label(t("settings.title", "Settings")).classes("text-2xl font-bold")
+				ui.label(t("settings.title", "Settings")).classes("text-lg font-semibold leading-tight")
 				ui.label(
 					t("settings.subtitle", "Manage application settings and worker configuration.")
-				).classes("text-sm text-gray-500")
+				).classes("text-xs text-gray-500 leading-tight")
 
 			# Right side (config set selector)
 			with ui.row().classes("items-center gap-2"):
@@ -85,7 +88,7 @@ def render(container: ui.element, ctx: PageContext) -> None:
 				ui.button(icon="add", on_click=open_create_dialog)\
 					.props("dense flat round")
 
-		ui.separator().classes("my-3")
+		ui.separator().classes("my-1")
 
 		# -------------------------------
 		# TABS
@@ -93,6 +96,9 @@ def render(container: ui.element, ctx: PageContext) -> None:
 		with ui.tabs().classes("w-full") as tabs:
 			ui.tab("Routes")
 			ui.tab("TCP Clients")
+			ui.tab("TwinCAT")
+			ui.tab("iTAC")
+			ui.tab("COM Device")
 			ui.tab("Scripts")
 			ui.tab("REST APIs")
 			ui.tab("Languages")
@@ -102,6 +108,12 @@ def render(container: ui.element, ctx: PageContext) -> None:
 				route_settings.render(ui.column().classes("w-full gap-4"), ctx)
 			with ui.tab_panel("TCP Clients"):
 				tcp_settings.render(ui.column().classes("w-full gap-4"), ctx)
+			with ui.tab_panel("TwinCAT"):
+				twincat_settings.render(ui.column().classes("w-full gap-4"), ctx)
+			with ui.tab_panel("iTAC"):
+				itac_settings.render(ui.column().classes("w-full gap-4"), ctx)
+			with ui.tab_panel("COM Device"):
+				com_device_settings.render(ui.column().classes("w-full gap-4"), ctx)
 			with ui.tab_panel("Scripts"):
 				scripts_lab.render(ui.column().classes("w-full gap-4"), ctx)
 			with ui.tab_panel("REST APIs"):

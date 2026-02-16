@@ -91,3 +91,15 @@ class ComDeviceCommands(StrEnum):
 	LIST_DEVICES = "com.list_devices"
 	SEND = "com.send"
 	STOP = "com.stop"
+
+
+# ------------------------------------------------------------------ OPC UA Worker
+
+class OpcUaCommands(StrEnum):
+	ADD_ENDPOINT = "opcua.add_endpoint"
+	REMOVE_ENDPOINT = "opcua.remove_endpoint"
+	CONNECT = "opcua.connect"
+	DISCONNECT = "opcua.disconnect"
+	READ = "opcua.read"
+	WRITE = "opcua.write"
+	STOP = "opcua.stop"

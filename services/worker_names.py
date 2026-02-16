@@ -7,4 +7,5 @@ class WorkerName:
     TWINCAT = "twincat"
     ITAC = "itac"
     COM_DEVICE = "com_device"
+    OPCUA = "opcua"
     # add more here

@@ -12,6 +12,12 @@ def build_header(ctx: PageContext) -> ui.header:
 
     with header:
         with ui.row().classes("h-full items-center w-full px-4"):
+            # First icon on the left: drawer toggle (icon only)
+            ui.button(
+                icon="menu",
+                on_click=lambda: ctx.drawer.toggle() if ctx.drawer else None,
+            ).props("flat round dense color=white").classes("mr-2")
+
             ui.label(t("app.title", "Shopfloor application")).classes("text-lg font-semibold")
             ui.space()
 
@@ -29,14 +35,7 @@ def build_header(ctx: PageContext) -> ui.header:
                 label="Language",
             ).props("dense outlined bg-color=white").classes("min-w-[180px] text-black")
 
-            # Toggle Nav
-            ui.button(
-                t("header.toggle_nav", "Toggle Nav"),
-                icon="menu",
-                on_click=lambda: ctx.drawer.toggle() if ctx.drawer else None,
-            ).props("flat color=white no-caps")
-
-            # Live date/time (right next to Toggle Nav)
+            # Live date/time
             dt_label = ui.label("").classes("ml-3 text-sm text-white/90")
 
             def update_time() -> None:

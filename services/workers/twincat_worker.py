@@ -22,6 +22,7 @@ from services.workers.base_worker import BaseWorker
 @dataclass(slots=True)
 class SubDef:
 	name: str
+	alias: str = ""
 	plc_type: str = "UINT"
 	string_len: int = 80
 	notification_handle: int = 0
@@ -261,6 +262,7 @@ class TwinCatWorker(BaseWorker):
 		conn = st.conn
 		client_id = st.cfg.client_id
 		name = sub.name
+		publish_key = sub.alias or sub.name
 
 		data_type, byte_size, is_string, is_wstring = _ads_datatype_and_size(sub.plc_type, sub.string_len)
 		attr = pyads.NotificationAttrib(byte_size)
@@ -269,7 +271,7 @@ class TwinCatWorker(BaseWorker):
 			try:
 				_, _, value = conn.parse_notification(notification, data_type)
 			except Exception as e:
-				self.publish_error_as(client_id, key=name, action="notify_parse", error=str(e))
+				self.publish_error_as(client_id, key=publish_key, action="notify_parse", error=str(e))
 				return
 
 			if is_string:
@@ -293,8 +295,8 @@ class TwinCatWorker(BaseWorker):
 					except Exception:
 						pass
 
-			st.values[name] = value
-			self.publish_value_as(client_id, name, value)
+			st.values[publish_key] = value
+			self.publish_value_as(client_id, publish_key, value)
 
 		sub.callback = _callback
 
@@ -312,7 +314,7 @@ class TwinCatWorker(BaseWorker):
 
 	def _write(self, log, plcs: Dict[str, PlcState], payload: Dict[str, Any]) -> None:
 		client_id = str(payload.get("client_id") or "")
-		name = payload.get("name")
+		name = str(payload.get("name") or "")
 		value = payload.get("value")
 
 		if not client_id:
@@ -321,15 +323,20 @@ class TwinCatWorker(BaseWorker):
 
 		st = plcs.get(client_id)
 		if not st or not st.conn or not st.connected:
-			self.publish_error_as(client_id, key=str(name or ""), action="write", error="not_connected")
+			self.publish_error_as(client_id, key=name, action="write", error="not_connected")
 			return
 
 		try:
-			st.conn.write_by_name(str(name or ""), value)
+			target_name = name
+			for sub in st.subs.values():
+				if name == sub.alias:
+					target_name = sub.name
+					break
+			st.conn.write_by_name(target_name, value)
 			self.publish_write_finished_as(client_id, f"write:{name}")
-			log.debug(f"write ok: client_id={client_id} name={name!r} value_type={type(value)}")
+			log.debug(f"write ok: client_id={client_id} name={name!r} target={target_name!r} value_type={type(value)}")
 		except Exception as e:
-			self.publish_error_as(client_id, key=str(name or ""), action="write", error=str(e))
+			self.publish_error_as(client_id, key=name, action="write", error=str(e))
 			log.error(f"write failed: client_id={client_id} name={name!r} err={e!r}")
 
 
@@ -357,6 +364,7 @@ def _build_subs(st: PlcState) -> None:
 				continue
 			st.subs[name] = SubDef(
 				name=name,
+				alias=str(entry.get("alias") or "").strip(),
 				plc_type=str(entry.get("plc_type", "UINT") or "UINT"),
 				string_len=int(entry.get("string_len", 80) or 80),
 			)

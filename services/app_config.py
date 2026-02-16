@@ -135,6 +135,7 @@ WORKER_REST = "rest_api"
 WORKER_TWINCAT = "twincat"
 WORKER_ITAC = "itac"
 WORKER_COM_DEVICE  = "com_device"
+WORKER_OPCUA = "opcua"
 
 
 # ------------------------------------------------------------------ Config models
@@ -162,6 +163,7 @@ class NavigationConfig:
         ]
     )
     main_route: str = "home"
+    hide_nav_on_startup: bool = False
     custom_routes: list[dict[str, Any]] = field(default_factory=list)
     route_roles: dict[str, list[str]] = field(default_factory=dict)
 
@@ -243,6 +245,18 @@ class ItacEndpoint:
     verify_ssl: bool = True
     auto_login: bool = True
     force_locale: str = ""
+
+@dataclass
+class OpcUaEndpoint:
+    name: str
+    server_url: str
+    security_policy: str = "None"
+    security_mode: str = "None"
+    username: str = ""
+    password: str = ""
+    timeout_s: float = 5.0
+    auto_connect: bool = False
+    nodes: list[dict[str, Any]] = field(default_factory=list)
 
 
 @dataclass
@@ -333,6 +347,7 @@ def _from_dict(data: dict[str, Any]) -> AppConfig:
     navigation = NavigationConfig(
         visible_routes=nav_data.get("visible_routes", NavigationConfig().visible_routes),
         main_route=nav_data.get("main_route", NavigationConfig().main_route),
+        hide_nav_on_startup=bool(nav_data.get("hide_nav_on_startup", False)),
         custom_routes=nav_data.get("custom_routes", []),
         route_roles=nav_data.get("route_roles", {}),
     )
@@ -416,6 +431,11 @@ def get_com_device_entries(cfg: AppConfig) -> list[ComDeviceEntry]:
             e["delimiter"] = _decode_escaped(e.get("delimiter", "\\n"))
         entries.append(ComDeviceEntry(**e))
     return entries
+
+
+def get_opcua_endpoints(cfg: AppConfig) -> list[OpcUaEndpoint]:
+    raw = get_worker_config(cfg, WORKER_OPCUA).get("endpoints", [])
+    return [OpcUaEndpoint(**e) for e in raw if isinstance(e, dict)]
 
 
 def _decode_escaped(s: str) -> str:

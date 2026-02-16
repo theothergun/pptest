@@ -24,7 +24,8 @@ from services.app_config import (
 	get_script_auto_start_chains,
 	get_twincat_plc_endpoints,
 	get_itac_endpoints,
-	get_com_device_entries
+	get_com_device_entries,
+	get_opcua_endpoints,
 )
 
 from services.worker_commands import (
@@ -33,6 +34,7 @@ from services.worker_commands import (
 	RestApiCommands as RestCommands,
 	TwinCatCommands,
 	ItacCommands,
+	OpcUaCommands,
 
 )
 
@@ -91,6 +93,7 @@ from services.workers.script_worker import ScriptWorker
 from services.workers.itac_worker import ItacWorker
 from services.workers.rest_api_worker import RestApiWorker
 from services.workers.com_device_worker import ComDeviceWorker
+from services.workers.opcua_worker import OpcUaWorker
 
 WORKER_CATALOG = {
 	WorkerName.TCP_CLIENT: TcpClientWorker,
@@ -98,7 +101,8 @@ WORKER_CATALOG = {
     WorkerName.SCRIPT: ScriptWorker,
 	WorkerName.ITAC : ItacWorker,
 	WorkerName.REST_API : RestApiWorker,
-	WorkerName.COM_DEVICE: ComDeviceWorker
+	WorkerName.COM_DEVICE: ComDeviceWorker,
+	WorkerName.OPCUA: OpcUaWorker,
 }
 
 for worker_name in APP_CONFIG.workers.enabled_workers:
@@ -214,6 +218,22 @@ if itac_handle:
 			verify_ssl=endpoint.verify_ssl,
 			auto_login=endpoint.auto_login,
 			force_locale=endpoint.force_locale,
+		)
+
+opcua_handle = GLOBAL_WORKERS.get(WorkerName.OPCUA)
+if opcua_handle:
+	for endpoint in get_opcua_endpoints(APP_CONFIG):
+		opcua_handle.send(
+			OpcUaCommands.ADD_ENDPOINT,
+			name=endpoint.name,
+			server_url=endpoint.server_url,
+			security_policy=endpoint.security_policy,
+			security_mode=endpoint.security_mode,
+			username=endpoint.username,
+			password=endpoint.password,
+			timeout_s=endpoint.timeout_s,
+			auto_connect=endpoint.auto_connect,
+			nodes=endpoint.nodes,
 		)
 
 

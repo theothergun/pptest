@@ -97,7 +97,7 @@ def _render_endpoints(scroll_to: str | None = None, highlight: str | None = None
             str_len = ui.input("Default string len", value=str(ep.get("default_string_len", 80))).classes("w-52")
 
         subs = ui.textarea(
-            "Subscriptions (JSON list)",
+            "Subscriptions (JSON list: [{\"name\":\"Main.CURRENTIP\",\"alias\":\"CurrentIp\",\"plc_type\":\"STRING\",\"string_len\":64}])",
             value=json.dumps(ep.get("subscriptions", []), indent=2),
         ).classes("w-full")
 
@@ -131,7 +131,10 @@ def _open_add_dialog() -> None:
         trans_mode = ui.input("Default trans mode", value="server_cycle").classes("w-full")
         cycle_ms = ui.input("Default cycle (ms)", value="200").classes("w-full")
         str_len = ui.input("Default string len", value="80").classes("w-full")
-        subs = ui.textarea("Subscriptions (JSON list)", value="[]").classes("w-full")
+        subs = ui.textarea(
+            "Subscriptions (JSON list: [{\"name\":\"Main.CURRENTIP\",\"alias\":\"CurrentIp\",\"plc_type\":\"STRING\",\"string_len\":64}])",
+            value="[]",
+        ).classes("w-full")
 
         with ui.row().classes("w-full justify-end gap-2"):
             ui.button("Cancel", on_click=d.close).props("flat")

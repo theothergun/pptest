@@ -106,7 +106,7 @@ def main(ctx: PublicStepChainContext):
 	#ctx.set_cycle_time(1)
 
 	step = ctx.step
-	print(step)
+	#print(step)
 	if step == STEP.INIT:
 
 		ctx.set_step_desc("init")
@@ -114,6 +114,10 @@ def main(ctx: PublicStepChainContext):
 		ctx.goto(STEP.WAIT_SCAN)
 
 	elif step == STEP.WAIT_SCAN:
+		pass
+		ctx.set_state("sr" , "444")
+		val = ctx.read_worker_value("opcua", "local", "Watchdog", default=None)
+		#print(val)
 		#	import time
 		#	time.sleep(2)
 		#res = ctx.ui.popup_confirm(
@@ -165,31 +169,31 @@ def main(ctx: PublicStepChainContext):
 		#	default="auto",
 		#)
 
-		if ans is None:
-			return
-		if not ans.get("ok"):
-			return
-		mode = str(ans.get("value") or "")
-		print(mode)
-		return
-		if res:
-			print(res.get("clicked"))
+		#if ans is None:
+		#	return
+		#if not ans.get("ok"):
+		#	return
+		#mode = str(ans.get("value") or "")
+		#print(mode)
+		#return
+		#if res:
+		#	print(res.get("clicked"))
 		#res =None
-		print(res)
-		if res is None:
-			return  # keep waiting, do NOT advance step
-		if res is True:
-			ctx.goto(20)
-		else:
-			ctx.goto(0)
+		#print(res)
+		#if res is None:
+	#		return  # keep waiting, do NOT advance step
+		#if res is True:
+		#	ctx.goto(20)
+		#else:
+		#	ctx.goto(0)
 
 		# Demo behavior: increment GOOD and then request pack info.
-		part_good = to_int(ctx.get_state(UI_VAR.PART_GOOD, 0), 0)
-		ctx.set_state(UI_VAR.PART_GOOD, part_good + 1)
+		#part_good = to_int(ctx.get_state(UI_VAR.PART_GOOD, 0), 0)
+		#ctx.set_state(UI_VAR.PART_GOOD, part_good + 1)
 
-		ctx.set_step_desc("wait before mes")
-		ui_wait(ctx, "Please scan a part", "Preparing MES request...")
-		ctx.goto(STEP.WAIT_BEFORE_MES)
+		#ctx.set_step_desc("wait before mes")
+		#ui_wait(ctx, "Please scan a part", "Preparing MES request...")
+		#ctx.goto(STEP.WAIT_BEFORE_MES)
 
 	elif step == STEP.WAIT_BEFORE_MES:
 		# Non-blocking delay (no sleep)

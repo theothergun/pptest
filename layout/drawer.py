@@ -1,6 +1,7 @@
 from nicegui import ui, app
 from layout.context import PageContext
 from layout.router import get_visible_routes, navigate, Route
+from services.app_config import get_app_config
 
 
 
@@ -28,7 +29,8 @@ def _render_drawer_content(ctx: PageContext) -> None:
 
 
 def build_drawer(ctx: PageContext) -> ui.left_drawer:
-	drawer = ui.left_drawer(value=True, bordered=True).props("width=180").classes("bg-gray-50")
+	hide_on_startup = bool(getattr(get_app_config().ui.navigation, "hide_nav_on_startup", False))
+	drawer = ui.left_drawer(value=not hide_on_startup, bordered=True).props("width=180").classes("bg-gray-50")
 	ctx.drawer = drawer
 
 	with drawer:

@@ -46,7 +46,7 @@
         {
           "icon": "home",
           "key": "app_state",
-          "label": "app_state",
+          "label": "Application Variables",
           "path": "settings/app_state_view.py"
         },
         {
@@ -68,6 +68,7 @@
           "path": "settings/language_manager.py"
         }
       ],
+      "hide_nav_on_startup": false,
       "main_route": "home",
       "route_roles": {
         "app_state": [
@@ -127,38 +128,34 @@
   "workers": {
     "configs": {
       "com_device": {
-        "devices": [
-          {
-            "baudrate": 115200,
-            "bytesize": 8,
-            "delimiter": "\r\n",
-            "device_id": "scanner_1",
-            "encoding": "utf-8",
-            "max_line_len": 4096,
-            "mode": "line",
-            "parity": "N",
-            "port": "COM5",
-            "read_chunk_size": 256,
-            "reconnect_max_s": 5.0,
-            "reconnect_min_s": 0.5,
-            "stopbits": 1.0,
-            "timeout_s": 0.2,
-            "write_timeout_s": 0.5
-          }
-        ]
+        "devices": []
       },
       "itac": {
+        "endpoints": []
+      },
+      "opcua": {
         "endpoints": [
           {
-            "auto_login": true,
-            "base_url": "http://mk01smesapp02:8080/mes/imsapi/rest/actions",
-            "client": "01",
-            "name": "itac_main",
-            "registration_type": "S",
-            "station_number": "6000000001",
-            "system_identifier": "nicegui",
-            "timeout_s": 10.0,
-            "verify_ssl": false
+            "auto_connect": true,
+            "name": "local",
+            "nodes": [
+              {
+                "alias": "time",
+                "node_id": "ns=2;s=[System]/Gateway/CurrentDateTime",
+                "poll_ms": 500
+              },
+              {
+                "alias": "Watchdog",
+                "node_id": "ns=2;s=[core_rscheuer]/KE-Elektronik/MK01/DataWiring/TransferLine/Fakra-KE-27/MES/SetupCheck/result_text",
+                "poll_ms": 250
+              }
+            ],
+            "password": "",
+            "security_mode": "None",
+            "security_policy": "None",
+            "server_url": "opc.tcp://192.168.1.26:62541",
+            "timeout_s": 5.0,
+            "username": ""
           }
         ]
       },
@@ -188,69 +185,20 @@
         "auto_start_chains": [
           {
             "instance_id": "default",
-            "script_name": "examples/popups"
+            "script_name": "Packaging/pack"
           }
         ]
       },
       "tcp_client": {
-        "clients": [
-          {
-            "auto_reconnect": true,
-            "client_id": "scanner_1",
-            "connect": true,
-            "delimiter": "\\n",
-            "encoding": "utf-8",
-            "host": "127.0.0.1",
-            "keepalive": true,
-            "mode": "line",
-            "port": 4001,
-            "reconnect_max_s": 10.0,
-            "reconnect_min_s": 1.0,
-            "tcp_nodelay": true
-          }
-        ]
+        "clients": []
       },
       "twincat": {
-        "plc_endpoints": [
-          {
-            "ads_port": 851,
-            "client_id": "twincat",
-            "plc_ams_net_id": "5.140.130.124.1.1",
-            "plc_ip": "192.168.0.50",
-            "subscriptions": [
-              {
-                "name": "MAIN.currentIPAddress",
-                "plc_type": "STRING",
-                "string_len": 64
-              },
-              {
-                "name": "MAIN.watchdog",
-                "plc_type": "UINT"
-              },
-              {
-                "name": "MAIN.test",
-                "plc_type": "STRING"
-              },
-              {
-                "name": "MAIN.idx",
-                "plc_type": "INT"
-              },
-              {
-                "name": "MAIN.isMQTTSetup",
-                "plc_type": "BOOL"
-              }
-            ]
-          }
-        ]
+        "plc_endpoints": []
       }
     },
     "enabled_workers": [
       "script_worker",
-      "twincat",
-      "tcp_client",
-      "itac",
-      "rest_api",
-      "com_device"
+      "opcua"
     ]
   }
 }

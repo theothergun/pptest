@@ -11,6 +11,11 @@ from pages.settings import language_manager
 from pages.settings import twincat_settings
 from pages.settings import itac_settings
 from pages.settings import com_device_settings
+from pages.settings import opcua_settings
+from pages.settings import enabled_workers_settings
+from pages.settings import general_settings
+from pages.settings import startup_settings
+from pages.settings import app_state_view
 
 from services.app_config import (
 	list_config_sets,
@@ -94,16 +99,29 @@ def render(container: ui.element, ctx: PageContext) -> None:
 		# TABS
 		# -------------------------------
 		with ui.tabs().classes("w-full") as tabs:
+			ui.tab("General")
+			ui.tab("Startup")
+			ui.tab("Application Variables")
+			ui.tab("Enabled Workers")
 			ui.tab("Routes")
 			ui.tab("TCP Clients")
 			ui.tab("TwinCAT")
 			ui.tab("iTAC")
 			ui.tab("COM Device")
+			ui.tab("OPC UA")
 			ui.tab("Scripts")
 			ui.tab("REST APIs")
 			ui.tab("Languages")
 
-		with ui.tab_panels(tabs, value="Routes").classes("w-full"):
+		with ui.tab_panels(tabs, value="General").classes("w-full"):
+			with ui.tab_panel("General"):
+				general_settings.render(ui.column().classes("w-full gap-4"), ctx)
+			with ui.tab_panel("Startup"):
+				startup_settings.render(ui.column().classes("w-full gap-4"), ctx)
+			with ui.tab_panel("Application Variables"):
+				app_state_view.render(ui.column().classes("w-full h-full min-h-0"), ctx)
+			with ui.tab_panel("Enabled Workers"):
+				enabled_workers_settings.render(ui.column().classes("w-full gap-4"), ctx)
 			with ui.tab_panel("Routes"):
 				route_settings.render(ui.column().classes("w-full gap-4"), ctx)
 			with ui.tab_panel("TCP Clients"):
@@ -114,6 +132,8 @@ def render(container: ui.element, ctx: PageContext) -> None:
 				itac_settings.render(ui.column().classes("w-full gap-4"), ctx)
 			with ui.tab_panel("COM Device"):
 				com_device_settings.render(ui.column().classes("w-full gap-4"), ctx)
+			with ui.tab_panel("OPC UA"):
+				opcua_settings.render(ui.column().classes("w-full gap-4"), ctx)
 			with ui.tab_panel("Scripts"):
 				scripts_lab.render(ui.column().classes("w-full gap-4"), ctx)
 			with ui.tab_panel("REST APIs"):

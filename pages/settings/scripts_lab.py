@@ -656,33 +656,40 @@ def build_page(ctx: PageContext) -> None:
 			with ui.grid().classes("w-full gap-4").style("grid-template-columns: max-content 1fr;"):
 				# Available scripts
 				with ui.card().classes("w-full"):
-					ui.label("Available Scripts").classes("text-lg font-bold mb-2")
-					ui_refs["script_list_container"] = ui.column().classes("w-full gap-2")
-					ui_refs["startup_container"] = ui.column().classes("w-full gap-2 mt-4")
+					with ui.tabs().classes("w-full") as scripts_tabs:
+						ui.tab("Available Scripts")
+						ui.tab("Start on startup")
 
-					def start_selected() -> None:
-						node_id = scripts_tree["selected_id"]
-						if not node_id:
-							ui.notify("Please select a script leaf first", type="negative")
-							return
-						_start_chain(node_id)
+					with ui.tab_panels(scripts_tabs, value="Available Scripts").classes("w-full"):
+						with ui.tab_panel("Available Scripts"):
+							ui_refs["script_list_container"] = ui.column().classes("w-full gap-2")
 
-					def edit_selected() -> None:
-						node_id = scripts_tree["selected_id"]
-						if not node_id:
-							ui.notify("Please select a script leaf first", type="negative")
-							return
-						_open_editor(node_id)
+							def start_selected() -> None:
+								node_id = scripts_tree["selected_id"]
+								if not node_id:
+									ui.notify("Please select a script leaf first", type="negative")
+									return
+								_start_chain(node_id)
 
-					with ui.row().classes("w-full gap-2"):
-						ui.button("Start Selected", icon="play_arrow", on_click=start_selected).props("color=green").classes("w-full")
-						ui.button("Edit", icon="edit", on_click=edit_selected).props("color=blue outline").classes("w-full")
+							def edit_selected() -> None:
+								node_id = scripts_tree["selected_id"]
+								if not node_id:
+									ui.notify("Please select a script leaf first", type="negative")
+									return
+								_open_editor(node_id)
 
-					ui.button(
-						"Refresh List",
-						icon="refresh",
-						on_click=lambda: worker_handle.send(Commands.LIST_SCRIPTS),
-					).props("color=blue flat").classes("w-full")
+							with ui.row().classes("w-full gap-2"):
+								ui.button("Start Selected", icon="play_arrow", on_click=start_selected).props("color=green").classes("w-full")
+								ui.button("Edit", icon="edit", on_click=edit_selected).props("color=blue outline").classes("w-full")
+
+							ui.button(
+								"Refresh List",
+								icon="refresh",
+								on_click=lambda: worker_handle.send(Commands.LIST_SCRIPTS),
+							).props("color=blue flat").classes("w-full")
+
+						with ui.tab_panel("Start on startup"):
+							ui_refs["startup_container"] = ui.column().classes("w-full gap-2")
 
 				# Running chains
 				with ui.card().classes("w-full"):

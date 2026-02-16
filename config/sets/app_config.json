@@ -196,7 +196,7 @@
         "clients": [
           {
             "auto_reconnect": true,
-            "client_id": "scanner1",
+            "client_id": "scanner_1",
             "connect": true,
             "delimiter": "\\n",
             "encoding": "utf-8",
@@ -204,7 +204,7 @@
             "keepalive": true,
             "mode": "line",
             "port": 4001,
-            "reconnect_max_s": 1.0,
+            "reconnect_max_s": 10.0,
             "reconnect_min_s": 1.0,
             "tcp_nodelay": true
           }

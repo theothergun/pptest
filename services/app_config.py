@@ -164,6 +164,7 @@ class NavigationConfig:
     )
     main_route: str = "home"
     hide_nav_on_startup: bool = False
+    dark_mode: bool = False
     custom_routes: list[dict[str, Any]] = field(default_factory=list)
     route_roles: dict[str, list[str]] = field(default_factory=dict)
 
@@ -348,6 +349,7 @@ def _from_dict(data: dict[str, Any]) -> AppConfig:
         visible_routes=nav_data.get("visible_routes", NavigationConfig().visible_routes),
         main_route=nav_data.get("main_route", NavigationConfig().main_route),
         hide_nav_on_startup=bool(nav_data.get("hide_nav_on_startup", False)),
+        dark_mode=bool(nav_data.get("dark_mode", False)),
         custom_routes=nav_data.get("custom_routes", []),
         route_roles=nav_data.get("route_roles", {}),
     )

@@ -11,11 +11,13 @@ from nicegui import ui
 
 from layout.context import PageContext
 from layout.page_scaffold import build_page
+from services.worker_topics import WorkerTopics
 
 
 def render(container: ui.element, ctx: PageContext) -> None:
 	# --- lifecycle management (same pattern as Scripts Lab / Home) ---
 	page_timers: list = []
+	page_subs: list = []
 
 	def add_timer(*args, **kwargs):
 		t = ui.timer(*args, **kwargs)
@@ -23,6 +25,13 @@ def render(container: ui.element, ctx: PageContext) -> None:
 		return t
 
 	def cleanup() -> None:
+		for sub in page_subs:
+			try:
+				sub.close()
+			except Exception:
+				pass
+		page_subs[:] = []
+
 		for t in page_timers:
 			try:
 				t.cancel()
@@ -35,8 +44,6 @@ def render(container: ui.element, ctx: PageContext) -> None:
 
 	def build_content(_parent: ui.element) -> None:
 		with ui.column().classes("w-full box-border gap-3 px-2 pb-2 pt-1"):
-			ui.label("AppState Inspector").classes("text-xl font-semibold")
-
 			with ui.row().classes("w-full items-center gap-3"):
 				filter_input = ui.input("Filter (key contains...)").classes("w-[380px]")
 				refresh_ms_input = ui.number("Refresh (ms)", value=300, min=100, max=5000, step=50).classes("w-[180px]")
@@ -97,7 +104,7 @@ def render(container: ui.element, ctx: PageContext) -> None:
 					key = row.get("key", "")
 					selected_key["key"] = key
 					dlg_title.set_text("Details: %s" % key)
-					raw = _get_state_value(ctx.state, key)
+					raw = last_raw_by_key.get(key, _get_state_value(ctx.state, key))
 					code.set_content(_safe_format_value(raw, max_len=20000))
 					dlg.open()
 				except Exception:
@@ -122,6 +129,9 @@ def render(container: ui.element, ctx: PageContext) -> None:
 				if not key:
 					ui.notify("Select a row first.", type="warning")
 					return
+				if row_scope.get(key) != "app_state":
+					ui.notify("Worker/device values are read-only here.", type="warning")
+					return
 				current = _get_state_value(ctx.state, key)
 				text = str(edit_input.value or "")
 				try:
@@ -144,14 +154,44 @@ def render(container: ui.element, ctx: PageContext) -> None:
 			table.on("rowClick", on_row_click)
 
 			last_snapshot: Dict[str, str] = {}
+			last_raw_by_key: Dict[str, Any] = {}
+			row_scope: Dict[str, str] = {}
+			worker_values: Dict[str, Any] = {}
+
+			sub_values = None
+			try:
+				if ctx.worker_bus is not None:
+					sub_values = ctx.worker_bus.subscribe(WorkerTopics.VALUE_CHANGED)
+					page_subs.append(sub_values)
+			except Exception:
+				sub_values = None
+
+			def _drain_worker_values() -> None:
+				if sub_values is None:
+					return
+				while True:
+					try:
+						msg = sub_values.queue.get_nowait()
+					except Exception:
+						break
+					payload = getattr(msg, "payload", None) or {}
+					k = str(payload.get("key") or "")
+					if not k:
+						continue
+					full_key = f"{str(getattr(msg, 'source', '') or '')}/{str(getattr(msg, 'source_id', '') or '')}/{k}"
+					worker_values[full_key] = payload.get("value")
 
 			def refresh_table(force: bool = False) -> None:
+				_drain_worker_values()
+
 				# build rows
 				items = _extract_state_items(ctx.state)
 
 				flt = (filter_input.value or "").strip().lower()
 				rows: List[Dict[str, str]] = []
 				snapshot: Dict[str, str] = {}
+				raw_by_key: Dict[str, Any] = {}
+				scope_by_key: Dict[str, str] = {}
 
 				for k, v in items:
 					if flt and flt not in k.lower():
@@ -160,6 +200,18 @@ def render(container: ui.element, ctx: PageContext) -> None:
 					vstr = _safe_format_value(v)
 					rows.append({"key": k, "type": tname, "value": vstr})
 					snapshot[k] = "%s|%s" % (tname, vstr)
+					raw_by_key[k] = v
+					scope_by_key[k] = "app_state"
+
+				for k, v in list(worker_values.items()):
+					if flt and flt not in k.lower():
+						continue
+					tname = type(v).__name__
+					vstr = _safe_format_value(v)
+					rows.append({"key": k, "type": tname, "value": vstr})
+					snapshot[k] = "%s|%s" % (tname, vstr)
+					raw_by_key[k] = v
+					scope_by_key[k] = "worker"
 
 				rows.sort(key=lambda r: r["key"])
 
@@ -169,6 +221,10 @@ def render(container: ui.element, ctx: PageContext) -> None:
 
 				last_snapshot.clear()
 				last_snapshot.update(snapshot)
+				last_raw_by_key.clear()
+				last_raw_by_key.update(raw_by_key)
+				row_scope.clear()
+				row_scope.update(scope_by_key)
 
 				table.rows = rows
 				table.update()
@@ -197,7 +253,7 @@ def render(container: ui.element, ctx: PageContext) -> None:
 			refresh_table(force=True)
 			add_timer(0.05, tick)
 
-	build_page(ctx, container, title="AppState Inspector", content=build_content, show_action_bar=False)
+	build_page(ctx, container, title=None, content=build_content, show_action_bar=False)
 
 
 def _extract_state_items(state: Any) -> List[Tuple[str, Any]]:

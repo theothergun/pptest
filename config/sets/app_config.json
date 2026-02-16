@@ -38,18 +38,6 @@
           "path": "settings/settings_page.py"
         },
         {
-          "icon": "dashboard",
-          "key": "summary",
-          "label": "Summary",
-          "path": "summary.py"
-        },
-        {
-          "icon": "home",
-          "key": "app_state",
-          "label": "Application Variables",
-          "path": "settings/app_state_view.py"
-        },
-        {
           "icon": "insert_drive_file",
           "key": "packaging",
           "label": "Packaging",
@@ -68,13 +56,10 @@
           "path": "settings/language_manager.py"
         }
       ],
+      "dark_mode": true,
       "hide_nav_on_startup": false,
-      "main_route": "home",
+      "main_route": "packaging",
       "route_roles": {
-        "app_state": [
-          "user",
-          "admin"
-        ],
         "errors": [
           "user",
           "admin"
@@ -100,10 +85,6 @@
         ],
         "settings": [
           "user"
-        ],
-        "summary": [
-          "user",
-          "admin"
         ],
         "tcp_settings": [
           "admin"

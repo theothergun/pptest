@@ -12,6 +12,8 @@ def _render_drawer_content(ctx: PageContext) -> None:
 	ctx.nav_buttons.clear()
 	ctx.drawer_content.clear()
 	active_key = app.storage.user.get("current_route", "")
+	is_dark = bool(getattr(get_app_config().ui.navigation, "dark_mode", False))
+	inactive_color = "grey-3" if is_dark else "grey-8"
 	# Build buttons
 	for key, route in get_visible_routes().items():
 		if key == "errors":
@@ -25,12 +27,14 @@ def _render_drawer_content(ctx: PageContext) -> None:
 		else:
 			# Normal look:
 			btn.props("flat")
-			btn.props("color=grey-8")
+			btn.props(f"color={inactive_color}")
 
 
 def build_drawer(ctx: PageContext) -> ui.left_drawer:
+	is_dark = bool(getattr(get_app_config().ui.navigation, "dark_mode", False))
 	hide_on_startup = bool(getattr(get_app_config().ui.navigation, "hide_nav_on_startup", False))
-	drawer = ui.left_drawer(value=not hide_on_startup, bordered=True).props("width=180").classes("bg-gray-50")
+	drawer_classes = "bg-slate-900 text-gray-100" if is_dark else "bg-gray-50"
+	drawer = ui.left_drawer(value=not hide_on_startup, bordered=True).props("width=180").classes(drawer_classes)
 	ctx.drawer = drawer
 
 	with drawer:

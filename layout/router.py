@@ -97,6 +97,8 @@ def is_route_visible(key: str) -> bool:
 
 def _apply_drawer_highlight(ctx: PageContext, active_key: str) -> None:
     """Update drawer button styles so the active one looks selected."""
+    is_dark = bool(getattr(get_app_config().ui.navigation, "dark_mode", False))
+    inactive_color = "grey-3" if is_dark else "grey-8"
     for key, btn in ctx.nav_buttons.items():
         if key == active_key:
             # Selected look:
@@ -105,7 +107,7 @@ def _apply_drawer_highlight(ctx: PageContext, active_key: str) -> None:
         else:
             # Normal look:
             btn.props("flat")
-            btn.props("color=grey-8")
+            btn.props(f"color={inactive_color}")
 
 
 #supports visiting: http://localhost:8080/?page=reports
@@ -141,6 +143,15 @@ def navigate(ctx: PageContext, route_key: str) -> None:
 
     if ctx.breadcrumb:
         ctx.breadcrumb.set_text(f"/{route_key}")
+
+    # Run per-page cleanup (timers/subscriptions) before removing old UI tree.
+    try:
+        cleanup = getattr(ctx.state, "_page_cleanup", None) if ctx.state is not None else None
+        if callable(cleanup):
+            cleanup()
+            setattr(ctx.state, "_page_cleanup", None)
+    except Exception:
+        pass
 
     if ctx.main_area:
         ctx.main_area.clear()

@@ -11,18 +11,22 @@ def render(container: ui.element, _ctx: PageContext) -> None:
 	with container.classes("w-full"):
 		cfg = get_app_config()
 		current = bool(getattr(cfg.ui.navigation, "hide_nav_on_startup", False))
+		current_dark = bool(getattr(cfg.ui.navigation, "dark_mode", False))
 
 		with ui.card().classes("w-full"):
 			ui.label("General Settings").classes("text-xl font-semibold")
 			ui.label("General UI behavior settings.").classes("text-sm text-gray-500")
 
 			hide_nav_switch = ui.switch("Hide nav on startup", value=current)
+			dark_mode_switch = ui.switch("Dark mode", value=current_dark)
 
 			def save_settings() -> None:
 				cfg = get_app_config()
 				cfg.ui.navigation.hide_nav_on_startup = bool(hide_nav_switch.value)
+				cfg.ui.navigation.dark_mode = bool(dark_mode_switch.value)
 				save_app_config(cfg)
 				ui.notify("General settings saved.", type="positive")
+				ui.run_javascript("location.reload()")
 
 			def open_restart_dialog() -> None:
 				d = ui.dialog()

@@ -252,6 +252,7 @@ if APP_CONFIG.auth.login_required:
 @ui.page("/")
 def index():
 	ui.colors(primary="#3b82f6")
+	ui.dark_mode(bool(getattr(APP_CONFIG.ui.navigation, "dark_mode", False)))
 
 	ui.add_head_html("""
 	<style>

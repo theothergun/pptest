@@ -6,6 +6,8 @@ from typing import Any
 from nicegui import ui
 from layout.context import PageContext
 from services.i18n import t
+from services.app_config import get_app_config
+from services.ui_theme import get_theme_color
 
 
 TOPIC_CMD = "packaging.cmd"
@@ -17,6 +19,7 @@ def render(container: ui.element, ctx: PageContext) -> None:
 
 
 def build_page(ctx: PageContext) -> None:
+	cfg = get_app_config()
 	worker_bus = ctx.workers.worker_bus
 	bridge = ctx.bridge
 
@@ -81,11 +84,11 @@ def build_page(ctx: PageContext) -> None:
 		# - orange if 0 < current < max (or max == 0 but current > 0)
 		# - green if max > 0 and current >= max
 		if current_qty == 0 and max_qty == 0:
-			bg = "#FCA5A5"  # red-ish
+			bg = get_theme_color(cfg, "status-bad", "#FCA5A5")
 		elif max_qty > 0 and current_qty >= max_qty:
-			bg = "#86EFAC"  # green-ish
+			bg = get_theme_color(cfg, "status-good", "#86EFAC")
 		else:
-			bg = "#FDBA74"  # orange-ish
+			bg = get_theme_color(cfg, "status-warning", "#FDBA74")
 
 		card_a = ui_refs.get("card_current_qty")
 		card_b = ui_refs.get("card_max_qty")
@@ -106,14 +109,14 @@ def build_page(ctx: PageContext) -> None:
 	def _bg_for_state(state: int) -> str:
 		# 1=Green, 2=Yellow, 3=Red, 4=Blue, 5=Grey
 		if state == 1:
-			return "#86EFAC"  # green-ish
+			return get_theme_color(cfg, "status-good", "#86EFAC")
 		if state == 2:
-			return "#FDE68A"  # yellow-ish
+			return get_theme_color(cfg, "status-warning", "#FDE68A")
 		if state == 3:
-			return "#FCA5A5"  # red-ish
+			return get_theme_color(cfg, "status-bad", "#FCA5A5")
 		if state == 4:
-			return "#93C5FD"  # blue-ish
-		return "#E5E7EB"  # grey-ish (also default)
+			return get_theme_color(cfg, "status-info", "#93C5FD")
+		return get_theme_color(cfg, "status-muted", "#E5E7EB")
 
 	def _set_instruction_feedback_cards_color(work_instruction_state: int, work_feedback_state: int) -> None:
 		card_instruction = ui_refs.get("card_instruction")
@@ -203,11 +206,11 @@ def build_page(ctx: PageContext) -> None:
 
 		with ui.row().classes("w-full gap-4 justify-start"):
 			ui.button(t("common.start", "Start"), icon="play_arrow", on_click=lambda: _publish_cmd("start")) \
-				.props("color=green").classes("w-[200px] h-[64px] text-lg")
+				.props("color=positive").classes("w-[200px] h-[64px] text-lg")
 			ui.button(t("common.stop", "Stop"), icon="stop", on_click=lambda: _publish_cmd("stop")) \
-				.props("color=red").classes("w-[200px] h-[64px] text-lg")
+				.props("color=negative").classes("w-[200px] h-[64px] text-lg")
 			ui.button(t("common.reset", "Reset"), icon="restart_alt", on_click=lambda: _publish_cmd("reset")) \
-				.props("color=blue outline").classes("w-[240px] h-[64px] text-lg")
+				.props("color=info outline").classes("w-[240px] h-[64px] text-lg")
 
 	# --------------------------
 	# Drain bridge for style updates

@@ -19,6 +19,7 @@ from services.worker_bus import WorkerBus
 from services.worker_names import WorkerName
 from services.app_config import (
 	load_app_config,
+	get_app_config,
 	get_rest_api_endpoints,
 	get_tcp_client_entries,
 	get_script_auto_start_chains,
@@ -39,8 +40,13 @@ from services.worker_commands import (
 )
 
 from services.app_state import AppState
-from services.logging_setup import setup_logging
+from services.logging_setup import (
+	setup_logging,
+	get_error_popup_events_since,
+	get_latest_error_popup_event_id,
+)
 from services.i18n import bootstrap_defaults
+from services.ui_theme import apply_ui_theme
 from loguru import logger
 
 
@@ -72,7 +78,7 @@ def _apply_proxy_env(cfg) -> None:
 			os.environ["no_proxy"] = p.no_proxy
 
 	except Exception:
-		# keep it non-fatal; logging optional
+		logger.exception("Failed applying proxy environment from config")
 		return
 
 APP_CONFIG = load_app_config()
@@ -251,8 +257,8 @@ if APP_CONFIG.auth.login_required:
 
 @ui.page("/")
 def index():
-	ui.colors(primary="#3b82f6")
-	ui.dark_mode(bool(getattr(APP_CONFIG.ui.navigation, "dark_mode", False)))
+	cfg = get_app_config()
+	apply_ui_theme(cfg)
 
 	ui.add_head_html("""
 	<style>
@@ -349,7 +355,7 @@ def index():
 					try:
 						dlg.close()
 					except Exception:
-						pass
+						logger.warning("Failed closing crash dialog for chain '{}'", chain_key)
 				continue
 
 			error_message = str(value.get("error_message") or "StepChain crashed.")
@@ -361,13 +367,37 @@ def index():
 		try:
 			sub_script_state.close()
 		except Exception:
-			pass
+			logger.warning("Failed to close script-state subscription during cleanup")
 		try:
 			crash_timer.cancel()
 		except Exception:
-			pass
+			logger.warning("Failed to cancel crash watcher timer during cleanup")
 
 	ui.context.client.on_disconnect(_cleanup_crash_watcher)
+
+	# Global logging popups for ERROR/CRITICAL records
+	last_error_popup_id = {"value": get_latest_error_popup_event_id()}
+
+	def _drain_error_popups() -> None:
+		current_id, events = get_error_popup_events_since(last_error_popup_id["value"])
+		last_error_popup_id["value"] = current_id
+		for evt in events:
+			level = str(evt.get("level", "ERROR")).upper()
+			msg = str(evt.get("message", "")).strip()
+			if not msg:
+				continue
+			notify_type = "negative" if level in ("ERROR", "CRITICAL") else "warning"
+			ui.notify(f"{level}: {msg}", type=notify_type, multi_line=True, timeout=10000)
+
+	error_popup_timer = ui.timer(0.25, _drain_error_popups)
+
+	def _cleanup_error_popup_watcher() -> None:
+		try:
+			error_popup_timer.cancel()
+		except Exception:
+			logger.warning("Failed to cancel error-popup timer during cleanup")
+
+	ui.context.client.on_disconnect(_cleanup_error_popup_watcher)
 
 	# --------- LAYOUT ---------
 	build_header(ctx)
@@ -380,7 +410,7 @@ def index():
 			build_main_area(ctx)
 
 	default_route = app.storage.user.get(
-		"current_route", APP_CONFIG.ui.navigation.main_route
+		"current_route", cfg.ui.navigation.main_route
 	)
 	initial = get_initial_route_from_url(default_route)
 	navigate(ctx, initial)

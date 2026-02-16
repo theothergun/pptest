@@ -83,10 +83,10 @@ def build_page(ctx: PageContext) -> None:
 	update_view()
 
 	with ui.row().classes("gap-2 mt-4"):
-		ui.button("Start publishing", on_click=lambda: pub.send(PubCmd.START)).props("color=green")
-		ui.button("Stop publishing", on_click=lambda: pub.send(PubCmd.STOP)).props("color=orange")
-		ui.button("Reset publisher", on_click=lambda: pub.send(PubCmd.RESET)).props("color=blue outline")
+		ui.button("Start publishing", on_click=lambda: pub.send(PubCmd.START)).props("color=positive")
+		ui.button("Stop publishing", on_click=lambda: pub.send(PubCmd.STOP)).props("color=warning")
+		ui.button("Reset publisher", on_click=lambda: pub.send(PubCmd.RESET)).props("color=info outline")
 
 		ui.separator().classes("mx-2")
 
-		ui.button("Clear subscriber", on_click=lambda: sub.send(SubCmd.CLEAR)).props("color=blue flat")
+		ui.button("Clear subscriber", on_click=lambda: sub.send(SubCmd.CLEAR)).props("color=info flat")

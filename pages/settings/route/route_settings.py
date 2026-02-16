@@ -46,7 +46,7 @@ def render(container: ui.element, ctx: PageContext) -> None:
 			_dialog, open_add_dialog = create_add_route_dialog(on_add=on_add_route)
 
 			# --- Sticky header (never scrolls) ---
-			with ui.column().classes("w-full shrink-0 bg-white z-10"):
+			with ui.column().classes("w-full shrink-0 z-10"):
 				with ui.row().classes("w-full items-center justify-between"):
 					ui.label(t("route.settings_title", "Route Settings")).classes("text-2xl font-bold")
 					ui.button(t("route.add_route", "Add route"), on_click=open_add_dialog).props("color=primary")
@@ -89,7 +89,7 @@ def _render_routes(scroll_to: str | None = None, highlight: str | None = None) -
 				ui.label(route.get("key", "")).classes("font-medium")
 				ui.label(route.get("path", "")).classes("text-xs text-gray-500 truncate")
 				if roles:
-					ui.label(" · " + ", ".join(roles)).classes("text-xs text-gray-400 truncate")
+					ui.label(" - " + ", ".join(roles)).classes("text-xs text-gray-400 truncate")
 
 			with ui.row().classes("items-center gap-2 shrink-0"):
 				ui.button(t("common.edit", "Edit"), on_click=toggle).props("flat color=primary")

@@ -108,7 +108,7 @@ def build_page(ctx: PageContext) -> None:
 	# Icon color styling (tree icons)
 	ui.add_head_html("""
 	<style>
-	#scripts_tree .q-tree__node-header i.q-icon { color: #3b82f6 !important; }
+	#scripts_tree .q-tree__node-header i.q-icon { color: var(--primary) !important; }
 	</style>
 	""")
 
@@ -164,8 +164,8 @@ def build_page(ctx: PageContext) -> None:
 				with ui.row().classes("w-full items-center gap-2"):
 					title = ui.label("Edit Script").classes("text-lg font-bold")
 					ui.space()
-					ui.button("Save", icon="save").props("color=green").on("click", lambda: _save_editor())
-					ui.button("Save + Reload", icon="refresh").props("color=blue").on("click", lambda: _save_editor(reload_after=True))
+					ui.button("Save", icon="save").props("color=positive").on("click", lambda: _save_editor())
+					ui.button("Save + Reload", icon="refresh").props("color=info").on("click", lambda: _save_editor(reload_after=True))
 					ui.button("Close", icon="close").props("flat").on("click", lambda: dlg.close())
 
 				editor["title"] = title
@@ -290,12 +290,12 @@ def build_page(ctx: PageContext) -> None:
 
 	def _status_color(active: bool, paused: bool, crashed: bool = False) -> str:
 		if crashed:
-			return "red"
+			return "negative"
 		if not active:
-			return "red"
+			return "negative"
 		if paused:
-			return "orange"
-		return "green"
+			return "warning"
+		return "positive"
 
 	def _start_chain_for_card(chain_key: str) -> None:
 		w = chain_cards.get(chain_key)
@@ -344,7 +344,7 @@ def build_page(ctx: PageContext) -> None:
 			with ui.row().classes("w-full items-center gap-2 mb-2"):
 				ui.icon("code")
 				ui.label("%s" % chain.get("script", "unknown")).classes("text-lg font-bold flex-grow")
-				badge = ui.badge("", color="green")
+				badge = ui.badge("", color="positive")
 
 			with ui.grid(columns=2).classes("w-full gap-2 mb-2"):
 				ui.label("Instance:").classes("font-semibold")
@@ -352,27 +352,27 @@ def build_page(ctx: PageContext) -> None:
 
 				ui.label("Current Step:").classes("font-semibold")
 				with ui.row().classes("items-center gap-2"):
-					step_label = ui.label("").classes("text-blue-600 font-mono text-lg")
-					step_time_label = ui.label("").classes("text-gray-500 font-mono text-lg")
+					step_label = ui.label("").classes("text-primary font-mono text-lg")
+					step_time_label = ui.label("").classes("app-muted font-mono text-lg")
 
 				ui.label("Step Text:").classes("font-semibold")
-				step_text = ui.label("").classes("text-blue-600 font-mono text-lg")
+				step_text = ui.label("").classes("text-primary font-mono text-lg")
 
 				ui.label("Cycles:").classes("font-semibold")
-				cycles_label = ui.label("").classes("text-gray-600")
+				cycles_label = ui.label("").classes("app-muted")
 
 			with ui.row().classes("w-full gap-2"):
 				btn_pause = ui.button(
 					"Pause",
 					icon="pause",
 					on_click=lambda ck=chain_key: worker_handle.send(Commands.PAUSE_CHAIN, chain_key=ck),
-				).props("color=orange flat dense")
+				).props("color=warning flat dense")
 
 				btn_resume = ui.button(
 					"Resume",
 					icon="play_arrow",
 					on_click=lambda ck=chain_key: worker_handle.send(Commands.RESUME_CHAIN, chain_key=ck),
-				).props("color=green flat dense")
+				).props("color=positive flat dense")
 
 				btn_retry = ui.button(
 					"Retry",
@@ -384,19 +384,19 @@ def build_page(ctx: PageContext) -> None:
 					"Start",
 					icon="play_arrow",
 					on_click=lambda ck=chain_key: _start_chain_for_card(ck),
-				).props("color=green flat dense")
+				).props("color=positive flat dense")
 
 				btn_stop = ui.button(
 					"Stop",
 					icon="stop",
 					on_click=lambda ck=chain_key: worker_handle.send(Commands.STOP_CHAIN, chain_key=ck),
-				).props("color=red flat dense")
+				).props("color=negative flat dense")
 
 				ui.button(
 					"Reload Script",
 					icon="refresh",
 					on_click=lambda sn=chain.get("script", "unknown"): worker_handle.send(Commands.RELOAD_SCRIPT, script_name=sn),
-				).props("color=blue flat dense").tooltip("Hot-reload this script")
+				).props("color=info flat dense").tooltip("Hot-reload this script")
 
 		with card2:
 			data = ui.json_editor({
@@ -648,7 +648,7 @@ def build_page(ctx: PageContext) -> None:
 				"Reload All Scripts",
 				icon="refresh",
 				on_click=lambda: worker_handle.send(Commands.RELOAD_ALL),
-			).props("color=blue outline")
+			).props("color=info outline")
 
 		# Content area that can grow
 		with ui.column().classes("w-full flex-1 min-h-0 gap-4"):
@@ -679,14 +679,14 @@ def build_page(ctx: PageContext) -> None:
 								_open_editor(node_id)
 
 							with ui.row().classes("w-full gap-2"):
-								ui.button("Start Selected", icon="play_arrow", on_click=start_selected).props("color=green").classes("w-full")
-								ui.button("Edit", icon="edit", on_click=edit_selected).props("color=blue outline").classes("w-full")
+								ui.button("Start Selected", icon="play_arrow", on_click=start_selected).props("color=positive").classes("w-full")
+								ui.button("Edit", icon="edit", on_click=edit_selected).props("color=info outline").classes("w-full")
 
 							ui.button(
 								"Refresh List",
 								icon="refresh",
 								on_click=lambda: worker_handle.send(Commands.LIST_SCRIPTS),
-							).props("color=blue flat").classes("w-full")
+							).props("color=info flat").classes("w-full")
 
 						with ui.tab_panel("Start on startup"):
 							ui_refs["startup_container"] = ui.column().classes("w-full gap-2")
@@ -705,7 +705,7 @@ def build_page(ctx: PageContext) -> None:
 							"Refresh Now",
 							icon="refresh",
 							on_click=lambda: worker_handle.send(Commands.LIST_CHAINS),
-						).props("flat color=blue")
+						).props("flat color=info")
 
 			# Bottom logs
 			with ui.card().classes("w-full flex-1 min-h-100"):
@@ -717,7 +717,7 @@ def build_page(ctx: PageContext) -> None:
 							"Clear logs",
 							icon="delete",
 							on_click=_clear_logs,
-						).props("flat color=grey")
+						).props("flat color=secondary")
 
 					ui_refs["log_view"] = (
 						ui.log(max_lines=100)

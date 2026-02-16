@@ -16,6 +16,7 @@ from pages.settings import enabled_workers_settings
 from pages.settings import general_settings
 from pages.settings import startup_settings
 from pages.settings import app_state_view
+from pages.settings import theme_settings
 
 from services.app_config import (
 	list_config_sets,
@@ -100,6 +101,7 @@ def render(container: ui.element, ctx: PageContext) -> None:
 		# -------------------------------
 		with ui.tabs().classes("w-full") as tabs:
 			ui.tab("General")
+			ui.tab("Color Themes")
 			ui.tab("Startup")
 			ui.tab("Application Variables")
 			ui.tab("Enabled Workers")
@@ -116,6 +118,8 @@ def render(container: ui.element, ctx: PageContext) -> None:
 		with ui.tab_panels(tabs, value="General").classes("w-full"):
 			with ui.tab_panel("General"):
 				general_settings.render(ui.column().classes("w-full gap-4"), ctx)
+			with ui.tab_panel("Color Themes"):
+				theme_settings.render(ui.column().classes("w-full gap-4"), ctx)
 			with ui.tab_panel("Startup"):
 				startup_settings.render(ui.column().classes("w-full gap-4"), ctx)
 			with ui.tab_panel("Application Variables"):

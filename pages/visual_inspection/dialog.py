@@ -40,8 +40,9 @@ def register_dialog_css() -> None:
         .q-table tbody tr { cursor: pointer; }
         /* Optional: highlight selected row a bit more */
         
-        .q-table tbody tr.bg-blue-1,
         .q-table tbody tr.q-tr--selected {
+        background-color: var(--surface-muted) !important;
+        color: var(--text-primary) !important;
         font-weight: 600;
         }
         
@@ -138,20 +139,20 @@ def create_failure_catalogue_dialog(ctx:PageContext) -> tuple[ui.dialog, callabl
                     ui.label("Viewer").classes("px-3 pt-3 text-sm text-gray-600")
                     ui.separator()
 
-                    with ui.element("div").classes("h-full w-full overflow-hidden bg-white"):
+                    with ui.element("div").classes("h-full w-full overflow-hidden"):
                         viewer_iframe = ui.html('', sanitize=False).classes("w-full h-full").style('height:80vh')
 
             # ---------------- bottom bar ----------------
             with ui.element("div").classes("w-full"):
                 with ui.row().classes("w-full gap-0"):
-                    btn_pass = ui.button("PASS", on_click=lambda: on_action_click('btn_pass')).props("unelevated").classes(
-                        "w-1/3 h-20 text-2xl font-bold bg-green-8 text-white rounded-none"
+                    btn_pass = ui.button("PASS", on_click=lambda: on_action_click('btn_pass')).props("unelevated color=positive").classes(
+                        "w-1/3 h-20 text-2xl font-bold text-black rounded-none"
                     )
-                    btn_fail = ui.button("FAIL", on_click=lambda: on_action_click('btn_fail')).props("unelevated").classes(
-                        "w-1/3 h-20 text-2xl font-bold bg-orange-8 text-white rounded-none"
+                    btn_fail = ui.button("FAIL", on_click=lambda: on_action_click('btn_fail')).props("unelevated color=warning").classes(
+                        "w-1/3 h-20 text-2xl font-bold text-black rounded-none"
                     )
-                    btn_scrap = ui.button("SCRAP", on_click=lambda: on_action_click('btn_scrap')).props("unelevated").classes(
-                        "w-1/3 h-20 text-2xl font-bold bg-red-8 text-white rounded-none"
+                    btn_scrap = ui.button("SCRAP", on_click=lambda: on_action_click('btn_scrap')).props("unelevated color=negative").classes(
+                        "w-1/3 h-20 text-2xl font-bold text-black rounded-none"
                     )
 
     # ---------- behavior ----------
@@ -175,12 +176,12 @@ def create_failure_catalogue_dialog(ctx:PageContext) -> tuple[ui.dialog, callabl
         close()
 
     def render_iframe(url: str) -> str:
-        return f'''<iframe src ="{url}" style ="width:100%; height:100%; border:none; background:white;"></iframe>'''
+        return f'''<iframe src ="{url}" style ="width:100%; height:100%; border:none; background:var(--surface);"></iframe>'''
 
     def set_viewer(url: str | None) -> None:
         state["viewer_url"] = url
         if not url:
-            viewer_iframe.content = """<div style="padding:12px; color:gray;">
+            viewer_iframe.content = """<div style="padding:12px; color:var(--text-secondary);">
                 No document / image loaded </div>"""
             return
         viewer_iframe.content = render_iframe(url)

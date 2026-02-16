@@ -2,13 +2,14 @@
 import queue
 
 from nicegui import ui
+from loguru import logger
 
 from layout.action_bar.models import Action
 from layout.context import PageContext
 from layout.page_scaffold import build_page
 from pages.visual_inspection.dialog import create_failure_catalogue_dialog
 
-BG_Q_CLASSES = {"bg-green-8", "bg-orange-8", "bg-red-8", "bg-blue-3"}
+BG_Q_CLASSES = {"bg-positive", "bg-warning", "bg-negative", "bg-info"}
 
 def render(container: ui.element, ctx: PageContext) -> None:
     dialog, open_catalogue = create_failure_catalogue_dialog(ctx)
@@ -29,13 +30,13 @@ def render(container: ui.element, ctx: PageContext) -> None:
         try:
            sub_state.close()
         except Exception:
-            pass
+            logger.warning("Failed to close visual-inspection state subscription during cleanup")
 
         for t in page_timers:
             try:
                 t.cancel()
             except Exception:
-                pass
+                logger.warning("Failed to cancel visual-inspection timer during cleanup")
         page_timers[:] = []
 
     ctx.state._page_cleanup = cleanup
@@ -80,14 +81,14 @@ def render(container: ui.element, ctx: PageContext) -> None:
                 # Two labels, stacked, relatively centered
                 with ui.column().classes("absolute left-1/2 top-10 -translate-x-1/2 -translate-y-1/2 items-center gap-3"):
                     work_instruction = ui.label() \
-                        .classes('text-lg font-semibold text-center text-white')
+                        .classes('text-lg font-semibold text-center text-black')
                     work_instruction.bind_text_from(ctx.state, "work_instruction", backward=lambda n:str(n))
                     work_instruction.classes("bg-primary min-w-[500px] py-2")
 
                     work_progress = ui.label() \
-                        .classes('text-base text-center text-white')
+                        .classes('text-base text-center text-black')
                     work_progress.bind_text_from(ctx.state, "work_feedback", backward= lambda n:str(n))
-                    work_progress.classes("bg-blue-3 min-w-[500px] py-2")
+                    work_progress.classes("bg-info min-w-[500px] py-2")
 
                 # Counters card aligned right
                 with ui.row().classes("w-full items-start"):
@@ -111,7 +112,7 @@ def render(container: ui.element, ctx: PageContext) -> None:
                     # body
                     body = ui.row()
                     _add_card_entries(body, {"ltc_dmc": "Serial number", "ltc_status": "Progress",
-                        "ltc_leak_rate": "Leak rate", "ltc_result": "Result"}, "text-gray-50")
+                        "ltc_leak_rate": "Leak rate", "ltc_result": "Result"}, "text-black")
 
                 # Center section (can be shown/hidden later)
                 center_section = ui.column().classes('flex-1 items-center justify-center')
@@ -127,7 +128,7 @@ def render(container: ui.element, ctx: PageContext) -> None:
                         ui.label("Visual control").classes("text-lg font-semibold")
                     # body
                     body = ui.row()
-                    _add_card_entries(body, {"vc_dmc": "Serial number", "vc_result": "Result"}, "text-gray-50")
+                    _add_card_entries(body, {"vc_dmc": "Serial number", "vc_result": "Result"}, "text-black")
 
         # update ltc color
         def update_ltc_color(status=0) -> None:
@@ -180,8 +181,8 @@ def render(container: ui.element, ctx: PageContext) -> None:
     def _get_bg_color(status:int):
         #status: 0 = init, 1= working, 2 = success, 3 = error
         # bg-orange-8 = working bg-red-8 = error
-        return "bg-%s"%("green-8" if status == 1 else "orange-8" if status == 2\
-            else "red-8" if status == 3 else "blue-3")
+        return "bg-%s"%("positive" if status == 1 else "warning" if status == 2\
+            else "negative" if status == 3 else "info")
 
 
     build_page(ctx, container, title="Home", content=build_content,

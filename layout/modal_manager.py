@@ -5,6 +5,7 @@ import queue
 from typing import Any, Optional, List, Dict
 from services.worker_topics import WorkerTopics
 from nicegui import ui
+from loguru import logger
 
 
 class ModalManager(object):
@@ -120,10 +121,11 @@ class ModalManager(object):
                 try:
                     self._input_number.label = placeholder
                 except Exception:
-                    pass
+                    logger.warning("Failed setting number-input placeholder in modal manager")
                 try:
                     self._input_number.set_value(default if default is not None else None)
                 except Exception:
+                    logger.warning("Failed setting number-input default value in modal manager; using None")
                     self._input_number.set_value(None)
 
             elif kind == "select":
@@ -131,7 +133,7 @@ class ModalManager(object):
                 try:
                     self._select.label = placeholder
                 except Exception:
-                    pass
+                    logger.warning("Failed setting select placeholder in modal manager")
 
                 # options can be list[str] or list[{"id":..,"text":..}]
                 raw = payload.get("options") or []
@@ -153,6 +155,7 @@ class ModalManager(object):
                 try:
                     self._select.set_value(str(default) if default is not None else "")
                 except Exception:
+                    logger.warning("Failed setting select default in modal manager; using empty string")
                     self._select.set_value("")
 
             else:
@@ -161,10 +164,11 @@ class ModalManager(object):
                 try:
                     self._input_text.label = placeholder
                 except Exception:
-                    pass
+                    logger.warning("Failed setting text-input placeholder in modal manager")
                 try:
                     self._input_text.set_value("" if default is None else str(default))
                 except Exception:
+                    logger.warning("Failed setting text-input default in modal manager; using empty string")
                     self._input_text.set_value("")
 
         elif m_type == "message":
@@ -215,7 +219,7 @@ class ModalManager(object):
                     try:
                         self._dlg.close()
                     except Exception:
-                        pass
+                        logger.warning("Failed closing active modal on close_active request")
                     self._active = None
                     self._active_key = None
                 continue
@@ -229,7 +233,7 @@ class ModalManager(object):
                 try:
                     self._dlg.close()
                 except Exception:
-                    pass
+                    logger.warning("Failed closing modal by key='{}'", key)
                 self._active = None
                 self._active_key = None
 
@@ -270,7 +274,7 @@ class ModalManager(object):
         try:
             self._dlg.close()
         except Exception:
-            pass
+            logger.warning("Failed closing modal dialog on primary action")
 
         if m_type == "confirm":
             self._publish_response(True)
@@ -284,6 +288,7 @@ class ModalManager(object):
                 try:
                     val = self._input_number.value
                 except Exception:
+                    logger.warning("Failed reading number input value in modal manager; using None")
                     val = None
                 self._publish_response({"ok": True, "value": val})
                 return
@@ -293,6 +298,7 @@ class ModalManager(object):
                 try:
                     val = str(self._select.value or "")
                 except Exception:
+                    logger.warning("Failed reading select value in modal manager; using empty string")
                     val = ""
                 self._publish_response({"ok": True, "value": val})
                 return
@@ -302,6 +308,7 @@ class ModalManager(object):
             try:
                 val = str(self._input_text.value or "")
             except Exception:
+                logger.warning("Failed reading text input value in modal manager; using empty string")
                 val = ""
             self._publish_response({"ok": True, "value": val})
             return
@@ -317,7 +324,7 @@ class ModalManager(object):
         try:
             self._dlg.close()
         except Exception:
-            pass
+            logger.warning("Failed closing modal dialog on secondary action")
 
         if m_type == "confirm":
             self._publish_response(False)

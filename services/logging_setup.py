@@ -3,6 +3,9 @@ from __future__ import annotations
 import logging
 import os
 import sys
+import threading
+from collections import deque
+from typing import Any
 from loguru import logger
 
 
@@ -13,6 +16,51 @@ LOG_FORMAT = (
 	"<white>{name}.{function}:{line}</white> | "
 	"<level>{message}</level>"
 )
+
+
+_ERROR_EVENTS_MAX = 500
+_error_events_lock = threading.Lock()
+_error_events: deque[dict[str, Any]] = deque(maxlen=_ERROR_EVENTS_MAX)
+_error_event_id = 0
+
+
+def _error_popup_sink(message) -> None:
+	"""Capture ERROR+ records so UI sessions can show toast popups."""
+	global _error_event_id
+	record = message.record
+	level_name = str(record.get("level").name)
+	text = str(record.get("message") or "").strip()
+
+	exc = record.get("exception")
+	if exc and getattr(exc, "value", None):
+		exc_text = str(exc.value)
+		if exc_text:
+			text = f"{text} | {exc_text}" if text else exc_text
+
+	if not text:
+		text = "An unknown error was logged."
+
+	with _error_events_lock:
+		_error_event_id += 1
+		_error_events.append(
+			{
+				"id": _error_event_id,
+				"level": level_name,
+				"message": text,
+			}
+		)
+
+
+def get_latest_error_popup_event_id() -> int:
+	with _error_events_lock:
+		return int(_error_event_id)
+
+
+def get_error_popup_events_since(last_seen_id: int) -> tuple[int, list[dict[str, Any]]]:
+	with _error_events_lock:
+		current = int(_error_event_id)
+		events = [evt for evt in _error_events if int(evt.get("id", 0)) > int(last_seen_id)]
+	return current, events
 
 
 def _parse_level(level_value) -> str:
@@ -82,6 +130,9 @@ def setup_logging(
 			},
 		]
 	)
+
+	# In-memory sink for UI error popups (all ERROR/CRITICAL records).
+	logger.add(_error_popup_sink, level="ERROR", catch=True, enqueue=True, format="{message}")
 
 	# Define/override level colors (Loguru default exists, but you want explicit)
 	logger.level("ERROR", color="<fg #ff0000>")

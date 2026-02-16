@@ -54,7 +54,7 @@ def render(container: ui.element, ctx: PageContext) -> None:
 			_dialog, open_add_dialog = create_add_tcp_client_dialog(on_add=on_add)
 
 			# header (non-scrolling)
-			with ui.column().classes("w-full shrink-0 bg-white z-10"):
+			with ui.column().classes("w-full shrink-0 z-10"):
 				with ui.row().classes("w-full items-center justify-between"):
 					ui.label("TCP Clients").classes("text-2xl font-bold")
 					ui.button("Add client", on_click=open_add_dialog).props("color=primary")
@@ -93,7 +93,7 @@ def _render_clients(scroll_to: str | None = None, highlight: str | None = None) 
 				if tcp_client.get("keepalive", True): flags.append("keepalive")
 				if tcp_client.get("tcp_nodelay", True): flags.append("no-delay")
 				if flags:
-					ui.label(" · " + ", ".join(flags)).classes("text-xs text-gray-400 truncate")
+					ui.label(" - " + ", ".join(flags)).classes("text-xs text-gray-400 truncate")
 
 			with ui.row().classes("items-center gap-2 shrink-0"):
 				ui.button("Edit", on_click=toggle).props("flat color=primary")

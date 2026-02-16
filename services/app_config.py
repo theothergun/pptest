@@ -169,9 +169,80 @@ class NavigationConfig:
     route_roles: dict[str, list[str]] = field(default_factory=dict)
 
 
+def _default_light_cool_palette() -> dict[str, str]:
+    return {
+        "primary": "#3b82f6",
+        "secondary": "#0ea5e9",
+        "accent": "#22c55e",
+        "positive": "#16a34a",
+        "negative": "#dc2626",
+        "warning": "#f59e0b",
+        "info": "#0284c7",
+        "app-background": "#f3f7fb",
+        "surface": "#ffffff",
+        "surface-muted": "#e8eef5",
+        "text-primary": "#0f172a",
+        "text-secondary": "#475569",
+        "header-bg": "#0f172a",
+        "header-text": "#e2e8f0",
+        "drawer-bg": "#e2e8f0",
+        "drawer-text": "#0f172a",
+        "input-bg": "#ffffff",
+        "input-text": "#0f172a",
+        "input-border": "#94a3b8",
+        "status-good": "#86efac",
+        "status-warning": "#fdba74",
+        "status-bad": "#fca5a5",
+        "status-info": "#93c5fd",
+        "status-muted": "#e5e7eb",
+    }
+
+
+def _default_dark_cool_palette() -> dict[str, str]:
+    return {
+        "primary": "#60a5fa",
+        "secondary": "#38bdf8",
+        "accent": "#4ade80",
+        "positive": "#22c55e",
+        "negative": "#f87171",
+        "warning": "#fbbf24",
+        "info": "#38bdf8",
+        "app-background": "#0b1220",
+        "surface": "#111827",
+        "surface-muted": "#1f2937",
+        "text-primary": "#e5e7eb",
+        "text-secondary": "#94a3b8",
+        "header-bg": "#020617",
+        "header-text": "#e2e8f0",
+        "drawer-bg": "#0f172a",
+        "drawer-text": "#e2e8f0",
+        "input-bg": "#111827",
+        "input-text": "#e5e7eb",
+        "input-border": "#334155",
+        "status-good": "#14532d",
+        "status-warning": "#92400e",
+        "status-bad": "#7f1d1d",
+        "status-info": "#1e3a8a",
+        "status-muted": "#374151",
+    }
+
+
+@dataclass
+class ThemeConfig:
+    light_palette: str = "light-cool"
+    dark_palette: str = "dark-cool"
+    palettes: dict[str, dict[str, str]] = field(
+        default_factory=lambda: {
+            "light-cool": _default_light_cool_palette(),
+            "dark-cool": _default_dark_cool_palette(),
+        }
+    )
+
+
 @dataclass
 class UiConfig:
     navigation: NavigationConfig = field(default_factory=NavigationConfig)
+    theme: ThemeConfig = field(default_factory=ThemeConfig)
 
 @dataclass
 class ComDeviceEntry:
@@ -344,7 +415,8 @@ def _to_dict(cfg: AppConfig) -> dict[str, Any]:
 def _from_dict(data: dict[str, Any]) -> AppConfig:
     auth = AuthConfig(**data.get("auth", {}))
 
-    nav_data = data.get("ui", {}).get("navigation", {})
+    ui_data = data.get("ui", {})
+    nav_data = ui_data.get("navigation", {})
     navigation = NavigationConfig(
         visible_routes=nav_data.get("visible_routes", NavigationConfig().visible_routes),
         main_route=nav_data.get("main_route", NavigationConfig().main_route),
@@ -353,7 +425,31 @@ def _from_dict(data: dict[str, Any]) -> AppConfig:
         custom_routes=nav_data.get("custom_routes", []),
         route_roles=nav_data.get("route_roles", {}),
     )
-    ui_cfg = UiConfig(navigation=navigation)
+    raw_theme = ui_data.get("theme", {}) if isinstance(ui_data, dict) else {}
+    default_theme = ThemeConfig()
+    palettes = {}
+    if isinstance(raw_theme.get("palettes"), dict):
+        for palette_name, palette_values in raw_theme.get("palettes", {}).items():
+            if isinstance(palette_name, str) and isinstance(palette_values, dict):
+                palettes[palette_name] = {str(k): str(v) for k, v in palette_values.items()}
+
+    merged_light = dict(_default_light_cool_palette())
+    merged_light.update(palettes.get("light-cool", {}))
+    merged_dark = dict(_default_dark_cool_palette())
+    merged_dark.update(palettes.get("dark-cool", {}))
+    merged_palettes = {"light-cool": merged_light, "dark-cool": merged_dark}
+
+    theme_cfg = ThemeConfig(
+        light_palette=str(raw_theme.get("light_palette", default_theme.light_palette)),
+        dark_palette=str(raw_theme.get("dark_palette", default_theme.dark_palette)),
+        palettes=merged_palettes,
+    )
+    if theme_cfg.light_palette not in theme_cfg.palettes:
+        theme_cfg.light_palette = default_theme.light_palette
+    if theme_cfg.dark_palette not in theme_cfg.palettes:
+        theme_cfg.dark_palette = default_theme.dark_palette
+
+    ui_cfg = UiConfig(navigation=navigation, theme=theme_cfg)
 
     workers_raw = data.get("workers", {})
     configs = workers_raw.get("configs")

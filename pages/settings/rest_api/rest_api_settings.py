@@ -61,7 +61,7 @@ def render(container: ui.element, ctx: PageContext) -> None:
 			_dialog, open_add_dialog = create_add_rest_endpoint_dialog(on_add=on_add)
 
 			# header (non-scrolling)
-			with ui.column().classes("w-full shrink-0 bg-white z-10"):
+			with ui.column().classes("w-full shrink-0 z-10"):
 				with ui.row().classes("w-full items-center justify-between"):
 					ui.label("REST API").classes("text-2xl font-bold")
 					ui.button("Add endpoint", on_click=open_add_dialog).props("color=primary")
@@ -97,7 +97,7 @@ def _render_endpoints(scroll_to: str | None = None, highlight: str | None = None
 				ui.label(f"timeout {ep.get('timeout_s', 10.0)}s").classes("text-xs text-gray-400")
 
 				if not ep.get("verify_ssl", True):
-					ui.label("SSL off").classes("text-xs text-orange-600")
+					ui.label("SSL off").classes("text-xs app-muted")
 
 			with ui.row().classes("items-center gap-2 shrink-0"):
 				ui.button("Edit", on_click=toggle).props("flat color=primary")

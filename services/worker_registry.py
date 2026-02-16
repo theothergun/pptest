@@ -40,7 +40,7 @@ class WorkerHandle:
         try:
             self.commands.put_nowait(("__stop__", {}))
         except Exception:
-            pass
+            logger.warning("Failed enqueueing __stop__ command for worker '{}'", self.name)
 
     def is_alive(self) -> bool:
         return self.thread.is_alive()
@@ -101,7 +101,7 @@ class WorkerRegistry:
                 try:
                     self.bridge.emit_notify(f"Worker '{name}' crashed (see logs)", "error")
                 except Exception:
-                    pass
+                    wlog.warning("Failed emitting worker crash notification to UI bridge")
 
         thread = threading.Thread(target=run, daemon=True, name=f"worker:{name}")
         handle = WorkerHandle(name, commands, stop_event, thread)

@@ -83,7 +83,7 @@ class WorkerBus:
 			try:
 				return str(topic.value)
 			except Exception:
-				pass
+				logger.warning("Failed converting topic.value to string; falling back to str(topic)")
 		return str(topic)
 
 	def _is_pattern_topic(self, topic_str: str) -> bool:

@@ -48,6 +48,91 @@ class UiApi:
 	def clear(self) -> None:
 		self._ctx._ui_state = {}
 
+	def _value_by_key(self, key: str, default: Any = None) -> Any:
+		target = str(key or "").strip()
+		if not target:
+			return default
+
+		# Search most recent payload per source first.
+		for source in list(self._ctx.data.keys()):
+			source_data = self._ctx.data.get(source, {})
+			last_id = self._ctx._last_seen_by_source.get(source, "")
+			payload = source_data.get(last_id) if last_id else None
+			if isinstance(payload, dict) and "__last__" in payload:
+				payload = payload.get("__last__")
+			if isinstance(payload, dict) and payload.get("key") == target:
+				return payload.get("value", default)
+
+		# Fallback full scan.
+		for source_data in self._ctx.data.values():
+			for payload in source_data.values():
+				if isinstance(payload, dict) and "__last__" in payload:
+					payload = payload.get("__last__")
+				if isinstance(payload, dict) and payload.get("key") == target:
+					return payload.get("value", default)
+
+		return default
+
+	def consume_command(
+		self,
+		key: str,
+		*,
+		value_field: str = "cmd",
+		dedupe: bool = True,
+		normalize: bool = True,
+	) -> Optional[str]:
+		"""
+		Read a command-style UI bus value once and optionally deduplicate by event id.
+
+		Expected payload examples:
+		- {"cmd": "start", "event_id": 123}
+		- "start"
+
+		Returns:
+		- command string (e.g. "start")
+		- None if not present / already consumed
+		"""
+		k = str(key or "").strip()
+		if not k:
+			return None
+
+		raw = self._value_by_key(k, default=None)
+		if raw is None:
+			return None
+
+		cmd: Optional[str] = None
+		event_id = None
+
+		if isinstance(raw, dict):
+			cmd = str(raw.get(value_field) or "").strip()
+			event_id = raw.get("event_id")
+		else:
+			cmd = str(raw).strip()
+
+		if not cmd:
+			return None
+		if normalize:
+			cmd = cmd.lower()
+
+		if not dedupe:
+			return cmd
+
+		last_event_key = "__ui_cmd_last_event_id:%s" % k
+		last_fallback_key = "__ui_cmd_last_fallback:%s" % k
+
+		if event_id is not None:
+			last_event_id = self._ctx._vars.get(last_event_key)
+			if last_event_id == event_id:
+				return None
+			self._ctx._vars[last_event_key] = event_id
+			return cmd
+
+		# Fallback dedupe for payloads without event_id.
+		if self._ctx._vars.get(last_fallback_key) == cmd:
+			return None
+		self._ctx._vars[last_fallback_key] = cmd
+		return cmd
+
 	# -------- AppState bridge helpers (persisted UI variables) --------
 
 	def set_state(self, key: str, value: Any) -> None:

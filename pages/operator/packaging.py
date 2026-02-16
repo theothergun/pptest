@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import queue
+import time
 from typing import Any
 
 from nicegui import ui
@@ -8,9 +9,11 @@ from layout.context import PageContext
 from services.i18n import t
 from services.app_config import get_app_config
 from services.ui_theme import get_theme_color
+from services.worker_topics import WorkerTopics
+from loguru import logger
 
 
-TOPIC_CMD = "packaging.cmd"
+PACKAGING_CMD_KEY = "packaging.cmd"
 
 
 def render(container: ui.element, ctx: PageContext) -> None:
@@ -75,8 +78,19 @@ def build_page(ctx: PageContext) -> None:
 	def _publish_cmd(cmd: str) -> None:
 		publish_fn = getattr(worker_bus, "publish", None)
 		if not callable(publish_fn):
+			logger.warning("Packaging UI command publish skipped: worker_bus.publish is not callable")
 			return
-		publish_fn(TOPIC_CMD, cmd=cmd)
+		payload = {
+			"cmd": str(cmd),
+			"event_id": int(time.time_ns()),
+		}
+		publish_fn(
+			topic=WorkerTopics.VALUE_CHANGED,
+			source="ui",
+			source_id="packaging",
+			key=PACKAGING_CMD_KEY,
+			value=payload,
+		)
 
 	def _set_counter_cards_color(current_qty: int, max_qty: int) -> None:
 		# rules:

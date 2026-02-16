@@ -7,6 +7,7 @@ import threading
 from collections import deque
 from typing import Any
 from loguru import logger
+import traceback
 
 
 LOG_FORMAT = (
@@ -61,6 +62,35 @@ def get_error_popup_events_since(last_seen_id: int) -> tuple[int, list[dict[str,
 		current = int(_error_event_id)
 		events = [evt for evt in _error_events if int(evt.get("id", 0)) > int(last_seen_id)]
 	return current, events
+
+
+def _install_global_exception_hooks() -> None:
+	"""Ensure uncaught exceptions always end up in logs."""
+	def _sys_hook(exc_type, exc_value, exc_tb):
+		try:
+			logger.opt(exception=(exc_type, exc_value, exc_tb)).critical("Uncaught exception")
+		except Exception:
+			try:
+				sys.stderr.write("Uncaught exception:\n")
+				traceback.print_exception(exc_type, exc_value, exc_tb, file=sys.stderr)
+			except Exception:
+				pass
+
+	def _thread_hook(args):
+		try:
+			logger.opt(exception=(args.exc_type, args.exc_value, args.exc_traceback)).critical(
+				"Uncaught thread exception in '{}'",
+				getattr(args.thread, "name", "unknown"),
+			)
+		except Exception:
+			try:
+				sys.stderr.write("Uncaught thread exception:\n")
+				traceback.print_exception(args.exc_type, args.exc_value, args.exc_traceback, file=sys.stderr)
+			except Exception:
+				pass
+
+	sys.excepthook = _sys_hook
+	threading.excepthook = _thread_hook
 
 
 def _parse_level(level_value) -> str:
@@ -133,6 +163,7 @@ def setup_logging(
 
 	# In-memory sink for UI error popups (all ERROR/CRITICAL records).
 	logger.add(_error_popup_sink, level="ERROR", catch=True, enqueue=True, format="{message}")
+	_install_global_exception_hooks()
 
 	# Define/override level colors (Loguru default exists, but you want explicit)
 	logger.level("ERROR", color="<fg #ff0000>")

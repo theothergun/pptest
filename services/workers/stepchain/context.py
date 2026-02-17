@@ -13,6 +13,7 @@ from services.workers.stepchain.apis.ui_api import UiApi
 from services.workers.stepchain.apis.flow_api import FlowApi
 from services.workers.stepchain.apis.timing_api import TimingApi
 from services.workers.stepchain.apis.workers_api import WorkersApi
+from services.workers.stepchain.apis.views_api import ViewsApi
 
 
 class StepChainContext:
@@ -198,6 +199,7 @@ class PublicStepChainContext:
         self.timing = TimingApi(ctx)
         self.workers = WorkersApi(ctx)
         self.worker = self.workers  # alias
+        self.view = ViewsApi(ctx)
 
     @property
     def chain_id(self) -> str:

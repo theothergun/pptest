@@ -133,6 +133,49 @@ class UiApi:
 		self._ctx._vars[last_fallback_key] = cmd
 		return cmd
 
+	def consume_payload(
+		self,
+		key: str,
+		*,
+		dedupe: bool = True,
+	) -> Optional[dict]:
+		"""
+		Read a raw UI bus payload once and optionally deduplicate by event id.
+
+		Returns:
+		- dict payload (original if dict, else {"value": raw})
+		- None if not present / already consumed
+		"""
+		k = str(key or "").strip()
+		if not k:
+			return None
+
+		raw = self._value_by_key(k, default=None)
+		if raw is None:
+			return None
+
+		payload = raw if isinstance(raw, dict) else {"value": raw}
+		event_id = payload.get("event_id") if isinstance(payload, dict) else None
+
+		if not dedupe:
+			return payload
+
+		last_event_key = "__ui_payload_last_event_id:%s" % k
+		last_fallback_key = "__ui_payload_last_fallback:%s" % k
+
+		if event_id is not None:
+			last_event_id = self._ctx._vars.get(last_event_key)
+			if last_event_id == event_id:
+				return None
+			self._ctx._vars[last_event_key] = event_id
+			return payload
+
+		fallback = repr(payload)
+		if self._ctx._vars.get(last_fallback_key) == fallback:
+			return None
+		self._ctx._vars[last_fallback_key] = fallback
+		return payload
+
 	# -------- AppState bridge helpers (persisted UI variables) --------
 
 	def set_state(self, key: str, value: Any) -> None:

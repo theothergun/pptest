@@ -53,12 +53,23 @@ class OpcUaWorker(BaseWorker):
 		log.info("OpcUaWorker started")
 
 		endpoints: Dict[str, OpcUaEndpointState] = {}
+		last_status_log_ts = 0.0
 
 		try:
 			while not self.should_stop():
 				self._execute_cmds(log, endpoints)
 				self._poll_nodes(log, endpoints)
 				self.set_connected(any(st.connected for st in endpoints.values()))
+				now = time.time()
+				if now - last_status_log_ts >= 5.0:
+					last_status_log_ts = now
+					# heartbeat publish so status pages can sync even if opened later
+					for st in endpoints.values():
+						if st.connected:
+							self.publish_connected_as(st.cfg.name)
+						else:
+							reason = st.last_error or "not_connected"
+							self.publish_disconnected_as(st.cfg.name, reason=reason)
 				time.sleep(0.02)
 		finally:
 			log.info("OpcUaWorker stopping")

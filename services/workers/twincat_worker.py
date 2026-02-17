@@ -82,6 +82,13 @@ class TwinCatWorker(BaseWorker):
 					connected = sum(1 for st in plcs.values() if st.connected)
 					connecting = sum(1 for st in plcs.values() if st.connecting)
 					log.debug(f"status: plcs={total} connected={connected} connecting={connecting}")
+					# heartbeat publish so UI status pages can sync even if they open later
+					for st in plcs.values():
+						if st.connected:
+							self.publish_connected_as(st.cfg.client_id)
+						else:
+							reason = st.last_error or "not_connected"
+							self.publish_disconnected_as(st.cfg.client_id, reason=reason)
 
 				time.sleep(0.02)
 
@@ -297,6 +304,9 @@ class TwinCatWorker(BaseWorker):
 
 			st.values[publish_key] = value
 			self.publish_value_as(client_id, publish_key, value)
+			# also publish under full name for compatibility
+			if publish_key != name:
+				self.publish_value_as(client_id, name, value)
 
 		sub.callback = _callback
 
@@ -316,6 +326,8 @@ class TwinCatWorker(BaseWorker):
 		client_id = str(payload.get("client_id") or "")
 		name = str(payload.get("name") or "")
 		value = payload.get("value")
+		payload_type = str(payload.get("plc_type") or "").strip()
+		payload_strlen = int(payload.get("string_len", 80) or 80)
 
 		if not client_id:
 			log.warning(f"WRITE ignored: missing client_id payload={payload!r}")
@@ -328,11 +340,50 @@ class TwinCatWorker(BaseWorker):
 
 		try:
 			target_name = name
+			sub_plc_type = ""
+			sub_strlen = 0
 			for sub in st.subs.values():
 				if name == sub.alias:
 					target_name = sub.name
+					sub_plc_type = sub.plc_type
+					sub_strlen = sub.string_len
 					break
-			st.conn.write_by_name(target_name, value)
+				if name == sub.name:
+					sub_plc_type = sub.plc_type
+					sub_strlen = sub.string_len
+
+			plc_type = payload_type or sub_plc_type
+			string_len = payload_strlen if payload_type else (sub_strlen or payload_strlen)
+
+			if plc_type and plc_type.upper().startswith(("STRING", "WSTRING")):
+				if value is None:
+					value = ""
+				if not isinstance(value, str):
+					value = str(value)
+
+			if plc_type:
+				dt_cls, byte_size, is_string, is_wstring = _ads_datatype_and_size(plc_type, string_len)
+				if is_string:
+					if value is None:
+						value = ""
+					if not isinstance(value, str):
+						value = str(value)
+					if is_wstring:
+						raw = value.encode("utf-16-le", "ignore")
+						raw = raw.split(b"\x00\x00", 1)[0]
+						raw = raw[: max(0, byte_size - 2)]
+						raw = raw + b"\x00\x00"
+					else:
+						raw = value.encode("latin1", "ignore")
+						raw = raw.split(b"\x00", 1)[0]
+						raw = raw[: max(0, byte_size - 1)]
+						raw = raw + b"\x00"
+					if byte_size > 0:
+						raw = raw.ljust(byte_size, b"\x00")
+					value = raw
+				st.conn.write_by_name(target_name, value, dt_cls)
+			else:
+				st.conn.write_by_name(target_name, value)
 			self.publish_write_finished_as(client_id, f"write:{name}")
 			log.debug(f"write ok: client_id={client_id} name={name!r} target={target_name!r} value_type={type(value)}")
 		except Exception as e:
@@ -357,14 +408,23 @@ def _parse_add_plc_payload(payload: Dict[str, Any]) -> PlcConfig:
 
 def _build_subs(st: PlcState) -> None:
 	st.subs = {}
+	used_aliases: set[str] = set()
 	for entry in st.cfg.subscriptions:
 		try:
 			name = str(entry.get("name") or "")
 			if not name:
 				continue
+			alias = str(entry.get("alias") or "").strip()
+			if not alias:
+				# auto-generate a short alias from the last segment if unique
+				short_alias = name.split(".")[-1].replace("[", "_").replace("]", "").strip("_")
+				if short_alias and short_alias not in used_aliases:
+					alias = short_alias
+			if alias:
+				used_aliases.add(alias)
 			st.subs[name] = SubDef(
 				name=name,
-				alias=str(entry.get("alias") or "").strip(),
+				alias=alias,
 				plc_type=str(entry.get("plc_type", "UINT") or "UINT"),
 				string_len=int(entry.get("string_len", 80) or 80),
 			)

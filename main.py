@@ -54,7 +54,7 @@ from loguru import logger
 # GLOBAL BACKEND (PROCESS LIFETIME)
 # ------------------------------------------------------------------
 
-setup_logging(app_name="mes_app", log_level="INFO")
+setup_logging(app_name="mes_app", log_level="DEBUG")
 logger.info("Starting NiceGUI")
 bootstrap_defaults()
 

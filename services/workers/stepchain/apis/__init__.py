@@ -4,6 +4,7 @@ from services.workers.stepchain.apis.ui_api import UiApi
 from services.workers.stepchain.apis.flow_api import FlowApi
 from services.workers.stepchain.apis.timing_api import TimingApi
 from services.workers.stepchain.apis.workers_api import WorkersApi
+from services.workers.stepchain.apis.views_api import ViewsApi
 
 __all__ = [
     "ValuesApi",
@@ -12,4 +13,5 @@ __all__ = [
     "FlowApi",
     "TimingApi",
     "WorkersApi",
+    "ViewsApi",
 ]

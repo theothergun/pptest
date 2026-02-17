@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from decimal import Decimal
+from typing import Any
 
 
 @dataclass
@@ -41,5 +42,18 @@ class AppState:
     description: str = ""
     current_container_qty: str = ""
     max_container_qty: str = ""
+    last_serial_number: str = ""
+    packaging_search_query: str = ""
+    packaging_container_selected: str = ""
+    packaging_active_container: str = ""
+    packaging_container_rows: list[dict[str, Any]] = field(default_factory=list)
+    packaging_serial_rows: list[dict[str, Any]] = field(default_factory=list)
+
+    # ---- container management ----
+    container_mgmt_search_query: str = ""
+    container_mgmt_container_selected: str = ""
+    container_mgmt_active_container: str = ""
+    container_mgmt_container_rows: list[dict[str, Any]] = field(default_factory=list)
+    container_mgmt_serial_rows: list[dict[str, Any]] = field(default_factory=list)
 
     test_new_kea: str= ""

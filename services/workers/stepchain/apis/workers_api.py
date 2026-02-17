@@ -9,6 +9,7 @@ from typing import Any, Callable, Optional
 from services.worker_commands import TcpClientCommands, TwinCatCommands, RestApiCommands
 
 from services.worker_commands import ItacCommands
+from services.worker_commands import OpcUaCommands
 from services.worker_topics import WorkerTopics
 from services.worker_commands import ComDeviceCommands
 from services.workers.stepchain.apis.api_utils import to_int
@@ -173,13 +174,23 @@ class WorkersApi:
 
 	# -------------------------- TwinCAT helpers -------------------------
 
-	def plc_write(self, client_id: str, name: str, value: Any) -> None:
+	def plc_write(
+		self,
+		client_id: str,
+		name: str,
+		value: Any,
+		*,
+		plc_type: str | None = None,
+		string_len: int | None = None,
+	) -> None:
 		if not callable(getattr(self._ctx, "send_cmd", None)):
 			return
 		self._ctx.send_cmd("twincat", TwinCatCommands.WRITE, {
 			"client_id": str(client_id),
 			"name": str(name),
 			"value": value,
+			"plc_type": plc_type,
+			"string_len": string_len,
 		})
 
 	def plc_value(self, client_id: str, name: str, default: Any = None) -> Any:
@@ -206,6 +217,112 @@ class WorkersApi:
 			return default
 
 		return msg_payload.get("value", default)
+
+	# --------------------------- OPC UA helpers --------------------------
+
+	def opcua_value(self, endpoint: str, name_or_alias: str, default: Any = None) -> Any:
+		return self.get("opcua", str(endpoint), str(name_or_alias), default)
+
+	def opcua_wait_value(self, endpoint: str, name_or_alias: str, default: Any = None, timeout_s: float = 1.0) -> Any:
+		ep = str(endpoint or "")
+		key = str(name_or_alias or "")
+		if not ep or not key:
+			return default
+
+		cached = self.get("opcua", ep, key, default=None)
+		if cached is not None:
+			return cached
+
+		msg_payload = self._wait_for_bus_value(
+			source="opcua",
+			source_id=ep,
+			key_predicate=lambda k: k == key,
+			timeout_s=float(timeout_s),
+		)
+
+		if msg_payload.get("error") in ("worker_error", "timeout"):
+			return default
+
+		return msg_payload.get("value", default)
+
+	def opcua_read(
+		self,
+		endpoint: str,
+		*,
+		node_id: str | None = None,
+		alias: str | None = None,
+		timeout_s: float = 1.0,
+	) -> dict:
+		if not callable(getattr(self._ctx, "send_cmd", None)):
+			return {"error": "no_send_cmd"}
+
+		ep = str(endpoint or "")
+		if not ep:
+			return {"error": "missing_endpoint"}
+
+		request_id = uuid.uuid4().hex
+		self._ctx.send_cmd("opcua", OpcUaCommands.READ, {
+			"name": ep,
+			"node_id": node_id,
+			"alias": alias,
+			"request_id": request_id,
+		})
+
+		expected_key = f"opcua.{ep}.read.{request_id}"
+
+		msg_payload = self._wait_for_bus_value(
+			source="opcua",
+			source_id=ep,
+			key_predicate=lambda k: k == expected_key,
+			timeout_s=float(timeout_s),
+		)
+
+		if msg_payload.get("error") == "worker_error":
+			return msg_payload
+
+		if msg_payload.get("error") == "timeout":
+			msg_payload["expected_key"] = expected_key
+			msg_payload["request_id"] = request_id
+			msg_payload["endpoint"] = ep
+			return msg_payload
+
+		value = msg_payload.get("value")
+		if isinstance(value, dict):
+			value.setdefault("_meta", {})
+			if isinstance(value.get("_meta"), dict):
+				value["_meta"].update({
+					"endpoint": ep,
+					"request_id": request_id,
+					"key": expected_key,
+				})
+			return value
+
+		return {
+			"value": value,
+			"_meta": {"endpoint": ep, "request_id": request_id, "key": expected_key},
+		}
+
+	def opcua_write(
+		self,
+		endpoint: str,
+		*,
+		node_id: str | None = None,
+		alias: str | None = None,
+		name_or_alias: str | None = None,
+		value: Any = None,
+	) -> None:
+		if not callable(getattr(self._ctx, "send_cmd", None)):
+			return
+		ep = str(endpoint or "")
+		if not ep:
+			return
+		self._ctx.send_cmd("opcua", OpcUaCommands.WRITE, {
+			"name": ep,
+			"node_id": str(node_id) if node_id else None,
+			"alias": alias,
+			"name_or_alias": name_or_alias,
+			"value": value,
+		})
 
 	# ----------------------------- REST sync ----------------------------
 

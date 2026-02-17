@@ -54,12 +54,28 @@
           "key": "language_manager",
           "label": "Langauge",
           "path": "settings/language_manager.py"
+        },
+        {
+          "icon": "insert_drive_file",
+          "key": "pack_nox",
+          "label": "Packaging Nox",
+          "path": "operator/packaging_nox.py"
+        },
+        {
+          "icon": "insert_drive_file",
+          "key": "Container Managemet",
+          "label": "Container Managemet",
+          "path": "operator/container_management.py"
         }
       ],
       "dark_mode": true,
       "hide_nav_on_startup": false,
       "main_route": "packaging",
       "route_roles": {
+        "Container Managemet": [
+          "user",
+          "admin"
+        ],
         "errors": [
           "user",
           "admin"
@@ -69,6 +85,10 @@
           "admin"
         ],
         "language_manager": [
+          "user",
+          "admin"
+        ],
+        "pack_nox": [
           "user",
           "admin"
         ],
@@ -102,7 +122,9 @@
         "vi_home",
         "test5",
         "app_state",
-        "language_manager"
+        "language_manager",
+        "pack_nox",
+        "Container Managemet"
       ]
     },
     "theme": {
@@ -192,7 +214,7 @@
             "password": "",
             "security_mode": "None",
             "security_policy": "None",
-            "server_url": "opc.tcp://192.168.1.26:62541",
+            "server_url": "opc.tcp://127.0.0.1:62541",
             "timeout_s": 5.0,
             "username": ""
           }
@@ -224,7 +246,7 @@
         "auto_start_chains": [
           {
             "instance_id": "default",
-            "script_name": "Packaging/pack"
+            "script_name": "examples/twincat_example"
           }
         ]
       },
@@ -232,11 +254,30 @@
         "clients": []
       },
       "twincat": {
-        "plc_endpoints": []
+        "plc_endpoints": [
+          {
+            "ads_port": 851,
+            "client_id": "packaging_station",
+            "default_cycle_ms": 200,
+            "default_string_len": 80,
+            "default_trans_mode": "server_cycle",
+            "plc_ams_net_id": "5.140.130.124.1.1",
+            "plc_ip": "192.168.1.50",
+            "subscriptions": [
+              {
+                "alias": "step",
+                "name": "MAIN.module.zenonVisu.StepText",
+                "plc_type": "STRING(80)",
+                "string_len": 80
+              }
+            ]
+          }
+        ]
       }
     },
     "enabled_workers": [
       "script_worker",
+      "twincat",
       "opcua"
     ]
   }

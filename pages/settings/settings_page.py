@@ -17,6 +17,7 @@ from pages.settings import general_settings
 from pages.settings import startup_settings
 from pages.settings import app_state_view
 from pages.settings import theme_settings
+from pages.settings import online_status
 
 from services.app_config import (
 	list_config_sets,
@@ -104,6 +105,7 @@ def render(container: ui.element, ctx: PageContext) -> None:
 			ui.tab("Color Themes")
 			ui.tab("Startup")
 			ui.tab("Application Variables")
+			ui.tab("Online Status")
 			ui.tab("Enabled Workers")
 			ui.tab("Routes")
 			ui.tab("TCP Clients")
@@ -124,6 +126,8 @@ def render(container: ui.element, ctx: PageContext) -> None:
 				startup_settings.render(ui.column().classes("w-full gap-4"), ctx)
 			with ui.tab_panel("Application Variables"):
 				app_state_view.render(ui.column().classes("w-full h-full min-h-0"), ctx)
+			with ui.tab_panel("Online Status"):
+				online_status.render(ui.column().classes("w-full h-full min-h-0"), ctx)
 			with ui.tab_panel("Enabled Workers"):
 				enabled_workers_settings.render(ui.column().classes("w-full gap-4"), ctx)
 			with ui.tab_panel("Routes"):

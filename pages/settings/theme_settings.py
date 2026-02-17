@@ -58,13 +58,33 @@ def render(container: ui.element, _ctx: PageContext) -> None:
                         with ui.row().classes("w-full items-center gap-3"):
                             ui.label(key).classes("w-[180px] text-sm")
                             color_input = ui.input(value=value).props("dense outlined").classes("w-[180px] app-input")
+                            color_picker = ui.input(value=value).props("type=color").classes("w-[48px] p-0")
                             preview = ui.element("div").classes("w-8 h-8 rounded border")
                             preview.style("background-color: %s;" % value)
 
                             def _update_preview(e, p=preview):
                                 p.style("background-color: %s;" % str(getattr(e, "value", "") or "transparent"))
 
-                            color_input.on_value_change(_update_preview)
+                            def _sync_from_text(e, p=preview, picker=color_picker):
+                                val = str(getattr(e, "value", "") or "").strip()
+                                _update_preview(e, p)
+                                if _HEX_COLOR_RE.match(val):
+                                    try:
+                                        picker.value = val
+                                    except Exception:
+                                        pass
+
+                            def _sync_from_picker(e, text_input=color_input, p=preview):
+                                val = str(getattr(e, "value", "") or "").strip()
+                                if val:
+                                    try:
+                                        text_input.value = val
+                                    except Exception:
+                                        pass
+                                _update_preview(e, p)
+
+                            color_input.on_value_change(_sync_from_text)
+                            color_picker.on_value_change(_sync_from_picker)
                             inputs[(palette_name, key)] = color_input
                             previews[(palette_name, key)] = preview
 

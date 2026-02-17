@@ -158,6 +158,8 @@ class NavigationConfig:
     visible_routes: list[str] = field(
         default_factory=lambda: [
             "home", "errors", "reports", "settings",
+            "settings_general", "settings_runtime", "settings_workers",
+            "settings_connectivity", "settings_languages",
             "settings_summary", "route_settings",
             "tcp_settings", "scripts", "example"
         ]

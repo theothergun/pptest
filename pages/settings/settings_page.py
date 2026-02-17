@@ -3,148 +3,151 @@ from __future__ import annotations
 from nicegui import ui
 
 from layout.main_area import PageContext
+from pages.settings.settings_layout import render_settings_header
+from pages.settings import general_settings
+from pages.settings import theme_settings
+from pages.settings import startup_settings
+from pages.settings import app_state_view
+from pages.settings import online_status
+from pages.settings import enabled_workers_settings
+from pages.settings import scripts_lab
 from pages.settings.route import route_settings
 from pages.settings.tcp_client import tcp_settings
-from pages.settings.rest_api import rest_api_settings
-from pages.settings import scripts_lab
-from pages.settings import language_manager
 from pages.settings import twincat_settings
 from pages.settings import itac_settings
 from pages.settings import com_device_settings
 from pages.settings import opcua_settings
-from pages.settings import enabled_workers_settings
-from pages.settings import general_settings
-from pages.settings import startup_settings
-from pages.settings import app_state_view
-from pages.settings import theme_settings
-from pages.settings import online_status
-
-from services.app_config import (
-	list_config_sets,
-	get_active_set_name,
-	create_config_set,
-	set_active_set,
-)
+from pages.settings import rest_api_settings
+from pages.settings import language_manager
 from services.i18n import t
 
 
 def render(container: ui.element, ctx: PageContext) -> None:
 	with container:
+		with ui.column().classes("w-full h-full min-h-0"):
+			render_settings_header(
+				ctx,
+				title=t("settings.title", "Settings"),
+				subtitle=t("settings.subtitle", "Manage application settings and worker configuration."),
+			)
+			with ui.column().classes("w-full flex-1 min-h-0"):
+				ui.label(t("settings.sections", "Sections")).classes("text-sm text-gray-500 mt-2")
 
-		# -------------------------------
-		# HEADER ROW
-		# -------------------------------
-		with ui.row().classes("w-full items-center justify-between"):
+				with ui.row().classes("w-full flex-1 min-h-0 overflow-hidden gap-4"):
+					left_col = ui.column().classes("w-[260px] min-w-[220px] max-w-[320px] h-full min-h-0 overflow-y-auto")
 
-			# Left side (title + subtitle)
-			with ui.column().classes("gap-0"):
-				ui.label(t("settings.title", "Settings")).classes("text-lg font-semibold leading-tight")
-				ui.label(
-					t("settings.subtitle", "Manage application settings and worker configuration.")
-				).classes("text-xs text-gray-500 leading-tight")
+					nodes = [
+						{
+							"id": "general",
+							"label": t("settings.general.title", "General"),
+							"icon": "tune",
+							"children": [
+								{"id": "general.core", "label": t("settings.general.core", "General Settings"), "icon": "settings"},
+								{"id": "general.themes", "label": t("settings.general.themes", "Color Themes"), "icon": "palette"},
+								{"id": "general.startup", "label": t("settings.general.startup", "Startup"), "icon": "rocket_launch"},
+							],
+						},
+						{
+							"id": "runtime",
+							"label": t("settings.runtime.title", "Runtime"),
+							"icon": "monitor_heart",
+							"children": [
+								{"id": "runtime.app_state", "label": t("settings.runtime.app_state", "Application Variables"), "icon": "data_object"},
+								{"id": "runtime.online", "label": t("settings.runtime.online", "Online Status"), "icon": "cloud_done"},
+							],
+						},
+						{
+							"id": "workers",
+							"label": t("settings.workers.title", "Workers"),
+							"icon": "engineering",
+							"children": [
+								{"id": "workers.enabled", "label": t("settings.workers.enabled", "Enabled Workers"), "icon": "toggle_on"},
+								{"id": "workers.scripts", "label": t("settings.workers.scripts", "Scripts"), "icon": "terminal"},
+							],
+						},
+						{
+							"id": "connectivity",
+							"label": t("settings.connectivity.title", "Connectivity"),
+							"icon": "hub",
+							"children": [
+								{"id": "connectivity.routes", "label": t("settings.connectivity.routes", "Routes"), "icon": "route"},
+								{"id": "connectivity.tcp", "label": t("settings.connectivity.tcp", "TCP Clients"), "icon": "swap_horiz"},
+								{"id": "connectivity.twincat", "label": t("settings.connectivity.twincat", "TwinCAT"), "icon": "memory"},
+								{"id": "connectivity.itac", "label": t("settings.connectivity.itac", "iTAC"), "icon": "factory"},
+								{"id": "connectivity.com", "label": t("settings.connectivity.com", "COM Device"), "icon": "usb"},
+								{"id": "connectivity.opcua", "label": t("settings.connectivity.opcua", "OPC UA"), "icon": "device_hub"},
+								{"id": "connectivity.rest", "label": t("settings.connectivity.rest", "REST APIs"), "icon": "cloud"},
+							],
+						},
+						{
+							"id": "languages",
+							"label": t("settings.languages.title", "Languages"),
+							"icon": "language",
+							"children": [
+								{"id": "languages.manager", "label": t("settings.languages.manager", "Language Manager"), "icon": "translate"},
+							],
+						},
+					]
 
-			# Right side (config set selector)
-			with ui.row().classes("items-center gap-2"):
+					leaf_ids: set[str] = set()
 
-				def refresh_sets():
-					selector.options = list_config_sets()
-					selector.value = get_active_set_name()
+					def _collect_leaf_ids(items: list[dict]) -> None:
+						for n in items:
+							children = n.get("children")
+							if children:
+								_collect_leaf_ids(children)
+							else:
+								leaf_ids.add(n.get("id"))
 
-				def on_change(e):
-					set_active_set(e.value)
-					ui.notify(f"Active config set: {e.value}", type="positive")
-					ui.run_javascript("location.reload()")
+					_collect_leaf_ids(nodes)
 
-				def open_create_dialog():
-					d = ui.dialog()
-					with d:
-						with ui.card().classes("w-[min(480px,95vw)] gap-3"):
-							ui.label("Create config set").classes("text-lg font-semibold")
+					# Content area
+					content = ui.column().classes("w-full flex-1 min-h-0 overflow-y-auto gap-4")
 
-							name_in = ui.input("Set name").classes("w-full")
-							template_sel = ui.select(
-								list_config_sets(),
-								label="Copy from (optional)"
-							).classes("w-full")
+					def render_panel(panel_id: str) -> None:
+						content.clear()
+						with content:
+							if panel_id == "general.core":
+								general_settings.render(ui.column().classes("w-full gap-4"), ctx)
+							elif panel_id == "general.themes":
+								theme_settings.render(ui.column().classes("w-full gap-4"), ctx)
+							elif panel_id == "general.startup":
+								startup_settings.render(ui.column().classes("w-full gap-4"), ctx)
+							elif panel_id == "runtime.app_state":
+								app_state_view.render(ui.column().classes("w-full h-full min-h-0"), ctx)
+							elif panel_id == "runtime.online":
+								online_status.render(ui.column().classes("w-full h-full min-h-0"), ctx)
+							elif panel_id == "workers.enabled":
+								enabled_workers_settings.render(ui.column().classes("w-full gap-4"), ctx)
+							elif panel_id == "workers.scripts":
+								scripts_lab.render(ui.column().classes("w-full gap-4"), ctx)
+							elif panel_id == "connectivity.routes":
+								route_settings.render(ui.column().classes("w-full gap-4"), ctx)
+							elif panel_id == "connectivity.tcp":
+								tcp_settings.render(ui.column().classes("w-full gap-4"), ctx)
+							elif panel_id == "connectivity.twincat":
+								twincat_settings.render(ui.column().classes("w-full gap-4"), ctx)
+							elif panel_id == "connectivity.itac":
+								itac_settings.render(ui.column().classes("w-full gap-4"), ctx)
+							elif panel_id == "connectivity.com":
+								com_device_settings.render(ui.column().classes("w-full gap-4"), ctx)
+							elif panel_id == "connectivity.opcua":
+								opcua_settings.render(ui.column().classes("w-full gap-4"), ctx)
+							elif panel_id == "connectivity.rest":
+								rest_api_settings.render(ui.column().classes("w-full gap-4"), ctx)
+							elif panel_id == "languages.manager":
+								language_manager.render(ui.column().classes("w-full gap-4"), ctx)
+							else:
+								ui.label(t("settings.select_hint", "Select a section from the tree.")).classes("text-sm text-gray-500")
 
-							def create():
-								try:
-									name = create_config_set(
-										name_in.value,
-										copy_from=template_sel.value,
-									)
-									ui.notify(f"Created: {name}", type="positive")
-									refresh_sets()
-									d.close()
-								except Exception as ex:
-									ui.notify(str(ex), type="negative")
+					def on_select(e) -> None:
+						node_id = getattr(e, "value", None)
+						if node_id in leaf_ids:
+							render_panel(node_id)
 
-							with ui.row().classes("justify-end gap-2"):
-								ui.button("Cancel", on_click=d.close).props("flat")
-								ui.button("Create", on_click=create).props("color=primary")
-					d.open()
+					with left_col:
+						nav_tree = ui.tree(nodes, label_key="label", on_select=on_select).classes("w-full")
+						nav_tree.props("dense")
 
-				ui.label("Config:").classes("text-sm text-gray-500")
-
-				selector = ui.select(
-					options=list_config_sets(),
-					value=get_active_set_name(),
-					on_change=on_change,
-				).props("dense outlined").classes("min-w-[160px]")
-
-				ui.button(icon="add", on_click=open_create_dialog)\
-					.props("dense flat round")
-
-		ui.separator().classes("my-1")
-
-		# -------------------------------
-		# TABS
-		# -------------------------------
-		with ui.tabs().classes("w-full") as tabs:
-			ui.tab("General")
-			ui.tab("Color Themes")
-			ui.tab("Startup")
-			ui.tab("Application Variables")
-			ui.tab("Online Status")
-			ui.tab("Enabled Workers")
-			ui.tab("Routes")
-			ui.tab("TCP Clients")
-			ui.tab("TwinCAT")
-			ui.tab("iTAC")
-			ui.tab("COM Device")
-			ui.tab("OPC UA")
-			ui.tab("Scripts")
-			ui.tab("REST APIs")
-			ui.tab("Languages")
-
-		with ui.tab_panels(tabs, value="General").classes("w-full"):
-			with ui.tab_panel("General"):
-				general_settings.render(ui.column().classes("w-full gap-4"), ctx)
-			with ui.tab_panel("Color Themes"):
-				theme_settings.render(ui.column().classes("w-full gap-4"), ctx)
-			with ui.tab_panel("Startup"):
-				startup_settings.render(ui.column().classes("w-full gap-4"), ctx)
-			with ui.tab_panel("Application Variables"):
-				app_state_view.render(ui.column().classes("w-full h-full min-h-0"), ctx)
-			with ui.tab_panel("Online Status"):
-				online_status.render(ui.column().classes("w-full h-full min-h-0"), ctx)
-			with ui.tab_panel("Enabled Workers"):
-				enabled_workers_settings.render(ui.column().classes("w-full gap-4"), ctx)
-			with ui.tab_panel("Routes"):
-				route_settings.render(ui.column().classes("w-full gap-4"), ctx)
-			with ui.tab_panel("TCP Clients"):
-				tcp_settings.render(ui.column().classes("w-full gap-4"), ctx)
-			with ui.tab_panel("TwinCAT"):
-				twincat_settings.render(ui.column().classes("w-full gap-4"), ctx)
-			with ui.tab_panel("iTAC"):
-				itac_settings.render(ui.column().classes("w-full gap-4"), ctx)
-			with ui.tab_panel("COM Device"):
-				com_device_settings.render(ui.column().classes("w-full gap-4"), ctx)
-			with ui.tab_panel("OPC UA"):
-				opcua_settings.render(ui.column().classes("w-full gap-4"), ctx)
-			with ui.tab_panel("Scripts"):
-				scripts_lab.render(ui.column().classes("w-full gap-4"), ctx)
-			with ui.tab_panel("REST APIs"):
-				rest_api_settings.render(ui.column().classes("w-full gap-4"), ctx)
-			with ui.tab_panel("Languages"):
-				language_manager.render(ui.column().classes("w-full gap-4"), ctx)
+					# default view
+					render_panel("general.core")

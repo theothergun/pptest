@@ -79,6 +79,14 @@ def build_page(ctx: PageContext) -> None:
 .pack-shell .pack-negative { color: var(--negative) !important; }
 .pack-shell .pack-text-primary { color: var(--text-primary) !important; }
 .pack-shell .pack-text-secondary { color: var(--text-secondary) !important; }
+.pack-shell .pack-data-input .q-field__control {
+	min-height: 56px !important;
+}
+.pack-shell .pack-data-input .q-field__native {
+	font-size: clamp(1rem, 1.3vw, 1.6rem) !important;
+	font-weight: 800 !important;
+	line-height: 1.1 !important;
+}
 @keyframes packFadeIn {
 	from { opacity: 0; transform: translateY(6px); }
 	to { opacity: 1; transform: translateY(0); }
@@ -298,32 +306,32 @@ def build_page(ctx: PageContext) -> None:
 			with ui.element("div").classes("w-full grid grid-cols-12 gap-3"):
 				with ui.column().classes("gap-1 col-span-12 md:col-span-6"):
 					ui.label(t("packaging.part_number", "Part Number")).classes("text-xs uppercase tracking-wide pack-text-secondary")
-					ui.input().props("readonly standout").classes("w-full app-input").bind_value_from(
+					ui.input().props("readonly standout").classes("w-full app-input pack-data-input").bind_value_from(
 						ctx.state, "part_number", backward=lambda n: str(n or "")
 					)
 				with ui.column().classes("gap-1 col-span-12 md:col-span-6"):
 					ui.label(t("packaging.description", "Description")).classes("text-xs uppercase tracking-wide pack-text-secondary")
-					ui.input().props("readonly standout").classes("w-full app-input").bind_value_from(
+					ui.input().props("readonly standout").classes("w-full app-input pack-data-input").bind_value_from(
 						ctx.state, "description", backward=lambda n: str(n or "-")
 					)
 
 				with ui.column().classes("gap-1 col-span-12 md:col-span-6"):
 					ui.label(t("packaging.container_number", "Container")).classes("text-xs uppercase tracking-wide pack-text-secondary")
-					ui.input().props("readonly standout").classes("w-full app-input").bind_value_from(
+					ui.input().props("readonly standout").classes("w-full app-input pack-data-input").bind_value_from(
 						ctx.state, "container_number", backward=lambda n: str(n or "")
 					)
 				with ui.column().classes("gap-1 col-span-12 md:col-span-6"):
 					ui.label(t("packaging.quantity", "Quantity")).classes("text-xs uppercase tracking-wide pack-text-secondary")
 					with ui.row().classes("w-full items-center gap-2 flex-nowrap"):
-						ui.input().props("readonly standout").classes("w-full text-center app-input") \
+						ui.input().props("readonly standout").classes("w-full text-center app-input pack-data-input") \
 							.bind_value_from(ctx.state, "current_container_qty", backward=lambda n: str(n or "0"))
 						ui.icon("east").classes("pack-text-secondary shrink-0")
-						ui.input().props("readonly standout").classes("w-full text-center app-input") \
+						ui.input().props("readonly standout").classes("w-full text-center app-input pack-data-input") \
 							.bind_value_from(ctx.state, "max_container_qty", backward=lambda n: str(n or "0"))
 
 				with ui.column().classes("gap-1 col-span-12"):
 					ui.label(t("packaging.last_serial_number", "Last Serial Number")).classes("text-xs uppercase tracking-wide pack-text-secondary")
-					ui.input().props("readonly standout").classes("w-full app-input").bind_value_from(
+					ui.input().props("readonly standout").classes("w-full app-input pack-data-input").bind_value_from(
 						ctx.state, "last_serial_number", backward=lambda n: str(n or "")
 					)
 

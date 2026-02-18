@@ -37,8 +37,12 @@ def main(ctx: PublicStepChainContext):
 
 	if cmd == "refresh":
 		ctx.goto(100)
+	elif cmd == "new":
+		ctx.goto(200)
+
 
 	step = ctx.step
+
 	print(step)
 	if step == 0:
 		pass
@@ -49,33 +53,35 @@ def main(ctx: PublicStepChainContext):
 			{"asset_id": ctx.global_var("asset_id")},
 			timeout_s=8.0,
 		)
-		logger.info(f"[{script_name}] get_active_container raw response: {res}")
 
+		logger.info(f"[{script_name}] get_active_container raw response: {res}")
 		payload = _extract_contract_payload(res)
 		result_code = payload.get("RESULT_CODE")
-		result_text = str(payload.get("RESULT_TEXT", "") or "")
-		print("*" * 50)
-		print(result_code)
-		print(payload.get("RESULT_CODE"))
-		print("*" * 50)
-		if result_code != 0:
-			ctx.ui.notify(
-				f"get_active_container failed: code={result_code} text={result_text}",
-				type_="warning",
-			)
+		result_text = payload.get("RESULT_TEXT")
+		if result_code == 0:
+
+			ctx.ui.set_state("part_number" , payload.get("DATA").get("PARTNUMBER"))
+			ctx.ui.set_state("description", payload.get("DATA").get("DESCRIPTION"))
+			ctx.ui.set_state("container_number" , payload.get("DATA").get("MATERIAL_BIN"))
+			ctx.ui.set_state("max_container_qty", payload.get("DATA").get("QTY_TOTAL"))
+			ctx.ui.set_state("current_container_qty", payload.get("DATA").get("QTY_CURR"))
+
 			ctx.goto(101) # success
 		else:
+			ctx.set_state("get_container_result_text", result_text)
 			ctx.goto(102)
+
 	elif step == 101:
 		ctx.ui.popup_wait_close()
+		ctx.notify_positive("Successfully refreshed container")
 		ctx.goto(0)
+
 	elif step == 102: # fail
-		ctx.ui.popup_message("container" , message="Something went wrong" )
+		ctx.notify_negative("Error refreshing container")
 		ctx.ui.popup_wait_close()
 		ctx.goto(0)
 
 	elif step == 105:
-
 		ctx.workers.publish(
 			topic=WorkerTopics.TOPIC_MODAL_CLOSE,
 			source="ScriptWorker",

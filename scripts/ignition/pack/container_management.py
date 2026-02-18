@@ -6,6 +6,7 @@ from services.worker_topics import WorkerTopics
 from services.workers.stepchain.context import PublicStepChainContext
 
 script_name = "ignition.pack.container_management"
+CREATE_CONTAINER_ERROR_POPUP_KEY = "create_and_activate_new_container"
 
 
 def _extract_contract_payload(res: dict) -> dict:
@@ -30,7 +31,7 @@ def main(ctx: PublicStepChainContext):
 
 	# Correct command channel for container_management view.
 	cmd = ctx.ui.consume_command("packaging.cmd")
-	print(cmd)
+	#print(cmd)
 
 	if cmd:
 		logger.info(f"[{script_name}] command received: {cmd}")
@@ -43,7 +44,7 @@ def main(ctx: PublicStepChainContext):
 
 	step = ctx.step
 
-	print(step)
+	#print(step)
 	if step == 0:
 		pass
 	elif step == 100:
@@ -90,6 +91,28 @@ def main(ctx: PublicStepChainContext):
 		)
 
 		ctx.set_step_desc("active container mapped to app_state")
+
+
+	elif step == 200:
+		res = ctx.rest_post_json(
+			"create_and_activate_new_container",
+			"",
+			{"asset_id": ctx.global_var("asset_id")},
+			timeout_s=8.0,
+		)
+		ctx.ui.popup_wait_close()
+		logger.info(f"[{script_name}] get_active_container raw response: {res}")
+		payload = _extract_contract_payload(res)
+		result_code = payload.get("RESULT_CODE")
+		result_text = payload.get("RESULT_TEXT")
+		if result_code == 0:
+			ctx.goto(100)
+		else:
+			# popup_message is keyed + non-blocking; clear stale result/pending state
+			# so the same popup can be shown again on repeated failures.
+			ctx.ui.popup_clear(key=CREATE_CONTAINER_ERROR_POPUP_KEY)
+			ctx.ui.popup_message(key=CREATE_CONTAINER_ERROR_POPUP_KEY, message=result_text)
+			ctx.goto(0)
 
 
 # Export

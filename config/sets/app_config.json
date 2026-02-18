@@ -319,14 +319,6 @@
         ]
       }
     },
-    "enabled_workers": [
-      "script_worker",
-      "tcp_client",
-      "rest_api",
-      "twincat",
-      "itac",
-      "com_device",
-      "opcua"
-    ]
+    "enabled_workers": []
   }
 }

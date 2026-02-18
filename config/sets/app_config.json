@@ -1,6 +1,46 @@
 {
   "auth": {
-    "login_required": true
+    "allow_legacy_fallback": true,
+    "default_roles": [
+      "user"
+    ],
+    "itac_connection_name": "itac_mk",
+    "login_required": true,
+    "rest_endpoint_name": "",
+    "rest_extra_payload": {},
+    "rest_headers": {},
+    "rest_login_path": "",
+    "rest_method": "POST",
+    "rest_password_field": "password",
+    "rest_success_field": "",
+    "rest_timeout_s": 8.0,
+    "rest_username_field": "username",
+    "users": [
+      {
+        "enabled": true,
+        "forename": "",
+        "lastname": "",
+        "password_hash": "pbkdf2_sha256$210000$RLdC_MGcR51BoDlGO1KWBA$Zb8f9JaK2AWhCEUFcsmTQkpiV7VOA8iRKT8G-QFoUb8",
+        "roles": [
+          "user"
+        ],
+        "username": "test123"
+      },
+      {
+        "enabled": true,
+        "forename": "big",
+        "lastname": "guy",
+        "password_hash": "pbkdf2_sha256$210000$4QGbRn0DBf3LXFAkBYWYZg$ijMwixo4D08W5qD-mhG3whQfbM-_MI6L9-Oqyx8QauY",
+        "roles": [
+          "admin"
+        ],
+        "username": "admin"
+      }
+    ],
+    "validation_mode": "local_or_itac"
+  },
+  "global_vars": {
+    "asset_id": "6e29b1d2-b578-11f0-88e3-005056a8f0c2"
   },
   "persistence": {
     "backend": "json",
@@ -60,9 +100,27 @@
           "key": "Container Managemet",
           "label": "Container Managemet",
           "path": "operator/container_management.py"
+        },
+        {
+          "icon": "insert_drive_file",
+          "key": "xdv",
+          "label": "xcv",
+          "path": "xcv"
+        },
+        {
+          "icon": "insert_drive_file",
+          "key": "xdvxcv",
+          "label": "xdvxcv",
+          "path": "xcv"
+        },
+        {
+          "icon": "asd",
+          "key": "sad",
+          "label": "asd",
+          "path": "asd"
         }
       ],
-      "dark_mode": false,
+      "dark_mode": true,
       "hide_nav_on_startup": false,
       "main_route": "packaging",
       "route_roles": {
@@ -93,6 +151,9 @@
           "user",
           "admin"
         ],
+        "sad": [
+          "asd"
+        ],
         "settings": [
           "user"
         ],
@@ -118,7 +179,10 @@
         "settings_connectivity",
         "settings_languages",
         "pack_nox",
-        "Container Managemet"
+        "Container Managemet",
+        "xdv",
+        "xdvxcv",
+        "sad"
       ]
     },
     "theme": {
@@ -186,7 +250,23 @@
         "devices": []
       },
       "itac": {
-        "endpoints": []
+        "endpoints": [
+          {
+            "auto_login": true,
+            "base_url": "http://mk01smesapp02:8080/mes/imsapi/rest/actions",
+            "client": "01",
+            "force_locale": "",
+            "name": "itac_mk",
+            "password": "",
+            "registration_type": "S",
+            "station_number": "6410400821",
+            "station_password": "",
+            "system_identifier": "nicegui",
+            "timeout_s": 10.0,
+            "user": "",
+            "verify_ssl": false
+          }
+        ]
       },
       "opcua": {
         "endpoints": [
@@ -217,16 +297,106 @@
       "rest_api": {
         "endpoints": [
           {
-            "base_url": "https://api.example.com",
+            "base_url": "http://192.168.1.26:8088/system/webdev/api-packaging/packaging/get_active_container",
             "headers": {
-              "Authorization": "Bearer token"
+              "Content-Type": "application/json"
             },
-            "name": "example",
-            "timeout_s": 10.0,
-            "verify_ssl": true
+            "name": "get_active_container",
+            "timeout_s": 8.0,
+            "verify_ssl": false
           },
           {
-            "base_url": "http://127.0.0.1:8088/system/webdev/Core/odc/BookSingleSerial",
+            "base_url": "http://192.168.1.26:8088/system/webdev/api-packaging/packaging/create_and_activate_new_container",
+            "headers": {
+              "Content-Type": "application/json"
+            },
+            "name": "create_and_activate_new_container",
+            "timeout_s": 8.0,
+            "verify_ssl": false
+          },
+          {
+            "base_url": "http://192.168.1.26:8088/system/webdev/api-packaging/packaging/deactivate_container_on_asset",
+            "headers": {
+              "Content-Type": "application/json"
+            },
+            "name": "deactivate_container_on_asset",
+            "timeout_s": 8.0,
+            "verify_ssl": false
+          },
+          {
+            "base_url": "http://192.168.1.26:8088/system/webdev/api-packaging/packaging/activate_container",
+            "headers": {
+              "Content-Type": "application/json"
+            },
+            "name": "activate_container",
+            "timeout_s": 8.0,
+            "verify_ssl": false
+          },
+          {
+            "base_url": "http://192.168.1.26:8088/system/webdev/api-packaging/packaging/search_container",
+            "headers": {
+              "Content-Type": "application/json"
+            },
+            "name": "search_container",
+            "timeout_s": 8.0,
+            "verify_ssl": false
+          },
+          {
+            "base_url": "http://192.168.1.26:8088/system/webdev/api-packaging/packaging/search_serial_numbers_of_container",
+            "headers": {
+              "Content-Type": "application/json"
+            },
+            "name": "search_serial_numbers_of_container",
+            "timeout_s": 8.0,
+            "verify_ssl": false
+          },
+          {
+            "base_url": "http://192.168.1.26:8088/system/webdev/api-packaging/packaging/remove_single_serial_number_from_container",
+            "headers": {
+              "Content-Type": "application/json"
+            },
+            "name": "remove_single_serial_number_from_container",
+            "timeout_s": 8.0,
+            "verify_ssl": false
+          },
+          {
+            "base_url": "http://192.168.1.26:8088/system/webdev/api-packaging/packaging/remove_all_serial_numbers_from_container",
+            "headers": {
+              "Content-Type": "application/json"
+            },
+            "name": "remove_all_serial_numbers_from_container",
+            "timeout_s": 8.0,
+            "verify_ssl": false
+          },
+          {
+            "base_url": "http://192.168.1.26:8088/system/webdev/api-packaging/packaging/get_container_from_serial_number",
+            "headers": {
+              "Content-Type": "application/json"
+            },
+            "name": "get_container_from_serial_number",
+            "timeout_s": 8.0,
+            "verify_ssl": false
+          },
+          {
+            "base_url": "http://192.168.1.26:8088/system/webdev/api-packaging/packaging/load_serial_number_failures",
+            "headers": {
+              "Content-Type": "application/json"
+            },
+            "name": "load_serial_number_failures",
+            "timeout_s": 8.0,
+            "verify_ssl": false
+          },
+          {
+            "base_url": "http://192.168.1.26:8088/system/webdev/api-packaging/packaging/load_station_failures",
+            "headers": {
+              "Content-Type": "application/json"
+            },
+            "name": "load_station_failures",
+            "timeout_s": 8.0,
+            "verify_ssl": false
+          },
+          {
+            "base_url": "http://192.168.1.26:8088/system/webdev/api-packaging/packaging/BookSingleSerial",
             "headers": {
               "Content-Type": "application/json"
             },
@@ -240,7 +410,7 @@
         "auto_start_chains": [
           {
             "instance_id": "default",
-            "script_name": "examples/twincat_example"
+            "script_name": "ignition/pack/container_management"
           }
         ]
       },
@@ -269,6 +439,10 @@
         ]
       }
     },
-    "enabled_workers": []
+    "enabled_workers": [
+      "script_worker",
+      "rest_api",
+      "itac"
+    ]
   }
 }

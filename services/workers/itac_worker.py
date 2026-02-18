@@ -129,6 +129,7 @@ class ItacWorker(BaseWorker):
 		exec_ = ThreadPoolExecutor(max_workers=8, thread_name_prefix="itac")
 		pending: Dict[Future, Tuple[str, str, str]] = {}
 		# future -> (connection_id, action, publish_key)
+		last_status_log_ts = 0.0
 
 		try:
 			while not self.should_stop():
@@ -136,6 +137,15 @@ class ItacWorker(BaseWorker):
 				self._poll_futures(log, session_mgr, connections, pending)
 
 				self.set_connected(any(st.connected for st in connections.values()))
+				now = time.time()
+				if now - last_status_log_ts >= 5.0:
+					last_status_log_ts = now
+					for st in connections.values():
+						if st.connected:
+							self.publish_connected_as(st.cfg.connection_id)
+						else:
+							reason = st.last_error or "not_connected"
+							self.publish_disconnected_as(st.cfg.connection_id, reason=reason)
 				time.sleep(0.02)
 
 		finally:
@@ -326,12 +336,16 @@ class ItacWorker(BaseWorker):
 
 		def job() -> dict:
 			_ensure_session(http, session_mgr, st.cfg)
-			res = _post_action(http, st.cfg, str(function_name or ""), body)
+			sess = session_mgr.get()
+			body_with_session = _with_session_context(body, sess)
+			res = _post_action(http, st.cfg, str(function_name or ""), body_with_session)
 			if _extract_return_code(res) == -3:
 				logger.info("raw_call returned -3 (session invalid) -> relogin once and retry")
 				session_mgr.clear(reason="session_invalid(-3)")
 				_ensure_session(http, session_mgr, st.cfg)
-				res = _post_action(http, st.cfg, str(function_name or ""), body)
+				sess = session_mgr.get()
+				body_with_session = _with_session_context(body, sess)
+				res = _post_action(http, st.cfg, str(function_name or ""), body_with_session)
 			return res
 
 		fut = exec_.submit(job)
@@ -526,6 +540,16 @@ def _tr_get_station_setting(http: _ThreadLocalHttp, cfg: ItacConnectionConfig, s
 	}
 	logger.info(f"call trGetStationSetting: connection_id={cfg.connection_id} session_id={session.session_id!r} station_number={cfg.station_number!r} keys={keys_list!r}")
 	return _post_action(http, cfg, "trGetStationSetting", body)
+
+
+def _with_session_context(body: Any, session: ItacSessionContext) -> dict:
+	body_dict = dict(body) if isinstance(body, dict) else {}
+	body_dict["sessionContext"] = {
+		"sessionId": str(session.session_id),
+		"persId": int(session.pers_id),
+		"locale": str(session.locale),
+	}
+	return body_dict
 
 
 # ------------------------------------------------------------------ Session handling (shared)

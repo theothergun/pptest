@@ -299,6 +299,25 @@ class PublicStepChainContext:
     def itac_raw_call(self, connection_id: str, function_name: str, body: Any = None, timeout_s: float = 10.0) -> Any:
         return self.workers.itac_raw_call(connection_id, function_name, body=body, timeout_s=timeout_s)
 
+    def itac_login_user(
+        self,
+        connection_id: str,
+        *,
+        station_number: str,
+        username: str,
+        password: str | None = None,
+        client: str = "01",
+        timeout_s: float = 10.0,
+    ) -> Any:
+        return self.workers.itac_login_user(
+            connection_id,
+            station_number=station_number,
+            username=username,
+            password=password,
+            client=client,
+            timeout_s=timeout_s,
+        )
+
     # -------------------- simplified worker IO for non-programmers --------------------
 
     def read_com(self, client_id: str, default: Any = None) -> Any:
@@ -378,6 +397,12 @@ class PublicStepChainContext:
 
     def camera_capture(self, key: str, default: Any = None) -> Any:
         return self.values.by_key(key, default)
+
+    def global_var(self, key: str, default: Any = None) -> Any:
+        return self.values.global_var(key, default)
+
+    def global_vars(self) -> Dict[str, Any]:
+        return self.values.global_all()
 
     def set_cycle_time(self, seconds: float) -> None:
         self.timing.set_cycle_time(seconds)

@@ -3,6 +3,8 @@ from __future__ import annotations
 import copy
 from typing import Any
 
+from services.app_config import get_app_config
+
 
 class ValuesApi:
     """Read-only access to latest bus values mirrored in context.data."""
@@ -66,3 +68,13 @@ class ValuesApi:
     def state_all(self) -> dict[str, Any]:
         """Read full mirrored AppState snapshot."""
         return copy.deepcopy(self._ctx._app_state)
+
+    def global_var(self, key: str, default: Any = None) -> Any:
+        cfg = get_app_config()
+        vars_map = cfg.global_vars if isinstance(getattr(cfg, "global_vars", None), dict) else {}
+        return vars_map.get(str(key), default)
+
+    def global_all(self) -> dict[str, Any]:
+        cfg = get_app_config()
+        vars_map = cfg.global_vars if isinstance(getattr(cfg, "global_vars", None), dict) else {}
+        return copy.deepcopy(vars_map)

@@ -39,8 +39,11 @@ def main(ctx: PublicStepChainContext):
 			],
 			wait_step_desc="Device offline - waiting for operator...",
 		 )
-
-
+		if res:
+			if res['clicked'] == "cancel":
+				ctx.goto(99)
+			if res['clicked'] == "retry":
+				ctx.goto(0)
 
 
 

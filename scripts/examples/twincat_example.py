@@ -16,7 +16,6 @@ def main(ctx: PublicStepChainContext):
     if step == 0:
         res = ctx.worker.plc_value("packaging_station", "step")
         if res:
-            pass
             print(res)
             #ctx.worker.plc_write("packaging_station", "MAIN.module.DMCReader.ProfinetState" , 6)
         ctx.goto(1)

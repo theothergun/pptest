@@ -151,6 +151,29 @@ class PersistenceConfig:
 @dataclass
 class AuthConfig:
     login_required: bool = True
+    # local | rest_api | itac | local_or_rest_api | local_or_itac
+    validation_mode: str = "local"
+    # Fallback roles if no role mapping exists for a user
+    default_roles: list[str] = field(default_factory=lambda: ["user"])
+    # Local user store (username + forename + lastname + roles + enabled + password_hash)
+    users: list[dict[str, Any]] = field(default_factory=list)
+    # Backward-compatible fallback:
+    # if local mode and users list is empty, keep legacy "admin/user by username" behavior
+    allow_legacy_fallback: bool = True
+
+    # REST auth validation settings
+    rest_endpoint_name: str = ""
+    rest_login_path: str = ""
+    rest_method: str = "POST"
+    rest_success_field: str = ""
+    rest_timeout_s: float = 8.0
+    rest_username_field: str = "username"
+    rest_password_field: str = "password"
+    rest_headers: dict[str, str] = field(default_factory=dict)
+    rest_extra_payload: dict[str, Any] = field(default_factory=dict)
+
+    # iTAC auth validation settings
+    itac_connection_name: str = ""
 
 
 @dataclass
@@ -352,6 +375,7 @@ class WorkersConfig:
 @dataclass
 class AppConfig:
     auth: AuthConfig = field(default_factory=AuthConfig)
+    global_vars: dict[str, Any] = field(default_factory=dict)
     ui: UiConfig = field(default_factory=UiConfig)
     workers: WorkersConfig = field(default_factory=WorkersConfig)
     persistence: PersistenceConfig = field(default_factory=PersistenceConfig)
@@ -415,7 +439,69 @@ def _to_dict(cfg: AppConfig) -> dict[str, Any]:
 # ------------------------------------------------------------------ Parsing
 
 def _from_dict(data: dict[str, Any]) -> AppConfig:
-    auth = AuthConfig(**data.get("auth", {}))
+    global_vars_raw = data.get("global_vars", {})
+    global_vars = dict(global_vars_raw) if isinstance(global_vars_raw, dict) else {}
+
+    auth_data = data.get("auth", {}) if isinstance(data.get("auth", {}), dict) else {}
+    raw_users = auth_data.get("users", [])
+    users: list[dict[str, Any]] = []
+    if isinstance(raw_users, list):
+        for item in raw_users:
+            if isinstance(item, dict):
+                username = str(item.get("username", "")).strip()
+                if not username:
+                    continue
+                roles_raw = item.get("roles", [])
+                if isinstance(roles_raw, list):
+                    roles = [str(r).strip() for r in roles_raw if str(r).strip()]
+                else:
+                    roles = []
+                users.append(
+                    {
+                        "username": username,
+                        "forename": str(item.get("forename", item.get("firstname", "")) or "").strip(),
+                        "lastname": str(item.get("lastname", item.get("name", "")) or "").strip(),
+                        "roles": roles or ["user"],
+                        "enabled": bool(item.get("enabled", True)),
+                        "password_hash": str(item.get("password_hash", "") or ""),
+                    }
+                )
+
+    default_roles_raw = auth_data.get("default_roles", ["user"])
+    if isinstance(default_roles_raw, list):
+        default_roles = [str(r).strip() for r in default_roles_raw if str(r).strip()]
+    else:
+        default_roles = ["user"]
+
+    rest_headers_raw = auth_data.get("rest_headers", {})
+    if isinstance(rest_headers_raw, dict):
+        rest_headers = {str(k): str(v) for k, v in rest_headers_raw.items()}
+    else:
+        rest_headers = {}
+
+    rest_extra_payload_raw = auth_data.get("rest_extra_payload", {})
+    if isinstance(rest_extra_payload_raw, dict):
+        rest_extra_payload = dict(rest_extra_payload_raw)
+    else:
+        rest_extra_payload = {}
+
+    auth = AuthConfig(
+        login_required=bool(auth_data.get("login_required", True)),
+        validation_mode=str(auth_data.get("validation_mode", "local") or "local"),
+        default_roles=default_roles or ["user"],
+        users=users,
+        allow_legacy_fallback=bool(auth_data.get("allow_legacy_fallback", True)),
+        rest_endpoint_name=str(auth_data.get("rest_endpoint_name", "") or ""),
+        rest_login_path=str(auth_data.get("rest_login_path", "") or ""),
+        rest_method=str(auth_data.get("rest_method", "POST") or "POST"),
+        rest_success_field=str(auth_data.get("rest_success_field", "") or ""),
+        rest_timeout_s=float(auth_data.get("rest_timeout_s", 8.0) or 8.0),
+        rest_username_field=str(auth_data.get("rest_username_field", "username") or "username"),
+        rest_password_field=str(auth_data.get("rest_password_field", "password") or "password"),
+        rest_headers=rest_headers,
+        rest_extra_payload=rest_extra_payload,
+        itac_connection_name=str(auth_data.get("itac_connection_name", "") or ""),
+    )
 
     ui_data = data.get("ui", {})
     nav_data = ui_data.get("navigation", {})
@@ -470,7 +556,14 @@ def _from_dict(data: dict[str, Any]) -> AppConfig:
 
     proxy = ProxyConfig(**data.get("proxy", {}))
 
-    return AppConfig(auth=auth, ui=ui_cfg, workers=workers_cfg, persistence=persistence, proxy=proxy)
+    return AppConfig(
+        auth=auth,
+        global_vars=global_vars,
+        ui=ui_cfg,
+        workers=workers_cfg,
+        persistence=persistence,
+        proxy=proxy,
+    )
 
 
 # ------------------------------------------------------------------ Helpers

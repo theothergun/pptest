@@ -274,6 +274,23 @@ def build_page(ctx: PageContext) -> None:
 		_set_auto_start_scripts(selected)
 		ui.notify("Startup scripts updated.", type="positive")
 
+	def _render_startup_tree(nodes: list[dict], level: int = 0) -> None:
+		"""Render a simple tree view with checkboxes on leaf script nodes."""
+		indent_cls = "pl-%s" % str(min(level * 4, 16))
+		for node in nodes or []:
+			node_id = str(node.get("id", "") or "")
+			label = str(node.get("label", "") or node_id)
+			children = node.get("children", [])
+			if isinstance(children, list) and children:
+				with ui.row().classes(f"w-full items-center gap-2 {indent_cls}"):
+					ui.icon("folder").classes("text-primary")
+					ui.label(label).classes("text-sm font-semibold")
+				_render_startup_tree(children, level + 1)
+			else:
+				with ui.row().classes(f"w-full items-center gap-2 {indent_cls}"):
+					ui.icon("description").classes("text-primary")
+					startup_state["checkboxes"][node_id] = ui.checkbox(label, value=node_id in startup_state["auto_start"])
+
 	# --------------------------
 	# Chain cards (stable, no recreate)
 	# --------------------------
@@ -615,12 +632,12 @@ def build_page(ctx: PageContext) -> None:
 		if startup_container is not None:
 			startup_container.clear()
 			startup_state["checkboxes"] = {}
-			auto_start = set(_get_auto_start_scripts())
+			startup_state["auto_start"] = set(_get_auto_start_scripts())
 			with startup_container:
 				ui.label("Start on startup").classes("text-sm font-semibold")
 				ui.label("Select scripts to auto-start (default instance).").classes("text-xs text-gray-500")
-				for script in scripts:
-					startup_state["checkboxes"][script] = ui.checkbox(script, value=script in auto_start)
+				ui.separator().classes("w-full")
+				_render_startup_tree(nodes, 0)
 				ui.button("Save startup scripts", on_click=_save_startup_scripts).props("color=primary").classes("mt-2")
 
 	# --------------------------

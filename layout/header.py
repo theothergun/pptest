@@ -3,7 +3,8 @@ from datetime import datetime
 from nicegui import ui
 
 from layout.main_area import PageContext
-from auth.session import get_user, logout
+from auth.auth_service import unregister_itac_user
+from auth.session import get_user, has_role, logout
 from services.app_config import get_app_config, save_app_config
 from services.i18n import SUPPORTED_LANGUAGES, get_language, set_language, t
 
@@ -61,13 +62,25 @@ def build_header(ctx: PageContext) -> ui.header:
             # User info (icon + username)
             user = get_user()
             username = user.username if user else "unknown"
+            full_name = ""
+            if user:
+                full_name = ("%s %s" % (user.forename, user.lastname)).strip()
 
             with ui.row().classes("ml-4 items-center gap-2"):
                 ui.icon("account_circle").classes("text-sm")
-                ui.label(username).classes("text-sm")
+                with ui.column().classes("gap-0"):
+                    username_label = ui.label(username).classes("text-sm")
+                    if has_role("admin"):
+                        username_label.classes(add="cursor-pointer text-primary")
+                        username_label.on("click", lambda: ui.run_javascript("window.location.href = '/?page=settings'"))
+                    ui.label(full_name or "-").classes("text-xs text-gray-300")
 
             # Logout
             def do_logout() -> None:
+                if user:
+                    ok, detail = unregister_itac_user(user.username)
+                    if not ok:
+                        ui.notify(f"iTAC unregister failed: {detail}", type="warning")
                 logout()
                 ui.run_javascript("window.location.href = '/login'")
 

@@ -7,6 +7,8 @@ from pages.settings.settings_layout import render_settings_header
 from pages.settings import general_settings
 from pages.settings import theme_settings
 from pages.settings import startup_settings
+from pages.settings import user_management
+from pages.settings import global_variables_settings
 from pages.settings import app_state_view
 from pages.settings import online_status
 from pages.settings import enabled_workers_settings
@@ -56,6 +58,8 @@ def render(container: ui.element, ctx: PageContext) -> None:
 								{"id": "general.core", "label": f"🛠️ {t('settings.general.core', 'General Settings')}"},
 								{"id": "general.themes", "label": f"🎨 {t('settings.general.themes', 'Color Themes')}"},
 								{"id": "general.startup", "label": f"🚀 {t('settings.general.startup', 'Startup')}"},
+								{"id": "general.users", "label": f"👤 {t('settings.general.users', 'User Management')}"},
+								{"id": "general.global_vars", "label": f"🌐 {t('settings.general.global_vars', 'Global Variables')}"},
 							],
 						},
 						{
@@ -130,6 +134,10 @@ def render(container: ui.element, ctx: PageContext) -> None:
 									theme_settings.render(target, ctx)
 								elif panel_id == "general.startup":
 									startup_settings.render(target, ctx)
+								elif panel_id == "general.users":
+									user_management.render(target, ctx)
+								elif panel_id == "general.global_vars":
+									global_variables_settings.render(target, ctx)
 								elif panel_id == "runtime.app_state":
 									app_state_view.render(target, ctx)
 								elif panel_id == "runtime.online":

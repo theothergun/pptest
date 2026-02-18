@@ -204,13 +204,103 @@
       "rest_api": {
         "endpoints": [
           {
-            "base_url": "https://api.example.com",
+            "base_url": "http://127.0.0.1:8088/system/webdev/Core/odc/get_active_container",
             "headers": {
-              "Authorization": "Bearer token"
+              "Content-Type": "application/json"
             },
-            "name": "example",
-            "timeout_s": 10.0,
-            "verify_ssl": true
+            "name": "get_active_container",
+            "timeout_s": 8.0,
+            "verify_ssl": false
+          },
+          {
+            "base_url": "http://127.0.0.1:8088/system/webdev/Core/odc/create_and_activate_new_container",
+            "headers": {
+              "Content-Type": "application/json"
+            },
+            "name": "create_and_activate_new_container",
+            "timeout_s": 8.0,
+            "verify_ssl": false
+          },
+          {
+            "base_url": "http://127.0.0.1:8088/system/webdev/Core/odc/deactivate_container_on_asset",
+            "headers": {
+              "Content-Type": "application/json"
+            },
+            "name": "deactivate_container_on_asset",
+            "timeout_s": 8.0,
+            "verify_ssl": false
+          },
+          {
+            "base_url": "http://127.0.0.1:8088/system/webdev/Core/odc/activate_container",
+            "headers": {
+              "Content-Type": "application/json"
+            },
+            "name": "activate_container",
+            "timeout_s": 8.0,
+            "verify_ssl": false
+          },
+          {
+            "base_url": "http://127.0.0.1:8088/system/webdev/Core/odc/search_container",
+            "headers": {
+              "Content-Type": "application/json"
+            },
+            "name": "search_container",
+            "timeout_s": 8.0,
+            "verify_ssl": false
+          },
+          {
+            "base_url": "http://127.0.0.1:8088/system/webdev/Core/odc/search_serial_numbers_of_container",
+            "headers": {
+              "Content-Type": "application/json"
+            },
+            "name": "search_serial_numbers_of_container",
+            "timeout_s": 8.0,
+            "verify_ssl": false
+          },
+          {
+            "base_url": "http://127.0.0.1:8088/system/webdev/Core/odc/remove_single_serial_number_from_container",
+            "headers": {
+              "Content-Type": "application/json"
+            },
+            "name": "remove_single_serial_number_from_container",
+            "timeout_s": 8.0,
+            "verify_ssl": false
+          },
+          {
+            "base_url": "http://127.0.0.1:8088/system/webdev/Core/odc/remove_all_serial_numbers_from_container",
+            "headers": {
+              "Content-Type": "application/json"
+            },
+            "name": "remove_all_serial_numbers_from_container",
+            "timeout_s": 8.0,
+            "verify_ssl": false
+          },
+          {
+            "base_url": "http://127.0.0.1:8088/system/webdev/Core/odc/get_container_from_serial_number",
+            "headers": {
+              "Content-Type": "application/json"
+            },
+            "name": "get_container_from_serial_number",
+            "timeout_s": 8.0,
+            "verify_ssl": false
+          },
+          {
+            "base_url": "http://127.0.0.1:8088/system/webdev/Core/odc/load_serial_number_failures",
+            "headers": {
+              "Content-Type": "application/json"
+            },
+            "name": "load_serial_number_failures",
+            "timeout_s": 8.0,
+            "verify_ssl": false
+          },
+          {
+            "base_url": "http://127.0.0.1:8088/system/webdev/Core/odc/load_station_failures",
+            "headers": {
+              "Content-Type": "application/json"
+            },
+            "name": "load_station_failures",
+            "timeout_s": 8.0,
+            "verify_ssl": false
           },
           {
             "base_url": "http://127.0.0.1:8088/system/webdev/Core/odc/BookSingleSerial",

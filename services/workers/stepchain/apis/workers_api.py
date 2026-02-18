@@ -6,6 +6,8 @@ import uuid
 import queue
 from typing import Any, Callable, Optional
 
+from loguru import logger
+
 from services.worker_commands import TcpClientCommands, TwinCatCommands, RestApiCommands
 
 from services.worker_commands import ItacCommands
@@ -13,6 +15,9 @@ from services.worker_commands import OpcUaCommands
 from services.worker_topics import WorkerTopics
 from services.worker_commands import ComDeviceCommands
 from services.workers.stepchain.apis.api_utils import to_int
+
+ITAC_NO_USER_LOGGED_RV = -104
+ITAC_USER_ALREADY_LOGGED_RV = -106
 
 class WorkersApi:
 	"""
@@ -573,6 +578,307 @@ class WorkersApi:
 				"request_id": request_id,
 				"key": expected_key,
 			},
+		}
+
+	def _itac_result_dict(self, res: Any) -> dict[str, Any]:
+		if not isinstance(res, dict):
+			return {}
+		result = res.get("result")
+		return result if isinstance(result, dict) else {}
+
+	def _itac_return_value(self, res: Any) -> int | None:
+		result = self._itac_result_dict(res)
+		for key in ("return_value", "returnCode", "return_code", "resultCode", "result_code", "code"):
+			if key in result:
+				try:
+					return int(result.get(key))
+				except Exception:
+					return None
+
+		if isinstance(res, dict):
+			for key in ("returnCode", "return_code", "resultCode", "result_code", "code"):
+				if key in res:
+					try:
+						return int(res.get(key))
+					except Exception:
+						return None
+
+		return None
+
+	def _itac_user_name(self, res: Any) -> str:
+		result = self._itac_result_dict(res)
+		if not result:
+			return ""
+		return str(result.get("userName") or result.get("username") or "").strip()
+
+	def itac_login_user(
+		self,
+		connection_id: str,
+		*,
+		station_number: str,
+		username: str,
+		password: str | None = None,
+		client: str = "01",
+		timeout_s: float = 10.0,
+	) -> dict:
+		"""
+		Performs iTAC user login flow in one call:
+		1) regGetRegisteredUser
+		2) regUnregisterUser (when a user is already logged in)
+		3) regRegisterUser
+		"""
+		cid = str(connection_id or "").strip()
+		station = str(station_number or "").strip()
+		user = str(username or "").strip()
+		pwd = str(password if password is not None else username or "")
+		client_id = str(client or "01").strip() or "01"
+
+		if not cid:
+			return {"ok": False, "stage": "validate", "error": "missing_connection_id"}
+		if not station:
+			return {"ok": False, "stage": "validate", "error": "missing_station_number"}
+		if not user:
+			return {"ok": False, "stage": "validate", "error": "missing_username"}
+		if not pwd:
+			return {"ok": False, "stage": "validate", "error": "missing_password"}
+
+		logger.info(
+			"itac_login_user start: connection_id='{}' station='{}' username='{}' client='{}'",
+			cid,
+			station,
+			user,
+			client_id,
+		)
+
+		get_registered = self.itac_raw_call(
+			cid,
+			"regGetRegisteredUser",
+			{"stationNumber": station},
+			timeout_s=timeout_s,
+		)
+		if not isinstance(get_registered, dict) or get_registered.get("error"):
+			return {
+				"ok": False,
+				"stage": "get_registered_user",
+				"error": str((get_registered or {}).get("error") or "worker_error"),
+				"responses": {"get_registered_user": get_registered},
+			}
+
+		get_rv = self._itac_return_value(get_registered)
+		registered_user = self._itac_user_name(get_registered)
+		if get_rv == ITAC_NO_USER_LOGGED_RV:
+			registered_user = ""
+			logger.info(
+				"itac_login_user get_registered_user: connection_id='{}' station='{}' return_value={} => no user logged in, skip unregister",
+				cid,
+				station,
+				get_rv,
+			)
+		elif get_rv != 0:
+			logger.warning(
+				"itac_login_user get_registered_user failed: connection_id='{}' station='{}' return_value={}",
+				cid,
+				station,
+				get_rv,
+			)
+			return {
+				"ok": False,
+				"stage": "get_registered_user",
+				"error": "itac_return_value_%s" % str(get_rv),
+				"responses": {"get_registered_user": get_registered},
+			}
+		else:
+			logger.info(
+				"itac_login_user get_registered_user: connection_id='{}' station='{}' registered_user='{}'",
+				cid,
+				station,
+				registered_user,
+			)
+
+		unregister_res: dict[str, Any] | None = None
+		if registered_user and registered_user.lower() == user.lower():
+			logger.info(
+				"itac_login_user same user already registered: connection_id='{}' station='{}' user='{}' -> skip unregister",
+				cid,
+				station,
+				registered_user,
+			)
+		elif registered_user:
+			logger.info(
+				"itac_login_user unregister_user: connection_id='{}' station='{}' user='{}'",
+				cid,
+				station,
+				registered_user,
+			)
+			unregister_res = self.itac_raw_call(
+				cid,
+				"regUnregisterUser",
+				{
+					"stationNumber": station,
+					"userName": registered_user,
+					"password": registered_user,
+					"client": client_id,
+				},
+				timeout_s=timeout_s,
+			)
+			if not isinstance(unregister_res, dict) or unregister_res.get("error"):
+				return {
+					"ok": False,
+					"stage": "unregister_user",
+					"error": str((unregister_res or {}).get("error") or "worker_error"),
+					"responses": {
+						"get_registered_user": get_registered,
+						"unregister_user": unregister_res,
+					},
+				}
+			unregister_rv = self._itac_return_value(unregister_res)
+			if unregister_rv != 0:
+				logger.warning(
+					"itac_login_user unregister_user failed: connection_id='{}' station='{}' user='{}' return_value={}",
+					cid,
+					station,
+					registered_user,
+					unregister_rv,
+				)
+				return {
+					"ok": False,
+					"stage": "unregister_user",
+					"error": "itac_return_value_%s" % str(unregister_rv),
+					"responses": {
+						"get_registered_user": get_registered,
+						"unregister_user": unregister_res,
+					},
+				}
+			logger.info(
+				"itac_login_user unregister_user success: connection_id='{}' station='{}' user='{}'",
+				cid,
+				station,
+				registered_user,
+			)
+
+		register_res = self.itac_raw_call(
+			cid,
+			"regRegisterUser",
+			{
+				"stationNumber": station,
+				"userName": user,
+				"password": pwd,
+				"client": client_id,
+			},
+			timeout_s=timeout_s,
+		)
+		if not isinstance(register_res, dict) or register_res.get("error"):
+			return {
+				"ok": False,
+				"stage": "register_user",
+				"error": str((register_res or {}).get("error") or "worker_error"),
+				"responses": {
+					"get_registered_user": get_registered,
+					"unregister_user": unregister_res,
+					"register_user": register_res,
+				},
+			}
+
+		register_rv = self._itac_return_value(register_res)
+		ok = register_rv in (0, ITAC_USER_ALREADY_LOGGED_RV)
+		profile_res = register_res
+		register_res2: dict[str, Any] | None = None
+		if register_rv == ITAC_USER_ALREADY_LOGGED_RV:
+			logger.info(
+				"itac_login_user register_user: connection_id='{}' station='{}' username='{}' return_value={} => already logged in (treated as success)",
+				cid,
+				station,
+				user,
+				register_rv,
+			)
+		if ok:
+			register_res2 = self.itac_raw_call(
+				cid,
+				"regRegisterUser",
+				{
+					"stationNumber": station,
+					"userName": user,
+					"password": pwd,
+					"client": client_id,
+				},
+				timeout_s=timeout_s,
+			)
+			if isinstance(register_res2, dict) and not register_res2.get("error"):
+				register_rv2 = self._itac_return_value(register_res2)
+				if register_rv2 in (0, ITAC_USER_ALREADY_LOGGED_RV):
+					profile_res = register_res2
+				else:
+					logger.warning(
+						"itac_login_user second register_user returned error: connection_id='{}' station='{}' username='{}' return_value={}",
+						cid,
+						station,
+						user,
+						register_rv2,
+					)
+			else:
+				logger.warning(
+					"itac_login_user second register_user failed: connection_id='{}' station='{}' username='{}' error='{}'",
+					cid,
+					station,
+					user,
+					str((register_res2 or {}).get("error") if isinstance(register_res2, dict) else "worker_error"),
+				)
+
+			# Retrieve profile fields from regGetRegisteredUser after login.
+			post_get_res = self.itac_raw_call(
+				cid,
+				"regGetRegisteredUser",
+				{"stationNumber": station},
+				timeout_s=timeout_s,
+			)
+			if isinstance(post_get_res, dict) and not post_get_res.get("error"):
+				post_get_rv = self._itac_return_value(post_get_res)
+				if post_get_rv == 0:
+					profile_res = post_get_res
+				else:
+					logger.warning(
+						"itac_login_user post-login get_registered_user returned error: connection_id='{}' station='{}' username='{}' return_value={}",
+						cid,
+						station,
+						user,
+						post_get_rv,
+					)
+			else:
+				logger.warning(
+					"itac_login_user post-login get_registered_user failed: connection_id='{}' station='{}' username='{}' error='{}'",
+					cid,
+					station,
+					user,
+					str((post_get_res or {}).get("error") if isinstance(post_get_res, dict) else "worker_error"),
+				)
+		if ok:
+			logger.success(
+				"itac_login_user register_user success: connection_id='{}' station='{}' username='{}'",
+				cid,
+				station,
+				user,
+			)
+		else:
+			logger.warning(
+				"itac_login_user register_user failed: connection_id='{}' station='{}' username='{}' return_value={}",
+				cid,
+				station,
+				user,
+				register_rv,
+			)
+		return {
+			"ok": ok,
+			"stage": "register_user",
+			"error": "" if ok else "itac_return_value_%s" % str(register_rv),
+			"registered_user_before": registered_user,
+			"responses": {
+				"get_registered_user": get_registered,
+				"unregister_user": unregister_res,
+				"register_user": register_res,
+				"register_user_profile": register_res2,
+				"get_registered_user_profile": post_get_res if ok else None,
+			},
+			"profile_response": profile_res,
 		}
 
 	# ---------------------- iTAC ergonomics helpers ----------------------

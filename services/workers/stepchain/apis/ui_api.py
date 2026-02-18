@@ -1,6 +1,7 @@
 # services/workers/stepchain/apis/ui_api.py
 from __future__ import annotations
 
+import time
 from typing import Any, Optional, Union
 
 from services.worker_topics import WorkerTopics
@@ -628,6 +629,56 @@ class UiApi:
 						self._ctx._modal_result_by_key.pop(k, None)
 					except Exception:
 						pass
+		except Exception:
+			pass
+
+	def popup_wait_open(
+		self,
+		*,
+		key: str = "packaging.wait",
+		title: str = "Please wait",
+		message: str = "Working ...",
+	) -> None:
+		"""
+		Open the packaging wait popup (spinner dialog) on the UI side.
+
+		This publishes a VALUE_CHANGED event with:
+		- key=<popup key>
+		- value={"action":"open","title":...,"message":...,"event_id":...}
+		"""
+		k = str(key or "").strip()
+		if not k:
+			return
+		try:
+			self._ctx.worker_bus.publish(
+				topic=WorkerTopics.VALUE_CHANGED,
+				source="ScriptWorker",
+				source_id=self._ctx.chain_id,
+				key=k,
+				value={
+					"action": "open",
+					"title": str(title or "Please wait"),
+					"message": str(message or "Working ..."),
+					"event_id": int(time.time_ns()),
+				},
+			)
+		except Exception:
+			pass
+
+	def popup_wait_close(self, *, key: str = "packaging.wait") -> None:
+		"""
+		Close the packaging wait popup by key.
+		"""
+		k = str(key or "").strip()
+		if not k:
+			return
+		try:
+			self._ctx.worker_bus.publish(
+				topic=WorkerTopics.TOPIC_MODAL_CLOSE,
+				source="ScriptWorker",
+				source_id=self._ctx.chain_id,
+				key=k,
+			)
 		except Exception:
 			pass
 

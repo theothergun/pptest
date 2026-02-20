@@ -87,6 +87,10 @@ def _render_devices(scroll_to: str | None = None, highlight: str | None = None) 
             write_timeout_s = ui.input("Write timeout (s)", value=str(dev.get("write_timeout_s", 0.5))).classes("w-52")
             delimiter = ui.input("Delimiter", value=dev.get("delimiter", "\\n")).classes("w-52")
             encoding = ui.input("Encoding", value=dev.get("encoding", "utf-8")).classes("w-52")
+        visible_on_device_panel = ui.switch(
+            "Visible on device panel",
+            value=bool(dev.get("visible_on_device_panel", False)),
+        )
 
         with ui.row().classes("w-full gap-3"):
             read_chunk_size = ui.input("Read chunk size", value=str(dev.get("read_chunk_size", 256))).classes("w-52")
@@ -98,7 +102,7 @@ def _render_devices(scroll_to: str | None = None, highlight: str | None = None) 
             ui.button(
                 "Save",
                 on_click=lambda i=idx, did=dev.get("device_id", ""), p=port, b=baudrate, by=bytesize, pa=parity, st=stopbits, mo=mode, to=timeout_s, wto=write_timeout_s, de=delimiter, en=encoding, rc=read_chunk_size, ml=max_line_len, rmi=reconnect_min_s, rma=reconnect_max_s:
-                _update_device(i, did, p.value, b.value, by.value, pa.value, st.value, mo.value, to.value, wto.value, de.value, en.value, rc.value, ml.value, rmi.value, rma.value),
+                _update_device(i, did, p.value, b.value, by.value, pa.value, st.value, mo.value, to.value, wto.value, de.value, en.value, rc.value, ml.value, rmi.value, rma.value, bool(visible_on_device_panel.value)),
             ).props("color=primary")
             ui.button("Delete", on_click=delete).props("flat color=negative")
 
@@ -132,6 +136,7 @@ def _open_add_dialog() -> None:
         max_line_len = ui.input("Max line len", value="4096").classes("w-full")
         reconnect_min_s = ui.input("Reconnect min (s)", value="0.5").classes("w-full")
         reconnect_max_s = ui.input("Reconnect max (s)", value="5.0").classes("w-full")
+        visible_on_device_panel = ui.switch("Visible on device panel", value=False)
 
         with ui.row().classes("w-full justify-end gap-2"):
             ui.button("Cancel", on_click=d.close).props("flat")
@@ -140,7 +145,7 @@ def _open_add_dialog() -> None:
                 on_click=lambda: _add_device(
                     d, device_id.value, port.value, baudrate.value, bytesize.value, parity.value, stopbits.value,
                     mode.value, timeout_s.value, write_timeout_s.value, delimiter.value, encoding.value,
-                    read_chunk_size.value, max_line_len.value, reconnect_min_s.value, reconnect_max_s.value
+                    read_chunk_size.value, max_line_len.value, reconnect_min_s.value, reconnect_max_s.value, bool(visible_on_device_panel.value)
                 ),
             ).props("color=primary")
     d.open()
@@ -148,7 +153,7 @@ def _open_add_dialog() -> None:
 
 def _add_device(dlg: ui.dialog, device_id: str, port: str, baudrate: str, bytesize: str, parity: str, stopbits: str, mode: str,
                 timeout_s: str, write_timeout_s: str, delimiter: str, encoding: str, read_chunk_size: str, max_line_len: str,
-                reconnect_min_s: str, reconnect_max_s: str) -> None:
+                reconnect_min_s: str, reconnect_max_s: str, visible_on_device_panel: bool) -> None:
     if not device_id.strip() or not port.strip():
         ui.notify("Device ID and port are required.", type="negative")
         return
@@ -180,6 +185,7 @@ def _add_device(dlg: ui.dialog, device_id: str, port: str, baudrate: str, bytesi
         "max_line_len": max_line_v,
         "reconnect_min_s": rec_min_v,
         "reconnect_max_s": rec_max_v,
+        "visible_on_device_panel": bool(visible_on_device_panel),
     })
     com_cfg["devices"] = devices
     save_app_config(cfg)
@@ -191,7 +197,7 @@ def _add_device(dlg: ui.dialog, device_id: str, port: str, baudrate: str, bytesi
 
 def _update_device(index: int, device_id: str, port: str, baudrate: str, bytesize: str, parity: str, stopbits: str, mode: str,
                    timeout_s: str, write_timeout_s: str, delimiter: str, encoding: str, read_chunk_size: str, max_line_len: str,
-                   reconnect_min_s: str, reconnect_max_s: str) -> None:
+                   reconnect_min_s: str, reconnect_max_s: str, visible_on_device_panel: bool) -> None:
     if not device_id.strip() or not port.strip():
         ui.notify("Device ID and port are required.", type="negative")
         return
@@ -223,6 +229,7 @@ def _update_device(index: int, device_id: str, port: str, baudrate: str, bytesiz
         "max_line_len": max_line_v,
         "reconnect_min_s": rec_min_v,
         "reconnect_max_s": rec_max_v,
+        "visible_on_device_panel": bool(visible_on_device_panel),
     }
     com_cfg["devices"] = devices
     save_app_config(cfg)

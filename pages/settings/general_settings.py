@@ -11,6 +11,7 @@ def render(container: ui.element, _ctx: PageContext) -> None:
 	with container.classes("w-full"):
 		cfg = get_app_config()
 		current = bool(getattr(cfg.ui.navigation, "hide_nav_on_startup", False))
+		current_show_device_panel = bool(getattr(cfg.ui.navigation, "show_device_panel", False))
 		current_dark = bool(getattr(cfg.ui.navigation, "dark_mode", False))
 		proxy_enabled = bool(getattr(cfg.proxy, "enabled", False))
 		proxy_http = str(getattr(cfg.proxy, "http", "") or "")
@@ -22,6 +23,7 @@ def render(container: ui.element, _ctx: PageContext) -> None:
 			ui.label("General UI behavior settings.").classes("text-sm text-gray-500")
 
 			hide_nav_switch = ui.switch("Hide nav on startup", value=current)
+			show_device_panel_switch = ui.switch("Show device panel", value=current_show_device_panel)
 			dark_mode_switch = ui.switch("Dark mode", value=current_dark)
 
 			ui.separator().classes("my-2")
@@ -45,6 +47,7 @@ def render(container: ui.element, _ctx: PageContext) -> None:
 			def save_settings() -> None:
 				cfg = get_app_config()
 				cfg.ui.navigation.hide_nav_on_startup = bool(hide_nav_switch.value)
+				cfg.ui.navigation.show_device_panel = bool(show_device_panel_switch.value)
 				cfg.ui.navigation.dark_mode = bool(dark_mode_switch.value)
 				cfg.proxy.enabled = bool(proxy_enabled_switch.value)
 				cfg.proxy.http = str(http_input.value or "").strip()

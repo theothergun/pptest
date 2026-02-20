@@ -10,6 +10,7 @@ from layout.main_area import build_main_area
 from layout.router import navigate, get_initial_route_from_url
 from layout.header import build_header
 from layout.drawer import build_drawer
+from layout.device_panel import build_device_panel
 from layout.errors_state import refresh_errors_count
 from layout.modal_manager import install_modal_manager
 
@@ -402,6 +403,7 @@ def index():
 	# --------- LAYOUT ---------
 	build_header(ctx)
 	build_drawer(ctx)
+	build_device_panel(ctx)
 
 	with ui.row().classes("w-full").style(
 		f"height: calc(100vh - {HEADER_PX}px - {FOOTER_PX}px);"

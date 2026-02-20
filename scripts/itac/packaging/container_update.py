@@ -20,14 +20,13 @@ def main(ctx: PublicStepChainContext):
         'key': 'itac.itac_mk.custom_function.e0aa4f593fd04cde89f063892bc04c26'}}
 
     """
-    ctx.set_cycle_time(1)
+    ctx.set_cycle_time(0.1)
     step = ctx.step
     msg = ctx.ui.consume_view_cmd("view.cmd.packaging_nox")
     cmd = msg.get("cmd") if msg else None
     if cmd == "refresh":
         ctx.set_state("update_container", True)
     if step == 0:
-
         container= ctx.get_state("container_number")
         if not container:
             ctx.goto(10)

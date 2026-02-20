@@ -166,6 +166,7 @@
           "admin"
         ]
       },
+      "show_device_panel": true,
       "visible_routes": [
         "summary",
         "packaging",
@@ -265,7 +266,8 @@
             "system_identifier": "nicegui",
             "timeout_s": 10.0,
             "user": "",
-            "verify_ssl": false
+            "verify_ssl": false,
+            "visible_on_device_panel": true
           }
         ]
       },
@@ -304,7 +306,8 @@
             },
             "name": "get_active_container",
             "timeout_s": 8.0,
-            "verify_ssl": false
+            "verify_ssl": false,
+            "visible_on_device_panel": false
           },
           {
             "base_url": "http://192.168.1.26:8088/system/webdev/api-packaging/packaging/create_and_activate_new_container",
@@ -437,7 +440,8 @@
             "port": 4001,
             "reconnect_max_s": 10.0,
             "reconnect_min_s": 1.0,
-            "tcp_nodelay": true
+            "tcp_nodelay": true,
+            "visible_on_device_panel": true
           }
         ]
       },

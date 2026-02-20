@@ -189,6 +189,7 @@ class NavigationConfig:
     )
     main_route: str = "home"
     hide_nav_on_startup: bool = False
+    show_device_panel: bool = False
     dark_mode: bool = False
     custom_routes: list[dict[str, Any]] = field(default_factory=list)
     route_roles: dict[str, list[str]] = field(default_factory=dict)
@@ -273,6 +274,7 @@ class UiConfig:
 class ComDeviceEntry:
     device_id: str
     port: str
+    visible_on_device_panel: bool = False
     baudrate: int = 115200
     bytesize: int = 8
     parity: str = "N"
@@ -295,6 +297,7 @@ class TcpClientEntry:
     client_id: str
     host: str
     port: int
+    visible_on_device_panel: bool = False
     connect: bool = True
     mode: str = "line"
     delimiter: str = "\\n"
@@ -310,6 +313,7 @@ class TcpClientEntry:
 class RestApiEndpoint:
     name: str
     base_url: str
+    visible_on_device_panel: bool = False
     headers: dict[str, str] = field(default_factory=dict)
     timeout_s: float = 10.0
     verify_ssl: bool = True
@@ -321,6 +325,7 @@ class TwincatEndpoint:
     plc_ip: str
     ads_port: int
     client_id: str
+    visible_on_device_panel: bool = False
     subscriptions: list[dict[str, Any]] = field(default_factory=list)
     default_trans_mode: str = "server_cycle"
     default_cycle_ms: int = 200
@@ -332,6 +337,7 @@ class ItacEndpoint:
     name: str
     base_url: str
     station_number: str
+    visible_on_device_panel: bool = False
     client: str = "01"
     registration_type: str = "S"
     system_identifier: str = "nicegui"
@@ -347,6 +353,7 @@ class ItacEndpoint:
 class OpcUaEndpoint:
     name: str
     server_url: str
+    visible_on_device_panel: bool = False
     security_policy: str = "None"
     security_mode: str = "None"
     username: str = ""
@@ -509,6 +516,7 @@ def _from_dict(data: dict[str, Any]) -> AppConfig:
         visible_routes=nav_data.get("visible_routes", NavigationConfig().visible_routes),
         main_route=nav_data.get("main_route", NavigationConfig().main_route),
         hide_nav_on_startup=bool(nav_data.get("hide_nav_on_startup", False)),
+        show_device_panel=bool(nav_data.get("show_device_panel", False)),
         dark_mode=bool(nav_data.get("dark_mode", False)),
         custom_routes=nav_data.get("custom_routes", []),
         route_roles=nav_data.get("route_roles", {}),
@@ -605,6 +613,7 @@ def get_twincat_plc_endpoints(cfg: AppConfig) -> list[TwincatEndpoint]:
                 plc_ip=e["plc_ip"],
                 ads_port=e["ads_port"],
                 client_id=e["client_id"],
+                visible_on_device_panel=bool(e.get("visible_on_device_panel", False)),
                 subscriptions=e.get("subscriptions", []),
             )
         )

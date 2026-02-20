@@ -92,6 +92,10 @@ def _render_endpoints(scroll_to: str | None = None, highlight: str | None = None
 			server_url = ui.input("Server URL", value=ep.get("server_url", "")).classes("flex-1")
 			timeout_s = ui.input("Timeout (s)", value=str(ep.get("timeout_s", 5.0))).classes("w-52")
 			auto_connect = ui.switch("Auto connect", value=ep.get("auto_connect", False))
+			visible_on_device_panel = ui.switch(
+				"Visible on device panel",
+				value=bool(ep.get("visible_on_device_panel", False)),
+			)
 
 		with ui.row().classes("w-full gap-3"):
 			security_policy = ui.input("Security policy", value=ep.get("security_policy", "None")).classes("flex-1")
@@ -109,7 +113,7 @@ def _render_endpoints(scroll_to: str | None = None, highlight: str | None = None
 			ui.button(
 				"Save",
 				on_click=lambda i=idx, n=ep.get("name", ""), u=server_url, to=timeout_s, ac=auto_connect, sp=security_policy, sm=security_mode, un=username, pw=password, nd=nodes:
-				_update_endpoint(i, n, u.value, to.value, bool(ac.value), sp.value, sm.value, un.value, pw.value, nd.value),
+				_update_endpoint(i, n, u.value, to.value, bool(ac.value), sp.value, sm.value, un.value, pw.value, nd.value, bool(visible_on_device_panel.value)),
 			).props("color=primary")
 			ui.button("Delete", on_click=delete).props("flat color=negative")
 
@@ -132,6 +136,7 @@ def _open_add_dialog() -> None:
 		server_url = ui.input("Server URL", value="opc.tcp://127.0.0.1:4840").classes("w-full")
 		timeout_s = ui.input("Timeout (s)", value="5.0").classes("w-full")
 		auto_connect = ui.switch("Auto connect", value=False)
+		visible_on_device_panel = ui.switch("Visible on device panel", value=False)
 		security_policy = ui.input("Security policy", value="None").classes("w-full")
 		security_mode = ui.input("Security mode", value="None").classes("w-full")
 		username = ui.input("Username").classes("w-full")
@@ -156,6 +161,7 @@ def _open_add_dialog() -> None:
 					username.value,
 					password.value,
 					nodes.value,
+					bool(visible_on_device_panel.value),
 				),
 			).props("color=primary")
 	d.open()
@@ -172,6 +178,7 @@ def _add_endpoint(
 	username: str,
 	password: str,
 	nodes_raw: str,
+	visible_on_device_panel: bool,
 ) -> None:
 	if not name.strip() or not server_url.strip():
 		ui.notify("Name and server URL are required.", type="negative")
@@ -201,6 +208,7 @@ def _add_endpoint(
 			"username": username or "",
 			"password": password or "",
 			"nodes": nodes_v,
+			"visible_on_device_panel": bool(visible_on_device_panel),
 		}
 	)
 	opc_cfg["endpoints"] = endpoints
@@ -223,6 +231,7 @@ def _update_endpoint(
 	username: str,
 	password: str,
 	nodes_raw: str,
+	visible_on_device_panel: bool,
 ) -> None:
 	if not name.strip() or not server_url.strip():
 		ui.notify("Name and server URL are required.", type="negative")
@@ -251,6 +260,7 @@ def _update_endpoint(
 		"username": username or "",
 		"password": password or "",
 		"nodes": nodes_v,
+		"visible_on_device_panel": bool(visible_on_device_panel),
 	}
 	opc_cfg["endpoints"] = endpoints
 	save_app_config(cfg)

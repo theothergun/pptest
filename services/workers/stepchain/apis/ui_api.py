@@ -428,7 +428,7 @@ class UiApi:
 		Return:
 		- None                 -> still waiting
 		- {"clicked": "retry"} -> user clicked a button
-		- {"closed": True}     -> popup was closed programmatically via popup_close()
+		- {"closed": True}     -> popup was closed via popup_close(..., clear=False)
 		"""
 		k = str(key or "").strip()
 		if not k:
@@ -489,26 +489,34 @@ class UiApi:
 		return None
 
 
-	def popup_close(self, key: str) -> None:
+	def popup_close(self, key: str, *, clear: bool = True) -> None:
 		"""
-		Close a popup by key (if active) and unblock the stepchain.
+		Close a popup by key (if active).
 
-		This will:
-		- close the UI dialog (best effort)
-		- set a local result {"closed": True} so popup_message() stops returning None
+		Default behavior also clears local modal state for this key so it can be
+		reused immediately without an extra popup_clear() call.
+		Pass clear=False to preserve the previous behavior and set
+		{"closed": True} for popup_message().
 		"""
 		k = str(key or "").strip()
 		if not k:
 			return
 
-		# unblock locally (important even if UI close fails)
-		try:
-			# Only set if it was pending; otherwise don't overwrite real result
-			if self._ctx._modal_is_pending(k):
-				self._ctx._modal_result_by_key[k] = {"closed": True}
-				self._ctx._modal_clear_pending(k)
-		except Exception:
-			pass
+		if clear:
+			# Reset modal state for immediate key reuse.
+			try:
+				self.popup_clear(k)
+			except Exception:
+				pass
+		else:
+			# Legacy behavior: unblock popup_message() with an explicit closed result.
+			try:
+				# Only set if it was pending; otherwise don't overwrite real result
+				if self._ctx._modal_is_pending(k):
+					self._ctx._modal_result_by_key[k] = {"closed": True}
+					self._ctx._modal_clear_pending(k)
+			except Exception:
+				pass
 
 		# close UI (best effort)
 		try:

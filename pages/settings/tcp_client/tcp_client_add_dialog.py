@@ -30,6 +30,7 @@ def create_add_tcp_client_dialog(
 				with ui.row().classes("w-full items-center gap-6"):
 					keepalive = ui.switch("Keepalive", value=True).classes("flex-1")
 					tcp_no_delay = ui.switch("TCP no delay", value=True).classes("flex-1")
+				visible_on_device_panel = ui.switch("Visible on device panel", value=False).classes("w-full")
 
 				mode = ui.input("Mode", value="line").classes("w-full")
 				delimiter = ui.input("Delimiter", value="\\n").classes("w-full")
@@ -52,6 +53,7 @@ def create_add_tcp_client_dialog(
 					reconnect_max_s.value = "10.0"
 					keepalive.value = True
 					tcp_no_delay.value = True
+					visible_on_device_panel.value = False
 
 				def handle_add() -> None:
 					payload = {
@@ -67,6 +69,7 @@ def create_add_tcp_client_dialog(
 						"reconnect_max_s": reconnect_max_s.value,
 						"keepalive": keepalive.value,
 						"tcp_nodelay": tcp_no_delay.value,
+						"visible_on_device_panel": visible_on_device_panel.value,
 					}
 					ok = on_add(payload)
 					if not ok:

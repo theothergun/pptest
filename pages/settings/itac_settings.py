@@ -85,12 +85,16 @@ def _render_endpoints(scroll_to: str | None = None, highlight: str | None = None
         with ui.row().classes("w-full items-center gap-6"):
             verify_ssl = ui.switch("Verify SSL", value=ep.get("verify_ssl", True))
             auto_login = ui.switch("Auto login", value=ep.get("auto_login", True))
+            visible_on_device_panel = ui.switch(
+                "Visible on device panel",
+                value=bool(ep.get("visible_on_device_panel", False)),
+            )
 
         with ui.row().classes("w-full justify-end gap-2"):
             ui.button(
                 "Save",
                 on_click=lambda i=idx, n=ep.get("name", ""), b=base_url, sn=station_number, c=client, rt=registration_type, si=system_identifier, sp=station_password, u=user, p=password, t=timeout_s, v=verify_ssl, a=auto_login, fl=force_locale:
-                _update_endpoint(i, n, b.value, sn.value, c.value, rt.value, si.value, sp.value, u.value, p.value, t.value, bool(v.value), bool(a.value), fl.value),
+                _update_endpoint(i, n, b.value, sn.value, c.value, rt.value, si.value, sp.value, u.value, p.value, t.value, bool(v.value), bool(a.value), fl.value, bool(visible_on_device_panel.value)),
             ).props("color=primary")
             ui.button("Delete", on_click=delete).props("flat color=negative")
 
@@ -122,6 +126,7 @@ def _open_add_dialog() -> None:
         force_locale = ui.input("Force locale").classes("w-full")
         verify_ssl = ui.switch("Verify SSL", value=True)
         auto_login = ui.switch("Auto login", value=True)
+        visible_on_device_panel = ui.switch("Visible on device panel", value=False)
 
         with ui.row().classes("w-full justify-end gap-2"):
             ui.button("Cancel", on_click=d.close).props("flat")
@@ -130,7 +135,7 @@ def _open_add_dialog() -> None:
                 on_click=lambda: _add_endpoint(
                     d, name.value, base_url.value, station_number.value, client.value, registration_type.value,
                     system_identifier.value, station_password.value, user.value, password.value, timeout_s.value,
-                    bool(verify_ssl.value), bool(auto_login.value), force_locale.value
+                    bool(verify_ssl.value), bool(auto_login.value), force_locale.value, bool(visible_on_device_panel.value)
                 ),
             ).props("color=primary")
     d.open()
@@ -138,7 +143,7 @@ def _open_add_dialog() -> None:
 
 def _add_endpoint(dlg: ui.dialog, name: str, base_url: str, station_number: str, client: str, registration_type: str,
                   system_identifier: str, station_password: str, user: str, password: str, timeout_s: str,
-                  verify_ssl: bool, auto_login: bool, force_locale: str) -> None:
+                  verify_ssl: bool, auto_login: bool, force_locale: str, visible_on_device_panel: bool) -> None:
     if not name.strip() or not base_url.strip() or not station_number.strip():
         ui.notify("Name, base URL and station number are required.", type="negative")
         return
@@ -167,6 +172,7 @@ def _add_endpoint(dlg: ui.dialog, name: str, base_url: str, station_number: str,
         "verify_ssl": bool(verify_ssl),
         "auto_login": bool(auto_login),
         "force_locale": force_locale or "",
+        "visible_on_device_panel": bool(visible_on_device_panel),
     })
     itac_cfg["endpoints"] = endpoints
     save_app_config(cfg)
@@ -178,7 +184,7 @@ def _add_endpoint(dlg: ui.dialog, name: str, base_url: str, station_number: str,
 
 def _update_endpoint(index: int, name: str, base_url: str, station_number: str, client: str, registration_type: str,
                      system_identifier: str, station_password: str, user: str, password: str, timeout_s: str,
-                     verify_ssl: bool, auto_login: bool, force_locale: str) -> None:
+                     verify_ssl: bool, auto_login: bool, force_locale: str, visible_on_device_panel: bool) -> None:
     if not name.strip() or not base_url.strip() or not station_number.strip():
         ui.notify("Name, base URL and station number are required.", type="negative")
         return
@@ -207,6 +213,7 @@ def _update_endpoint(index: int, name: str, base_url: str, station_number: str, 
         "verify_ssl": bool(verify_ssl),
         "auto_login": bool(auto_login),
         "force_locale": force_locale or "",
+        "visible_on_device_panel": bool(visible_on_device_panel),
     }
     itac_cfg["endpoints"] = endpoints
     save_app_config(cfg)

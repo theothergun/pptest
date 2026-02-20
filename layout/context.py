@@ -20,6 +20,7 @@ class PageContext:
 
 	# Reference to the left navigation drawer element (so header can toggle it)
 	drawer: Optional[ui.left_drawer] = None
+	right_drawer: Optional[ui.right_drawer] = None
 
 	# Dynamic container inside the drawer. Only this element should be cleared and rebuilt when routes change.
 	drawer_content: Optional[ui.element] = None
@@ -29,6 +30,7 @@ class PageContext:
 
 	# Label shown in the main area (often used as breadcrumb like "/home")
 	breadcrumb: Optional[ui.label] = None
+	device_panel_toggle_btn: Optional[ui.button] = None
 
 	# The container where the current page content is rendered
 	# (router clears it and renders the selected page inside)

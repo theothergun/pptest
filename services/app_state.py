@@ -42,7 +42,11 @@ class AppState:
     description: str = ""
     current_container_qty: str = ""
     max_container_qty: str = ""
+    current_serialnumber: str = ""
     last_serial_number: str = ""
+    view_button_states: dict[str, bool] = field(default_factory=dict)
+    operator_show_device_panel: bool | None = None
+    operator_device_panel_items: list[dict[str, Any]] = field(default_factory=list)
     packaging_search_query: str = ""
     packaging_container_selected: str = ""
     packaging_active_container: str = ""

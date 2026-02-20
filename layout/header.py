@@ -25,6 +25,11 @@ def build_header(ctx: PageContext) -> ui.header:
             ui.label(t("app.title", "Shopfloor application")).classes("text-lg font-semibold")
             ui.space()
 
+            ctx.device_panel_toggle_btn = ui.button(
+                icon="monitor_heart",
+                on_click=lambda: ctx.right_drawer.toggle() if ctx.right_drawer else None,
+            ).props("flat round dense").classes("mr-1")
+
             language_options = {entry["code"]: entry["label"] for entry in SUPPORTED_LANGUAGES}
 
             def on_language_change(e) -> None:

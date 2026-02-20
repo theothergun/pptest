@@ -9,10 +9,8 @@ def main(ctx: PublicStepChainContext):
     Packaging NOX container scan, this listen on tcp worker endpoint
     PACK_NOX_SCANNER
     """
-    ctx.set_cycle_time(0.01)
-
     step = ctx.step
-    print(step)
+    ctx.set_cycle_time(0.01)
     if step == 0:
         res = ctx.workers.tcp_wait("PACK_NOX_SCANNER", default=None, timeout_s=1)
         ctx.data["scanned_label"] = res
@@ -29,13 +27,14 @@ def main(ctx: PublicStepChainContext):
         if scan_info_result["result"]["return_value"] != 0:
             ctx.goto(901)
             return
-        ctx.ui.popup_clear(key="scan_success")
         ctx.ui.popup_message(key="scan_success", message="Packaging container scanned successfully", status="success")
-        ctx.set_cycle_time(1)
+        # Close can race with async UI-open. Keep trying briefly in step 20.
+        ctx.set_state("update_container", True)
+        ctx.set_cycle_time(3)
         ctx.goto(20)
     elif step == 20:
-        ctx.ui.popup_close(key="scan_success")
-        ctx.ui.popup_clear(key="scan_success")
+        ctx.ui.popup_close(key="scan_success", clear=True)
+        ctx.set_cycle_time(0.01)
         ctx.goto(0)
     elif step == 900: # itac call execption connection?
         ctx.set_cycle_time(1)

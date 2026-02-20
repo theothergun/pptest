@@ -115,6 +115,10 @@ def _render_clients(scroll_to: str | None = None, highlight: str | None = None) 
 				auto_reconnect_input = ui.switch("Auto reconnect", value=tcp_client.get("auto_reconnect", True))
 				keepalive_input = ui.switch("Keepalive", value=tcp_client.get("keepalive", True))
 				tcp_no_delay_input = ui.switch("TCP no delay", value=tcp_client.get("tcp_nodelay", True))
+				visible_on_device_panel_input = ui.switch(
+					"Visible on device panel",
+					value=bool(tcp_client.get("visible_on_device_panel", False)),
+				)
 
 			mode_input = ui.input("Mode", value=tcp_client.get("mode", "line")).classes("w-full")
 			delimiter_input = ui.input("Delimiter", value=tcp_client.get("delimiter", "\\n")).classes("w-full")
@@ -131,10 +135,10 @@ def _render_clients(scroll_to: str | None = None, highlight: str | None = None) 
 					on_click=lambda i=idx, hi=host_input, pi=port_input, ci=connect_input,
 									mi=mode_input, di=delimiter_input, ei=encoding_input,
 									ari=auto_reconnect_input, rmin=r_min_input, rmax=r_max_input,
-									kai=keepalive_input, tni=tcp_no_delay_input:
+									kai=keepalive_input, tni=tcp_no_delay_input, vdp=visible_on_device_panel_input:
 					_update_client(
 						i, hi.value, pi.value, ci.value, mi.value, di.value, ei.value,
-						ari.value, rmin.value, rmax.value, kai.value, tni.value)).props("color=primary")
+						ari.value, rmin.value, rmax.value, kai.value, tni.value, vdp.value)).props("color=primary")
 
 				ui.button("Delete", on_click=delete).props("flat color=negative")
 
@@ -188,6 +192,7 @@ def _add_client(payload: dict) -> bool:
 		"reconnect_max_s": reconnect_max_value,
 		"keepalive": bool(payload.get("keepalive", True)),
 		"tcp_nodelay": bool(payload.get("tcp_nodelay", True)),
+		"visible_on_device_panel": bool(payload.get("visible_on_device_panel", False)),
 	})
 
 	tcp_cfg["clients"] = clients
@@ -233,6 +238,7 @@ def _update_client(
 	reconnect_max_s: str,
 	keepalive: bool,
 	tcp_no_delay: bool,
+	visible_on_device_panel: bool,
 ) -> None:
 	port_value = _parse_int(port, "Port must be a number.")
 	if port_value is None:
@@ -265,6 +271,7 @@ def _update_client(
 		"reconnect_max_s": reconnect_max_value,
 		"keepalive": bool(keepalive),
 		"tcp_nodelay": bool(tcp_no_delay),
+		"visible_on_device_panel": bool(visible_on_device_panel),
 	}
 
 	tcp_cfg["clients"] = clients

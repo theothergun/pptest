@@ -95,6 +95,10 @@ def _render_endpoints(scroll_to: str | None = None, highlight: str | None = None
             trans_mode = ui.input("Default trans mode", value=ep.get("default_trans_mode", "server_cycle")).classes("flex-1")
             cycle_ms = ui.input("Default cycle (ms)", value=str(ep.get("default_cycle_ms", 200))).classes("w-52")
             str_len = ui.input("Default string len", value=str(ep.get("default_string_len", 80))).classes("w-52")
+        visible_on_device_panel = ui.switch(
+            "Visible on device panel",
+            value=bool(ep.get("visible_on_device_panel", False)),
+        )
 
         subs = ui.textarea(
             "Subscriptions (JSON list: [{\"name\":\"Main.CURRENTIP\",\"alias\":\"CurrentIp\",\"plc_type\":\"STRING\",\"string_len\":64}])",
@@ -105,7 +109,7 @@ def _render_endpoints(scroll_to: str | None = None, highlight: str | None = None
             ui.button(
                 "Save",
                 on_click=lambda i=idx, cid=ep.get("client_id", ""), ip=plc_ip, net=ams, ap=ads_port, tm=trans_mode, cm=cycle_ms, sl=str_len, su=subs:
-                _update_endpoint(i, cid, ip.value, net.value, ap.value, tm.value, cm.value, sl.value, su.value),
+                _update_endpoint(i, cid, ip.value, net.value, ap.value, tm.value, cm.value, sl.value, su.value, bool(visible_on_device_panel.value)),
             ).props("color=primary")
             ui.button("Delete", on_click=delete).props("flat color=negative")
 
@@ -131,6 +135,7 @@ def _open_add_dialog() -> None:
         trans_mode = ui.input("Default trans mode", value="server_cycle").classes("w-full")
         cycle_ms = ui.input("Default cycle (ms)", value="200").classes("w-full")
         str_len = ui.input("Default string len", value="80").classes("w-full")
+        visible_on_device_panel = ui.switch("Visible on device panel", value=False)
         subs = ui.textarea(
             "Subscriptions (JSON list: [{\"name\":\"Main.CURRENTIP\",\"alias\":\"CurrentIp\",\"plc_type\":\"STRING\",\"string_len\":64}])",
             value="[]",
@@ -150,13 +155,14 @@ def _open_add_dialog() -> None:
                     cycle_ms.value,
                     str_len.value,
                     subs.value,
+                    bool(visible_on_device_panel.value),
                 ),
             ).props("color=primary")
     d.open()
 
 
 def _add_endpoint(dlg: ui.dialog, client_id: str, plc_ip: str, plc_ams_net_id: str, ads_port: str, default_trans_mode: str,
-                  default_cycle_ms: str, default_string_len: str, subscriptions_raw: str) -> None:
+                  default_cycle_ms: str, default_string_len: str, subscriptions_raw: str, visible_on_device_panel: bool) -> None:
     if not client_id.strip() or not plc_ip.strip() or not plc_ams_net_id.strip():
         ui.notify("Client ID, PLC IP and AMS Net ID are required.", type="negative")
         return
@@ -183,6 +189,7 @@ def _add_endpoint(dlg: ui.dialog, client_id: str, plc_ip: str, plc_ams_net_id: s
         "default_cycle_ms": cycle_ms_v,
         "default_string_len": str_len_v,
         "subscriptions": subs_v,
+        "visible_on_device_panel": bool(visible_on_device_panel),
     })
     tw_cfg["plc_endpoints"] = endpoints
     save_app_config(cfg)
@@ -193,7 +200,7 @@ def _add_endpoint(dlg: ui.dialog, client_id: str, plc_ip: str, plc_ams_net_id: s
 
 
 def _update_endpoint(index: int, client_id: str, plc_ip: str, plc_ams_net_id: str, ads_port: str, default_trans_mode: str,
-                     default_cycle_ms: str, default_string_len: str, subscriptions_raw: str) -> None:
+                     default_cycle_ms: str, default_string_len: str, subscriptions_raw: str, visible_on_device_panel: bool) -> None:
     if not client_id.strip() or not plc_ip.strip() or not plc_ams_net_id.strip():
         ui.notify("Client ID, PLC IP and AMS Net ID are required.", type="negative")
         return
@@ -220,6 +227,7 @@ def _update_endpoint(index: int, client_id: str, plc_ip: str, plc_ams_net_id: st
         "default_cycle_ms": cycle_ms_v,
         "default_string_len": str_len_v,
         "subscriptions": subs_v,
+        "visible_on_device_panel": bool(visible_on_device_panel),
     }
     tw_cfg["plc_endpoints"] = endpoints
     save_app_config(cfg)

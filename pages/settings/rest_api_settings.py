@@ -37,6 +37,7 @@ def render(container: ui.element, ctx: PageContext) -> None:
                     headers_input = ui.textarea("Headers (JSON)").classes("w-full")
                     timeout_input = ui.input("Timeout (s)", value="10").classes("w-full")
                     verify_ssl_input = ui.switch("Verify SSL", value=True)
+                    visible_on_device_panel_input = ui.switch("Visible on device panel", value=True)
 
                     ui.button(
                         "Add endpoint",
@@ -46,6 +47,7 @@ def render(container: ui.element, ctx: PageContext) -> None:
                             headers_input.value,
                             timeout_input.value,
                             verify_ssl_input.value,
+                            visible_on_device_panel_input.value,
                         ),
                     ).props("color=primary")
 
@@ -123,16 +125,21 @@ def _render_endpoints(scroll_to: str | None = None, highlight: str | None = None
             ).classes("w-full")
             timeout_input = ui.input("Timeout (s)", value=str(endpoint.get("timeout_s", 10.0))).classes("w-full")
             verify_ssl_input = ui.switch("Verify SSL", value=endpoint.get("verify_ssl", True))
+            visible_on_device_panel_input = ui.switch(
+                "Visible on device panel",
+                value=bool(endpoint.get("visible_on_device_panel", True)),
+            )
             with ui.row().classes("w-full items-center justify-end gap-2"):
                 ui.button(
                     "Save",
-                    on_click=lambda i=idx, ni=name_input, bi=base_url_input, hi=headers_input, ti=timeout_input, vi=verify_ssl_input: _update_endpoint(
+                    on_click=lambda i=idx, ni=name_input, bi=base_url_input, hi=headers_input, ti=timeout_input, vi=verify_ssl_input, vdp=visible_on_device_panel_input: _update_endpoint(
                         i,
                         ni.value,
                         bi.value,
                         hi.value,
                         ti.value,
                         vi.value,
+                        vdp.value,
                     ),
                 ).props("color=primary")
                 ui.button("Delete", on_click=delete).props("color=negative flat")
@@ -154,6 +161,7 @@ def _add_endpoint(
     headers_raw: str,
     timeout_s: str,
     verify_ssl: bool,
+    visible_on_device_panel: bool,
 ) -> None:
     if not name or not base_url:
         ui.notify("Name and base URL are required.", type="negative")
@@ -175,6 +183,7 @@ def _add_endpoint(
             "headers": headers,
             "timeout_s": timeout_value,
             "verify_ssl": bool(verify_ssl),
+            "visible_on_device_panel": bool(visible_on_device_panel),
         }
     )
     _set_endpoints(data, endpoints)
@@ -204,6 +213,7 @@ def _update_endpoint(
     headers_raw: str,
     timeout_s: str,
     verify_ssl: bool,
+    visible_on_device_panel: bool,
 ) -> None:
     if not name or not base_url:
         ui.notify("Name and base URL are required.", type="negative")
@@ -227,6 +237,7 @@ def _update_endpoint(
         "headers": headers,
         "timeout_s": timeout_value,
         "verify_ssl": bool(verify_ssl),
+        "visible_on_device_panel": bool(visible_on_device_panel),
     }
     _set_endpoints(data, endpoints)
     _write_config_data(data)

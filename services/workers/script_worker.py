@@ -96,7 +96,9 @@ class ScriptWorker(BaseWorker):
 	def _build_chain_list_payload(self) -> list[dict[str, Any]]:
 		items: list[dict[str, Any]] = []
 		for chain_key, inst in self.chains.items():
-			with inst.lock:
+			if not inst.lock.acquire(timeout=0.01):
+				continue
+			try:
 				ctx = inst.context
 				items.append({
 					"key": chain_key,
@@ -110,6 +112,8 @@ class ScriptWorker(BaseWorker):
 					"cycle_count": getattr(ctx, "cycle_count", 0),
 					"step_time": getattr(ctx, "step_time", 0.0),
 				})
+			finally:
+				inst.lock.release()
 		return items
 
 	def _publish_scripts_if_changed(self, force: bool = False) -> None:
@@ -229,10 +233,14 @@ class ScriptWorker(BaseWorker):
 					continue
 
 				for inst in self.chains.values():
-					with inst.lock:
+					if not inst.lock.acquire(blocking=False):
+						continue
+					try:
 						if not inst.active:
 							continue
 						self._apply_bus_msg_to_ctx(inst.context, msg)
+					finally:
+						inst.lock.release()
 				processed += 1
 			return processed
 
@@ -271,10 +279,14 @@ class ScriptWorker(BaseWorker):
 			data = payload if isinstance(payload, dict) else {}
 
 			for inst in self.chains.values():
-				with inst.lock:
+				if not inst.lock.acquire(blocking=False):
+					continue
+				try:
 					if not inst.active:
 						continue
 					self._apply_ui_state_msg_to_ctx(inst.context, topic, data)
+				finally:
+					inst.lock.release()
 
 	# ------------------------------------------------------------------ lifecycle
 
@@ -306,6 +318,8 @@ class ScriptWorker(BaseWorker):
 		self.log.info(f"[_chain_runner] started chain_key={chain_key}")
 		while not self.should_stop() and not inst.stop_event.is_set():
 			should_sleep = 0.02
+			should_publish_changed = False
+			notify_text = ""
 			with inst.lock:
 				if not inst.active:
 					break
@@ -316,51 +330,60 @@ class ScriptWorker(BaseWorker):
 						inst.context._step_started_ts = now_ts
 					inst.context.step_elapsed_s = max(0.0, now_ts - inst.context._step_started_ts)
 					should_sleep = 0.02
+					need_tick = False
 				else:
 					now = time.time()
 					if inst.next_tick_ts and now < inst.next_tick_ts:
 						should_sleep = max(0.0, min(0.05, inst.next_tick_ts - now))
+						need_tick = False
 					else:
 						inst.context.cycle_count = inst.context.cycle_count + 1
-						try:
-							now_ts = time.time()
-							if inst.context._step_started_ts <= 0:
-								inst.context._step_started_ts = now_ts
-							inst.context.step_elapsed_s = max(0.0, now_ts - inst.context._step_started_ts)
+						now_ts = time.time()
+						if inst.context._step_started_ts <= 0:
+							inst.context._step_started_ts = now_ts
+						inst.context.step_elapsed_s = max(0.0, now_ts - inst.context._step_started_ts)
+						fn = inst.fn
+						need_tick = True
 
-							start = time.time()
-							fn = inst.fn
-							fn(inst.context.public)
-							elapsed_ms = (time.time() - start) * 1000.0
-							inst.context.step_time = round(elapsed_ms, 2)
+			if need_tick:
+				try:
+					start = time.time()
+					fn(inst.context.public)
+					elapsed_ms = (time.time() - start) * 1000.0
+					with inst.lock:
+						inst.context.step_time = round(elapsed_ms, 2)
+						prev_step = int(getattr(inst.context, "step", 0))
+						next_step = int(getattr(inst.context, "next_step", prev_step))
+						if next_step != prev_step:
+							inst.context._step_started_ts = time.time()
+							inst.context.step_elapsed_s = 0.0
+						inst.context.step = next_step
+						cycle_s = self._get_cycle_time_s(inst.context)
+						inst.next_tick_ts = time.time() + cycle_s
+					should_sleep = 0.001
+					self._publish_chain_state(chain_key, inst.context)
+				except Exception:
+					err = "chain crashed chain_key=%s\n%s" % (chain_key, self._format_exc())
+					self.log.error("[_chain_runner] %s" % err)
+					self.publish_error_as(chain_key, key=chain_key, action="chain_tick", error=err)
+					with inst.lock:
+						inst.paused = True
+						inst.context.paused = True
+						inst.context.error_flag = True
+						inst.context.error_message = "StepChain crashed. Please review and press Retry."
+					self._publish_chain_log(chain_key, "chain crashed - paused; operator can retry", level="error")
+					self._publish_chain_state(chain_key, inst.context)
+					should_publish_changed = True
+					notify_text = "⚠️ Script '%s' crashed. Open Scripts Lab and press Retry." % chain_key
+					should_sleep = 0.05
 
-							prev_step = int(getattr(inst.context, "step", 0))
-							next_step = int(getattr(inst.context, "next_step", prev_step))
-							if next_step != prev_step:
-								inst.context._step_started_ts = time.time()
-								inst.context.step_elapsed_s = 0.0
-							inst.context.step = next_step
-						except Exception:
-							err = "chain crashed chain_key=%s\n%s" % (chain_key, self._format_exc())
-							self.log.error("[_chain_runner] %s" % err)
-							self.publish_error_as(chain_key, key=chain_key, action="chain_tick", error=err)
-							inst.paused = True
-							inst.context.paused = True
-							inst.context.error_flag = True
-							inst.context.error_message = "StepChain crashed. Please review and press Retry."
-							self._publish_chain_log(chain_key, "chain crashed - paused; operator can retry", level="error")
-							self._publish_chain_state(chain_key, inst.context)
-							self._publish_chains_if_changed(True)
-							try:
-								self.bridge.emit_notify("⚠️ Script '%s' crashed. Open Scripts Lab and press Retry." % chain_key, "warning")
-							except Exception:
-								pass
-							should_sleep = 0.05
-						else:
-							cycle_s = self._get_cycle_time_s(inst.context)
-							inst.next_tick_ts = time.time() + cycle_s
-							self._publish_chain_state(chain_key, inst.context)
-							should_sleep = 0.001
+			if should_publish_changed:
+				self._publish_chains_if_changed(True)
+				if notify_text:
+					try:
+						self.bridge.emit_notify(notify_text, "warning")
+					except Exception:
+						pass
 
 			if should_sleep > 0:
 				time.sleep(should_sleep)

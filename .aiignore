@@ -11,16 +11,17 @@ dist/
 build/
 out/
 
-**/__pycache__/
+**/__pycache__/*
 
 **/*.pyc
 
 **/*.pyo
+*.pyc
+__pycache__/*
+.mypy_cache/*
 
-.mypy_cache/
-
-.pytest_cache/
-.git/
-.idea/
+.pytest_cache/*
+.git/*
+.idea/*
 log/
-.nicegui/
+.nicegui/*

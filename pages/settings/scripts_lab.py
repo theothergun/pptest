@@ -122,14 +122,23 @@ def build_page(ctx: PageContext) -> None:
 		"empty_deleted": {"done": False},
 		"log_view": None,
 		"startup_container": None,
+		"scripts_toggle_btn": None,
+		"startup_toggle_btn": None,
 	}
 
 	# --------------------------
 	# Editor state
 	# --------------------------
-	scripts_tree = {"leaf_ids": set(), "selected_id": None, "selected_label": None}
+	scripts_tree = {
+		"leaf_ids": set(),
+		"selected_id": None,
+		"selected_label": None,
+		"expanded_all": None,
+		"tree": None,
+		"script_paths": [],
+	}
 	last_scripts_sig = {"sig": ""}
-	startup_state = {"checkboxes": {}}
+	startup_state = {"checkboxes": {}, "expanded_all": True, "auto_start": set(), "nodes": []}
 
 	scripts_dir = Path("scripts")
 	editor = {"dialog": None, "textarea": None, "path": None, "script_name": None, "title": None}
@@ -274,8 +283,10 @@ def build_page(ctx: PageContext) -> None:
 		_set_auto_start_scripts(selected)
 		ui.notify("Startup scripts updated.", type="positive")
 
-	def _render_startup_tree(nodes: list[dict], level: int = 0) -> None:
+	def _render_startup_tree(nodes: list[dict], level: int = 0, expanded_all: bool = True) -> None:
 		"""Render a simple tree view with checkboxes on leaf script nodes."""
+		if not expanded_all and level > 0:
+			return
 		indent_cls = "pl-%s" % str(min(level * 4, 16))
 		for node in nodes or []:
 			node_id = str(node.get("id", "") or "")
@@ -285,11 +296,74 @@ def build_page(ctx: PageContext) -> None:
 				with ui.row().classes(f"w-full items-center gap-2 {indent_cls}"):
 					ui.icon("folder").classes("text-primary")
 					ui.label(label).classes("text-sm font-semibold")
-				_render_startup_tree(children, level + 1)
+				_render_startup_tree(children, level + 1, expanded_all)
 			else:
 				with ui.row().classes(f"w-full items-center gap-2 {indent_cls}"):
 					ui.icon("description").classes("text-primary")
 					startup_state["checkboxes"][node_id] = ui.checkbox(label, value=node_id in startup_state["auto_start"])
+
+	def _apply_expand_state(nodes: list[dict], expanded_all: bool | None) -> list[dict]:
+		if expanded_all is None:
+			return nodes
+
+		def _copy(items: list[dict]) -> list[dict]:
+			out: list[dict] = []
+			for item in items or []:
+				new_item = dict(item)
+				children = item.get("children", [])
+				if children:
+					new_item["expanded"] = bool(expanded_all)
+					new_item["children"] = _copy(children)
+				out.append(new_item)
+			return out
+
+		return _copy(nodes)
+
+	def _get_startup_selected_from_ui() -> list[str]:
+		selected: list[str] = []
+		for script, checkbox in startup_state["checkboxes"].items():
+			if getattr(checkbox, "value", False):
+				selected.append(script)
+		return selected
+
+	def _render_startup_section(nodes: list[dict], selected_override: list[str] | None = None) -> None:
+		startup_container = ui_refs.get("startup_container")
+		if startup_container is None:
+			return
+
+		startup_container.clear()
+		startup_state["checkboxes"] = {}
+		startup_state["nodes"] = nodes or []
+		if selected_override is None:
+			startup_state["auto_start"] = set(_get_auto_start_scripts())
+		else:
+			startup_state["auto_start"] = set(selected_override)
+
+		with startup_container:
+			ui.label("Start on startup").classes("text-sm font-semibold")
+			ui.label("Select scripts to auto-start (default instance).").classes("text-xs text-gray-500")
+
+			with ui.row().classes("w-full items-center gap-2"):
+				label = "Collapse All" if startup_state["expanded_all"] else "Expand All"
+				ui_refs["startup_toggle_btn"] = ui.button(label, on_click=_toggle_startup_expand_all).props("outline")
+
+			ui.separator().classes("w-full")
+			_render_startup_tree(nodes, 0, startup_state["expanded_all"])
+			ui.button("Save startup scripts", on_click=_save_startup_scripts).props("color=primary").classes("mt-2")
+
+	def _toggle_startup_expand_all() -> None:
+		selected = _get_startup_selected_from_ui()
+		startup_state["expanded_all"] = not bool(startup_state.get("expanded_all", True))
+		_render_startup_section(startup_state.get("nodes", []), selected_override=selected)
+
+	def _toggle_scripts_expand_all() -> None:
+		cur = scripts_tree.get("expanded_all")
+		next_state = True if cur in (None, False) else False
+		scripts_tree["expanded_all"] = next_state
+		btn = ui_refs.get("scripts_toggle_btn")
+		if btn is not None:
+			btn.text = "Collapse All" if next_state else "Expand All"
+		_render_scripts_tree(scripts_tree.get("script_paths", []), force=True)
 
 	# --------------------------
 	# Chain cards (stable, no recreate)
@@ -591,13 +665,13 @@ def build_page(ctx: PageContext) -> None:
 	# --------------------------
 	# Render scripts tree only when scripts list changes
 	# --------------------------
-	def _render_scripts_tree(script_paths: list[str]) -> None:
+	def _render_scripts_tree(script_paths: list[str], force: bool = False) -> None:
 		container = ui_refs.get("script_list_container")
 		if container is None:
 			return
 
 		sig = "|".join(script_paths or [])
-		if sig == last_scripts_sig["sig"]:
+		if (not force) and sig == last_scripts_sig["sig"]:
 			return
 		last_scripts_sig["sig"] = sig
 
@@ -605,6 +679,7 @@ def build_page(ctx: PageContext) -> None:
 
 		with container:
 			scripts = script_paths or []
+			scripts_tree["script_paths"] = scripts
 			if not scripts:
 				ui.label("No scripts found").classes("text-gray-500")
 				ui.label("(Add .py files to 'scripts/' directory)").classes("text-xs text-gray-400")
@@ -625,20 +700,12 @@ def build_page(ctx: PageContext) -> None:
 					scripts_tree["selected_label"].text = "Select a script from the tree"
 
 			with ui.element("div").props("id=scripts_tree").classes("w-full"):
-				tree = ui.tree(nodes, label_key="label", on_select=on_select).classes("w-full")
+				nodes_for_tree = _apply_expand_state(nodes, scripts_tree.get("expanded_all"))
+				tree = ui.tree(nodes_for_tree, label_key="label", on_select=on_select).classes("w-full")
 				tree.props("dense")
+				scripts_tree["tree"] = tree
 
-		startup_container = ui_refs.get("startup_container")
-		if startup_container is not None:
-			startup_container.clear()
-			startup_state["checkboxes"] = {}
-			startup_state["auto_start"] = set(_get_auto_start_scripts())
-			with startup_container:
-				ui.label("Start on startup").classes("text-sm font-semibold")
-				ui.label("Select scripts to auto-start (default instance).").classes("text-xs text-gray-500")
-				ui.separator().classes("w-full")
-				_render_startup_tree(nodes, 0)
-				ui.button("Save startup scripts", on_click=_save_startup_scripts).props("color=primary").classes("mt-2")
+		_render_startup_section(nodes)
 
 	# --------------------------
 	# Hot reload toggle (UI -> worker)
@@ -698,6 +765,10 @@ def build_page(ctx: PageContext) -> None:
 							with ui.row().classes("w-full gap-2"):
 								ui.button("Start Selected", icon="play_arrow", on_click=start_selected).props("color=positive").classes("w-full")
 								ui.button("Edit", icon="edit", on_click=edit_selected).props("color=info outline").classes("w-full")
+
+							with ui.row().classes("w-full gap-2"):
+								label = "Collapse All" if scripts_tree.get("expanded_all") else "Expand All"
+								ui_refs["scripts_toggle_btn"] = ui.button(label, on_click=_toggle_scripts_expand_all).props("outline").classes("w-full")
 
 							ui.button(
 								"Refresh List",

@@ -1,6 +1,7 @@
 # services/workers/stepchain/apis/ui_api.py
 from __future__ import annotations
 
+import fnmatch
 import time
 from typing import Any, Optional, Union
 
@@ -176,6 +177,64 @@ class UiApi:
 			return None
 		self._ctx._vars[last_fallback_key] = fallback
 		return payload
+
+	def consume_view_cmd(self, pattern: str = "view.cmd.*", *, dedupe: bool = True) -> Optional[dict]:
+		"""
+		Return the latest view command payload matching a topic pattern.
+		Example topics: "view.cmd.container_management", "view.cmd.packaging".
+		"""
+		pat = str(pattern or "").strip() or "view.cmd.*"
+		bus_last = self._ctx.data.get("bus_last", {})
+		if not isinstance(bus_last, dict):
+			return None
+
+		best = None
+		best_ts = None
+		best_source = None
+
+		for source_id, entry in bus_last.items():
+			if not isinstance(entry, dict):
+				continue
+			topic = str(entry.get("topic") or "")
+			if not topic:
+				continue
+			if not fnmatch.fnmatchcase(topic, pat):
+				continue
+			ts = entry.get("ts", 0)
+			if best is None or (isinstance(ts, (int, float)) and ts > (best_ts or 0)):
+				best = entry
+				best_ts = ts if isinstance(ts, (int, float)) else 0
+				best_source = source_id
+
+		if not best:
+			return None
+
+		payload = best.get("payload")
+		if not isinstance(payload, dict):
+			return None
+
+		topic = str(best.get("topic") or "")
+		event_id = payload.get("event_id")
+		last_key = "__view_cmd_last:%s:%s" % (topic, str(best_source or ""))
+		last_val = self._ctx._vars.get(last_key)
+
+		if dedupe:
+			if event_id is not None:
+				if last_val == event_id:
+					return None
+				self._ctx._vars[last_key] = event_id
+			else:
+				if last_val == best_ts:
+					return None
+				self._ctx._vars[last_key] = best_ts
+
+		out = dict(payload)
+		out["_meta"] = {
+			"topic": topic,
+			"source_id": str(best_source or ""),
+			"ts": best_ts,
+		}
+		return out
 
 	# -------- AppState bridge helpers (persisted UI variables) --------
 
@@ -682,6 +741,19 @@ class UiApi:
 		except Exception:
 			pass
 
+	def subscribe_view_cmd(self, pattern: str = "view.cmd.*"):
+		"""
+		Subscribe to view command topics (e.g. "view.cmd.container_management").
+		Returns a WorkerBus Subscription or None if worker_bus is unavailable.
+		"""
+		bus = getattr(self._ctx, "worker_bus", None)
+		if bus is None or not hasattr(bus, "subscribe"):
+			return None
+		try:
+			return bus.subscribe(str(pattern or "view.cmd.*"))
+		except Exception:
+			return None
+
 		# --- UI close (best effort) ---
 		try:
 			if key is None:
@@ -700,5 +772,23 @@ class UiApi:
 						source_id=self._ctx.chain_id,
 						key=k,
 					)
+		except Exception:
+			pass
+
+	def popup_close_all(self) -> None:
+		"""
+		Close all active popups (best effort) and clear local modal state.
+		"""
+		try:
+			self.popup_clear()
+		except Exception:
+			pass
+		try:
+			self._ctx.worker_bus.publish(
+				topic=WorkerTopics.TOPIC_MODAL_CLOSE,
+				source="ScriptWorker",
+				source_id=self._ctx.chain_id,
+				close_active=True,
+			)
 		except Exception:
 			pass

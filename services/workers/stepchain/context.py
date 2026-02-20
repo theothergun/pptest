@@ -335,6 +335,9 @@ class PublicStepChainContext:
     def read_tcp(self, client_id: str, default: Any = None, decode: bool = True) -> Any:
         return self.workers.tcp_message(client_id, default=default, decode=decode)
 
+    def wait_tcp(self, client_id: str, timeout_s: float = 1.0, default: Any = None, decode: bool = True) -> Any:
+        return self.workers.tcp_wait(client_id, default=default, timeout_s=timeout_s, decode=decode)
+
     def write_plc(self, client_id: str, name: str, value: Any) -> None:
         self.workers.plc_write(client_id, name, value)
 

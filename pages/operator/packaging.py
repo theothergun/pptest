@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import queue
-import time
 from typing import Any
 
 from nicegui import ui
@@ -9,12 +7,12 @@ from layout.context import PageContext
 from services.app_config import get_app_config
 from services.i18n import t
 from services.ui_theme import get_theme_color
-from services.worker_topics import WorkerTopics
-from loguru import logger
+from services.ui.view_cmd import install_wait_dialog, publish_view_cmd, view_wait_key
 
 
 PACKAGING_CMD_KEY = "packaging.cmd"
-PACKAGING_WAIT_MODAL_KEY = "packaging.wait"
+PACKAGING_VIEW = "packaging"
+PACKAGING_WAIT_MODAL_KEY = view_wait_key(PACKAGING_VIEW)
 
 
 def render(container: ui.element, ctx: PageContext) -> None:
@@ -26,8 +24,6 @@ def build_page(ctx: PageContext) -> None:
 	cfg = get_app_config()
 	worker_bus = ctx.workers.worker_bus
 	page_timers: list = []
-	sub_wait_close = worker_bus.subscribe(WorkerTopics.TOPIC_MODAL_CLOSE)
-	sub_wait_open = worker_bus.subscribe(WorkerTopics.VALUE_CHANGED)
 	ui_refs: dict[str, Any] = {
 		"card_instruction": None,
 		"card_feedback": None,
@@ -100,14 +96,11 @@ def build_page(ctx: PageContext) -> None:
 		return t
 
 	def cleanup() -> None:
-		try:
-			sub_wait_close.close()
-		except Exception:
-			pass
-		try:
-			sub_wait_open.close()
-		except Exception:
-			pass
+		for sub in wait_dialog["subs"]:
+			try:
+				sub.close()
+			except Exception:
+				pass
 		for t in page_timers:
 			try:
 				t.cancel()
@@ -118,92 +111,24 @@ def build_page(ctx: PageContext) -> None:
 	ctx.state._page_cleanup = cleanup
 	ui.context.client.on_disconnect(cleanup)
 
-	wait_state = {"open": False}
-	wait_text_refs: dict[str, Any] = {"title": None, "message": None}
-	with ui.dialog().props("persistent") as wait_dialog:
-		with ui.card().classes("w-72 items-center gap-3 py-6"):
-			ui.icon("hourglass_top").classes("text-primary text-4xl pack-wait-spin")
-			wait_text_refs["title"] = ui.label(t("packaging.wait_title", "Please wait")).classes("text-base font-semibold")
-			wait_text_refs["message"] = ui.label(t("packaging.working", "Working ...")).classes("text-sm font-medium")
-
-	def _set_wait_dialog_text(title: str | None = None, message: str | None = None) -> None:
-		title_ref = wait_text_refs.get("title")
-		msg_ref = wait_text_refs.get("message")
-		if title_ref is not None and title is not None:
-			title_ref.set_text(str(title))
-		if msg_ref is not None and message is not None:
-			msg_ref.set_text(str(message))
-
-	def _open_wait_dialog() -> None:
-		if wait_state["open"]:
-			return
-		wait_state["open"] = True
-		wait_dialog.open()
-
-	def _close_wait_dialog() -> None:
-		if not wait_state["open"]:
-			return
-		wait_state["open"] = False
-		wait_dialog.close()
-
-	def _drain_wait_open_signal() -> None:
-		while True:
-			try:
-				msg = sub_wait_open.queue.get_nowait()
-			except queue.Empty:
-				break
-			payload = getattr(msg, "payload", None) or {}
-			if not isinstance(payload, dict):
-				continue
-			key = str(payload.get("key") or "").strip()
-			if key != PACKAGING_WAIT_MODAL_KEY:
-				continue
-			value = payload.get("value")
-			if not isinstance(value, dict):
-				continue
-			action = str(value.get("action") or "").strip().lower()
-			if action == "open":
-				_set_wait_dialog_text(
-					title=str(value.get("title") or t("packaging.wait_title", "Please wait")),
-					message=str(value.get("message") or t("packaging.working", "Working ...")),
-				)
-				_open_wait_dialog()
-			elif action == "close":
-				_close_wait_dialog()
-
-	def _drain_wait_close_signal() -> None:
-		while True:
-			try:
-				msg = sub_wait_close.queue.get_nowait()
-			except queue.Empty:
-				break
-			payload = getattr(msg, "payload", None) or {}
-			if not isinstance(payload, dict):
-				continue
-			if bool(payload.get("close_active", False)):
-				_close_wait_dialog()
-				continue
-			key = str(payload.get("key") or "").strip()
-			if key in (PACKAGING_WAIT_MODAL_KEY, PACKAGING_CMD_KEY):
-				_close_wait_dialog()
+	wait_dialog = install_wait_dialog(
+		ctx=ctx,
+		worker_bus=worker_bus,
+		wait_key=PACKAGING_WAIT_MODAL_KEY,
+		title=t("packaging.wait_title", "Please wait"),
+		message=t("packaging.working", "Working ..."),
+		add_timer=add_timer,
+	)
 
 	def _publish_cmd(cmd: str) -> None:
-		publish_fn = getattr(worker_bus, "publish", None)
-		if not callable(publish_fn):
-			logger.warning("Packaging UI command publish skipped: worker_bus.publish is not callable")
-			return
-		_open_wait_dialog()
-		payload = {
-			"cmd": str(cmd),
-			"event_id": int(time.time_ns()),
-			"wait_modal_key": PACKAGING_WAIT_MODAL_KEY,
-		}
-		publish_fn(
-			topic=WorkerTopics.VALUE_CHANGED,
-			source="ui",
-			source_id="packaging",
-			key=PACKAGING_CMD_KEY,
-			value=payload,
+		publish_view_cmd(
+			worker_bus=worker_bus,
+			view=PACKAGING_VIEW,
+			cmd_key=PACKAGING_CMD_KEY,
+			cmd=cmd,
+			wait_key=PACKAGING_WAIT_MODAL_KEY,
+			open_wait=wait_dialog["open"],
+			source_id=PACKAGING_VIEW,
 		)
 
 	def _input_box_width() -> str:
@@ -353,8 +278,6 @@ def build_page(ctx: PageContext) -> None:
 			ui.button(t("common.reset", "Reset"), icon="restart_alt", on_click=lambda: _publish_cmd("reset")) \
 				.props("outline color=warning").classes("pack-btn w-[140px] h-[48px]")
 
-	add_timer(0.1, _drain_wait_open_signal)
-	add_timer(0.1, _drain_wait_close_signal)
 	add_timer(0.2, _apply_instruction_feedback_colors)
 	add_timer(0.2, _apply_qty_progress)
 	_apply_instruction_feedback_colors()

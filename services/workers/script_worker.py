@@ -71,6 +71,7 @@ class ScriptWorker(BaseWorker):
 			Topics.ERROR,
 			Topics.TOPIC_MODAL_RESPONSE,
 		]))
+		self.bus_sub_view_cmd = self.add_subscription(self.worker_bus.subscribe("view.cmd.*"))
 
 
 
@@ -176,40 +177,61 @@ class ScriptWorker(BaseWorker):
 
 	def _apply_bus_msg_to_ctx(self, ctx: StepChainContext, msg: BusMessage) -> None:
 		try:
-			if msg.topic != self._expected_topic_value_changed():
-				return
-
+			topic = str(getattr(msg, "topic", "") or "")
 			source = getattr(msg, "source", "") or "unknown"
 			source_id = getattr(msg, "source_id", "") or ""
 			payload = getattr(msg, "payload", None) or {}
 
-			ctx._update_bus_value(source=source, source_id=source_id, payload=payload)
+			if "bus_last" not in ctx.data:
+				ctx.data["bus_last"] = {}
+			ctx.data["bus_last"][source_id] = {
+				"topic": topic,
+				"payload": payload,
+				"ts": time.time(),
+			}
+
+			if topic == self._expected_topic_value_changed():
+				ctx._update_bus_value(source=source, source_id=source_id, payload=payload)
+			else:
+				if "bus_events" not in ctx.data:
+					ctx.data["bus_events"] = {}
+				if source_id not in ctx.data["bus_events"]:
+					ctx.data["bus_events"][source_id] = {}
+				ctx.data["bus_events"][source_id][topic] = payload
 
 		except Exception:
 			self.log.error("[_apply_bus_msg_to_ctx] failed\n%s" % self._format_exc())
 
 	def _drain_bus_updates(self, max_items: int) -> None:
-		for _ in range(max_items):
-			try:
-				msg = self.bus_sub.queue.get_nowait()
-			except queue.Empty:
-				break
+		def _drain_queue(q: "queue.Queue[BusMessage]", handle_modal: bool) -> int:
+			processed = 0
+			for _ in range(max_items):
+				try:
+					msg = q.get_nowait()
+				except queue.Empty:
+					break
 
-			if str(getattr(msg, "topic", "") or "") == Topics.TOPIC_MODAL_RESPONSE:
-				payload = getattr(msg, "payload", None) or {}
-				request_id = payload.get("request_id")
-				chain_id = payload.get("chain_id")
-				result = payload.get("result")
+				if handle_modal and str(getattr(msg, "topic", "") or "") == Topics.TOPIC_MODAL_RESPONSE:
+					payload = getattr(msg, "payload", None) or {}
+					request_id = payload.get("request_id")
+					chain_id = payload.get("chain_id")
+					result = payload.get("result")
 
-				inst = self.chains.get(str(chain_id or ""))
-				if inst and request_id is not None:
-					inst.context._modal_set_result_for_request(str(request_id), result)
-				continue
-
-			for inst in self.chains.values():
-				if not inst.active:
+					inst = self.chains.get(str(chain_id or ""))
+					if inst and request_id is not None:
+						inst.context._modal_set_result_for_request(str(request_id), result)
 					continue
-				self._apply_bus_msg_to_ctx(inst.context, msg)
+
+				for inst in self.chains.values():
+					if not inst.active:
+						continue
+					self._apply_bus_msg_to_ctx(inst.context, msg)
+				processed += 1
+			return processed
+
+		processed = _drain_queue(self.bus_sub.queue, handle_modal=True)
+		if processed < max_items:
+			_drain_queue(self.bus_sub_view_cmd.queue, handle_modal=False)
 
 	def _apply_ui_state_msg_to_ctx(self, ctx: StepChainContext, topic: str, payload: dict[str, Any]) -> None:
 		try:

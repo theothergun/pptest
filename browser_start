@@ -1,0 +1,1 @@
+"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"  --app=http://localhost:8080  --user-data-dir="C:\temp\edge-kiosk-1" --app=http://localhost:8080 --window-size=1920,500 --window-position=0,0

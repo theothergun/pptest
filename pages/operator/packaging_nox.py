@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import queue
-import time
 from typing import Any
 
 from nicegui import ui
@@ -9,11 +8,12 @@ from layout.context import PageContext
 from services.i18n import t
 from services.app_config import get_app_config
 from services.ui_theme import get_theme_color
-from services.worker_topics import WorkerTopics
-from loguru import logger
+from services.ui.view_cmd import install_wait_dialog, publish_view_cmd, view_wait_key
 
 
 PACKAGING_CMD_KEY = "packaging.cmd"
+PACKAGING_NOX_VIEW = "packaging_nox"
+PACKAGING_NOX_WAIT_MODAL_KEY = view_wait_key(PACKAGING_NOX_VIEW)
 
 
 def render(container: ui.element, ctx: PageContext) -> None:
@@ -52,6 +52,11 @@ def build_page(ctx: PageContext) -> None:
 			sub_state.close()
 		except Exception:
 			pass
+		for sub in wait_dialog["subs"]:
+			try:
+				sub.close()
+			except Exception:
+				pass
 
 		for t in page_timers:
 			try:
@@ -76,21 +81,24 @@ def build_page(ctx: PageContext) -> None:
 	}
 
 	def _publish_cmd(cmd: str) -> None:
-		publish_fn = getattr(worker_bus, "publish", None)
-		if not callable(publish_fn):
-			logger.warning("Packaging UI command publish skipped: worker_bus.publish is not callable")
-			return
-		payload = {
-			"cmd": str(cmd),
-			"event_id": int(time.time_ns()),
-		}
-		publish_fn(
-			topic=WorkerTopics.VALUE_CHANGED,
-			source="ui",
-			source_id="packaging",
-			key=PACKAGING_CMD_KEY,
-			value=payload,
+		publish_view_cmd(
+			worker_bus=worker_bus,
+			view=PACKAGING_NOX_VIEW,
+			cmd_key=PACKAGING_CMD_KEY,
+			cmd=cmd,
+			wait_key=PACKAGING_NOX_WAIT_MODAL_KEY,
+			open_wait=wait_dialog["open"],
+			source_id=PACKAGING_NOX_VIEW,
 		)
+
+	wait_dialog = install_wait_dialog(
+		ctx=ctx,
+		worker_bus=worker_bus,
+		wait_key=PACKAGING_NOX_WAIT_MODAL_KEY,
+		title=t("packaging.wait_title", "Please wait"),
+		message=t("packaging.working", "Working ..."),
+		add_timer=add_timer,
+	)
 
 	def _set_counter_cards_color(current_qty: int, max_qty: int) -> None:
 		# rules:
@@ -152,80 +160,168 @@ def build_page(ctx: PageContext) -> None:
 			except Exception:
 				pass
 
+
 	# --------------------------
 	# Layout
 	# --------------------------
-	with ui.column().classes("w-full h-full flex flex-col min-h-0 p-4 gap-4"):
-		with ui.row().classes("w-full items-center gap-4"):
-			ui.label(t("packaging.title", "📦 packaging Station")).classes("text-2xl font-bold")
+	ui.add_head_html("""
+<style>
+.pack-shell {
+	background: linear-gradient(135deg, var(--surface-muted) 0%, var(--app-background) 100%);
+	border-radius: 20px;
+	border: 1px solid var(--input-border);
+	box-shadow: 0 12px 30px rgba(16, 24, 40, 0.06);
+}
+.pack-card {
+	border: 1px solid var(--input-border);
+	border-radius: 16px;
+	box-shadow: 0 10px 24px rgba(16, 24, 40, 0.08);
+	background: var(--surface);
+	color: var(--text-primary);
+	overflow: hidden;
+}
+.pack-soft {
+	background: var(--surface);
+	border: 1px solid var(--input-border);
+}
+.pack-qty {
+	background: var(--surface-muted);
+	border: 1px solid var(--input-border);
+	box-shadow: 0 6px 14px rgba(16, 24, 40, 0.08);
+}
+.pack-qty .qty-value { color: var(--text-primary); }
+.pack-qty .qty-label { color: var(--text-secondary); }
+.dark .pack-qty,
+.body--dark .pack-qty {
+	background: rgba(255, 255, 255, 0.08);
+	border-color: rgba(255, 255, 255, 0.22);
+}
+.dark .pack-qty .qty-value,
+.body--dark .pack-qty .qty-value {
+	color: #ffffff;
+}
+.dark .pack-qty .qty-label,
+.body--dark .pack-qty .qty-label {
+	color: rgba(255, 255, 255, 0.72);
+}
+.pack-panel {
+	background: linear-gradient(180deg, var(--surface-muted) 0%, var(--surface) 100%);
+	border: 1px solid var(--input-border);
+	box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+.pack-panel .panel-title {
+	font-size: 11px;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--primary);
+	font-weight: 700;
+}
+.pack-fade {
+	animation: packFadeIn 220ms ease-out;
+}
+.pack-btn {
+	font-weight: 700;
+	letter-spacing: 0.3px;
+	border-radius: 14px;
+	transition: transform 120ms ease, box-shadow 120ms ease, border-color 120ms ease;
+}
+.pack-btn:hover {
+	transform: translateY(-1px);
+	box-shadow: 0 10px 20px rgba(15, 23, 42, 0.12);
+}
+.pack-header {
+	min-height: 62px;
+}
+.pack-kpi {
+	border-radius: 14px;
+	border: 1px solid var(--input-border);
+	background: var(--surface);
+}
+.pack-kpi .q-icon { font-size: 18px; }
+@keyframes packFadeIn {
+	from { opacity: 0; transform: translateY(6px); }
+	to { opacity: 1; transform: translateY(0); }
+}
+</style>
+""")
+
+	with ui.column().classes("pack-shell w-full flex flex-col p-4 gap-3"):
+		with ui.row().classes("w-full items-center gap-3 pack-header"):
+			ui.icon("inventory_2").classes("text-amber-500 text-3xl")
+			ui.label(t("packaging.title", "Packaging Station")).classes("text-2xl font-bold")
 			ui.space()
+			with ui.row().classes("items-center gap-2"):
+				with ui.card().classes("pack-kpi px-4 py-2"):
+					with ui.row().classes("items-center gap-2"):
+						ui.icon("check_circle").classes("text-green-600")
+						ui.label(t("packaging.total_good", "Good")).classes("text-sm text-gray-600")
+					ui.label("").classes("text-2xl font-bold text-green-600") \
+						.bind_text_from(ctx.state, "part_good", backward=lambda n: "%s" % int(n or 0))
+				with ui.card().classes("pack-kpi px-4 py-2"):
+					with ui.row().classes("items-center gap-2"):
+						ui.icon("cancel").classes("text-red-600")
+						ui.label(t("packaging.total_bad", "Bad")).classes("text-sm text-gray-600")
+					ui.label("").classes("text-2xl font-bold text-red-600") \
+						.bind_text_from(ctx.state, "part_bad", backward=lambda n: "%s" % int(n or 0))
+				ui.button(t("common.reset", "Reset"), icon="restart_alt", on_click=lambda: _publish_cmd("reset_counters")) \
+					.props("outline color=secondary").classes("pack-btn h-[40px] px-4")
 
-		with ui.grid().classes("w-full gap-4").style("grid-template-columns: 360px 1fr 280px;"):
-			with ui.card().classes("w-full"):
-				ui.label(t("packaging.container_number", "Containernumber")).classes("text-sm text-gray-500")
-				ui.label("").classes("text-lg font-bold") \
-					.bind_text_from(ctx.state, "container_number", backward=lambda n: str(n or ""))
+		with ui.grid().classes("w-full gap-3").style("grid-template-columns: 280px 1fr;"):
+			with ui.card().classes("pack-card pack-fade w-full p-4"):
+				with ui.row().classes("w-full gap-3 flex-nowrap items-start"):
+					with ui.column().classes("flex-grow gap-2"):
+						ui.label(t("packaging.container_number", "Containernumber")).classes("text-xs uppercase tracking-wide text-gray-500")
+						ui.label("").classes("text-lg font-bold") \
+							.bind_text_from(ctx.state, "container_number", backward=lambda n: str(n or ""))
 
-				ui.separator()
+						ui.separator()
 
-				ui.label(t("packaging.part_number", "Partnumber")).classes("text-sm text-gray-500")
-				ui.label("").classes("text-lg font-bold") \
-					.bind_text_from(ctx.state, "part_number", backward=lambda n: str(n or ""))
+						ui.label(t("packaging.part_number", "Partnumber")).classes("text-xs uppercase tracking-wide text-gray-500")
+						ui.label("").classes("text-lg font-bold") \
+							.bind_text_from(ctx.state, "part_number", backward=lambda n: str(n or ""))
 
-				ui.separator()
+						ui.separator()
 
-				ui.label(t("common.description", "Description")).classes("text-sm text-gray-500")
-				ui.label("").classes("text-base") \
-					.bind_text_from(ctx.state, "description", backward=lambda n: str(n or ""))
+						ui.label(t("common.description", "Description")).classes("text-xs uppercase tracking-wide text-gray-500")
+						ui.label("").classes("text-base") \
+							.bind_text_from(ctx.state, "description", backward=lambda n: str(n or ""))
+						with ui.row().classes("w-full gap-3 mt-1 flex-nowrap"):
+							ui_refs["card_current_qty"] = ui.card().classes("pack-qty w-[120px] h-[64px] flex flex-col items-center justify-center")
+							with ui_refs["card_current_qty"]:
+								ui.label("").classes("qty-value text-2xl font-bold leading-none text-center") \
+									.bind_text_from(ctx.state, "current_container_qty", backward=lambda n: "%s" % int(n or 0))
+								ui.label(t("common.current", "Current")).classes("qty-label text-[10px] font-semibold tracking-wide leading-none text-center")
 
-				ui.separator()
+							ui_refs["card_max_qty"] = ui.card().classes("pack-qty w-[120px] h-[64px] flex flex-col items-center justify-center")
+							with ui_refs["card_max_qty"]:
+								ui.label("").classes("qty-value text-2xl font-bold leading-none text-center") \
+									.bind_text_from(ctx.state, "max_container_qty", backward=lambda n: "%s" % int(n or 0))
+								ui.label(t("common.max", "Max")).classes("qty-label text-[10px] font-semibold tracking-wide leading-none text-center")
 
-				with ui.row().classes("w-full justify-between items-center mt-2"):
-					ui_refs["card_current_qty"] = ui.card().classes("w-[140px] h-[96px] flex flex-col items-center justify-center")
-					with ui_refs["card_current_qty"]:
-						ui.label("").classes("text-3xl font-bold leading-none text-center") \
-							.bind_text_from(ctx.state, "current_container_qty", backward=lambda n: "%s" % int(n or 0))
-						ui.label(t("common.current", "Current")).classes("text-xs font-bold leading-none text-center")
-
-					ui_refs["card_max_qty"] = ui.card().classes("w-[140px] h-[96px] flex flex-col items-center justify-center")
-					with ui_refs["card_max_qty"]:
-						ui.label("").classes("text-3xl font-bold leading-none text-center") \
-							.bind_text_from(ctx.state, "max_container_qty", backward=lambda n: "%s" % int(n or 0))
-						ui.label(t("common.max", "Max")).classes("text-xs font-bold leading-none text-center")
-
-			with ui.column().classes("w-full gap-4"):
-				ui_refs["card_instruction"] = ui.card().classes("w-full")  # NEW ref
+			with ui.column().classes("w-full gap-3"):
+				ui_refs["card_instruction"] = ui.card().classes("pack-card pack-panel pack-fade w-full p-4")
 				with ui_refs["card_instruction"]:
-					ui.label(t("packaging.instruction_for_worker", "Instruction for worker")).classes("text-sm text-gray-700")
+					ui.label(t("packaging.instruction_for_worker", "Instruction for worker")).classes("panel-title")
 					lbl_instruction = ui.label("").classes("text-xl font-semibold")
 					lbl_instruction.style("min-height: 72px;")
 					lbl_instruction.bind_text_from(ctx.state, "work_instruction", backward=lambda n: str(n or ""))
 
-				ui_refs["card_feedback"] = ui.card().classes("w-full")  # NEW ref
+				ui_refs["card_feedback"] = ui.card().classes("pack-card pack-panel pack-fade w-full p-4")
 				with ui_refs["card_feedback"]:
-					ui.label(t("packaging.current_step", "Current step")).classes("text-sm text-gray-700")
+					ui.label(t("packaging.current_step", "Current step")).classes("panel-title")
 					lbl_step = ui.label("").classes("text-xl font-semibold")
 					lbl_step.style("min-height: 72px;")
 					lbl_step.bind_text_from(ctx.state, "work_feedback", backward=lambda n: str(n or ""))
 
-			with ui.card().classes("w-full"):
-				ui.label(t("packaging.total_good", "Total good")).classes("text-sm text-gray-500")
-				ui.label("").classes("text-4xl font-bold") \
-					.bind_text_from(ctx.state, "part_good", backward=lambda n: "%s" % int(n or 0))
-
-				ui.separator()
-
-				ui.label(t("packaging.total_bad", "Total bad")).classes("text-sm text-gray-500")
-				ui.label("").classes("text-4xl font-bold") \
-					.bind_text_from(ctx.state, "part_bad", backward=lambda n: "%s" % int(n or 0))
-
-		with ui.row().classes("w-full gap-4 justify-start"):
+		with ui.row().classes("w-full gap-3 justify-start"):
 			ui.button(t("common.start", "Start"), icon="play_arrow", on_click=lambda: _publish_cmd("start")) \
-				.props("color=positive").classes("w-[200px] h-[64px] text-lg")
+				.props("outline color=positive").classes("pack-btn w-[160px] h-[52px]")
 			ui.button(t("common.stop", "Stop"), icon="stop", on_click=lambda: _publish_cmd("stop")) \
-				.props("color=negative").classes("w-[200px] h-[64px] text-lg")
+				.props("outline color=negative").classes("pack-btn w-[160px] h-[52px]")
 			ui.button(t("common.reset", "Reset"), icon="restart_alt", on_click=lambda: _publish_cmd("reset")) \
-				.props("color=info outline").classes("w-[240px] h-[64px] text-lg")
+				.props("outline color=info").classes("pack-btn w-[160px] h-[52px]")
+			ui.button(t("common.refresh", "Refresh"), icon="refresh", on_click=lambda: _publish_cmd("refresh")) \
+				.props("outline color=secondary").classes("pack-btn w-[160px] h-[52px]")
 
 	# --------------------------
 	# Drain bridge for style updates

@@ -40,7 +40,8 @@
     "validation_mode": "local_or_itac"
   },
   "global_vars": {
-    "asset_id": "6e29b1d2-b578-11f0-88e3-005056a8f0c2"
+    "asset_id": "6e29b1d2-b578-11f0-88e3-005056a8f0c2",
+    "station": 6410400821
   },
   "persistence": {
     "backend": "json",
@@ -120,7 +121,7 @@
           "path": "asd"
         }
       ],
-      "dark_mode": true,
+      "dark_mode": false,
       "hide_nav_on_startup": false,
       "main_route": "packaging",
       "route_roles": {
@@ -410,12 +411,35 @@
         "auto_start_chains": [
           {
             "instance_id": "default",
-            "script_name": "ignition/pack/container_management"
+            "script_name": "itac/packaging/container_scan"
+          },
+          {
+            "instance_id": "default",
+            "script_name": "itac/packaging/container_update"
+          },
+          {
+            "instance_id": "default",
+            "script_name": "itac/packaging/serialnumber"
           }
         ]
       },
       "tcp_client": {
-        "clients": []
+        "clients": [
+          {
+            "auto_reconnect": true,
+            "client_id": "PACK_NOX_SCANNER",
+            "connect": true,
+            "delimiter": "\\n",
+            "encoding": "utf-8",
+            "host": "127.0.0.1",
+            "keepalive": true,
+            "mode": "line",
+            "port": 4001,
+            "reconnect_max_s": 10.0,
+            "reconnect_min_s": 1.0,
+            "tcp_nodelay": true
+          }
+        ]
       },
       "twincat": {
         "plc_endpoints": [
@@ -441,6 +465,7 @@
     },
     "enabled_workers": [
       "script_worker",
+      "tcp_client",
       "rest_api",
       "itac"
     ]

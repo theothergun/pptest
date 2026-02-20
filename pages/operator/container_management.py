@@ -1,16 +1,16 @@
 from __future__ import annotations
 
-import time
 from typing import Any
 
 from nicegui import ui
 from layout.context import PageContext
 from services.i18n import t
-from services.worker_topics import WorkerTopics
-from loguru import logger
+from services.ui.view_cmd import install_wait_dialog, publish_view_cmd, view_wait_key
 
 
 CONTAINER_MGMT_CMD_KEY = "container_management.cmd"
+CONTAINER_MGMT_VIEW = "container_management"
+CONTAINER_MGMT_WAIT_MODAL_KEY = view_wait_key(CONTAINER_MGMT_VIEW)
 
 
 def render(container: ui.element, ctx: PageContext) -> None:
@@ -20,37 +20,59 @@ def render(container: ui.element, ctx: PageContext) -> None:
 
 def build_page(ctx: PageContext) -> None:
 	worker_bus = ctx.workers.worker_bus
+	page_timers: list = []
+
+	def add_timer(*args, **kwargs):
+		t = ui.timer(*args, **kwargs)
+		page_timers.append(t)
+		return t
+
+	def cleanup() -> None:
+		for sub in wait_dialog["subs"]:
+			try:
+				sub.close()
+			except Exception:
+				pass
+		for t in page_timers:
+			try:
+				t.cancel()
+			except Exception:
+				pass
+		page_timers[:] = []
+
+	ctx.state._page_cleanup = cleanup
+	ui.context.client.on_disconnect(cleanup)
+
+	wait_dialog = install_wait_dialog(
+		ctx=ctx,
+		worker_bus=worker_bus,
+		wait_key=CONTAINER_MGMT_WAIT_MODAL_KEY,
+		title=t("packaging.wait_title", "Please wait"),
+		message=t("packaging.working", "Working ..."),
+		add_timer=add_timer,
+	)
 
 	def _publish_cmd(cmd: str) -> None:
-		payload = {
-			"cmd": str(cmd),
-			"event_id": int(time.time_ns()),
-		}
-		publish_fn = getattr(worker_bus, "publish", None)
-		if not callable(publish_fn):
-			logger.warning("Container Management UI command publish skipped: worker_bus.publish is not callable")
-			return
-		publish_fn(
-			topic=WorkerTopics.VALUE_CHANGED,
-			source="ui",
-			source_id="container_management",
-			key=CONTAINER_MGMT_CMD_KEY,
-			value=payload,
+		publish_view_cmd(
+			worker_bus=worker_bus,
+			view=CONTAINER_MGMT_VIEW,
+			cmd_key=CONTAINER_MGMT_CMD_KEY,
+			cmd=cmd,
+			wait_key=CONTAINER_MGMT_WAIT_MODAL_KEY,
+			open_wait=wait_dialog["open"],
+			source_id=CONTAINER_MGMT_VIEW,
 		)
 
 	def _publish_cmd_payload(cmd: str, **extra: Any) -> None:
-		publish_fn = getattr(worker_bus, "publish", None)
-		if not callable(publish_fn):
-			logger.warning("Container Management UI command publish skipped: worker_bus.publish is not callable")
-			return
-		payload = {"cmd": str(cmd), "event_id": int(time.time_ns())}
-		payload.update({k: v for k, v in extra.items()})
-		publish_fn(
-			topic=WorkerTopics.VALUE_CHANGED,
-			source="ui",
-			source_id="container_management",
-			key=CONTAINER_MGMT_CMD_KEY,
-			value=payload,
+		publish_view_cmd(
+			worker_bus=worker_bus,
+			view=CONTAINER_MGMT_VIEW,
+			cmd_key=CONTAINER_MGMT_CMD_KEY,
+			cmd=cmd,
+			wait_key=CONTAINER_MGMT_WAIT_MODAL_KEY,
+			open_wait=wait_dialog["open"],
+			extra=extra,
+			source_id=CONTAINER_MGMT_VIEW,
 		)
 
 	def _refresh_tables() -> None:
@@ -80,7 +102,7 @@ def build_page(ctx: PageContext) -> None:
 			with ui.element("div").classes("w-full bg-primary text-white font-semibold px-3 py-2"):
 				ui.label(t("container_management.search_container", "Search Container")).classes("text-white")
 
-			with ui.row().classes("w-full items-start gap-4"):
+	with ui.row().classes("w-full items-start gap-4"):
 				with ui.column().classes("flex-1 gap-2"):
 					ui.input().classes("w-full app-input") \
 						.bind_value_from(ctx.state, "container_mgmt_search_query", backward=lambda n: str(n or ""))
@@ -104,6 +126,7 @@ def build_page(ctx: PageContext) -> None:
 					ui.button(t("container_management.activate", "@Activate"),
 							  on_click=lambda: _publish_cmd("activate")) \
 						.props("outline").classes("w-full")
+
 
 		with ui.element("div").classes("w-full bg-primary text-white font-semibold px-3 py-2"):
 			ui.label("").classes("text-white").bind_text_from(
@@ -144,4 +167,4 @@ def build_page(ctx: PageContext) -> None:
 						  on_click=lambda: _publish_cmd("remove_all")) \
 					.props("outline").classes("w-full")
 
-	ui.timer(0.2, _refresh_tables)
+	add_timer(0.2, _refresh_tables)

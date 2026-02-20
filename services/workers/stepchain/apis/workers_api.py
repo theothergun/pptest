@@ -177,6 +177,36 @@ class WorkersApi:
 				return default
 		return value
 
+	def tcp_wait(
+		self,
+		client_id: str,
+		default: Any = None,
+		timeout_s: float = 1.0,
+		decode: bool = True,
+		encoding: str = "utf-8",
+	) -> Any:
+		cid = str(client_id or "")
+		if not cid:
+			return default
+
+		msg_payload = self._wait_for_bus_value(
+			source="tcp_client",
+			source_id=cid,
+			key_predicate=lambda k: k == "message",
+			timeout_s=float(timeout_s),
+		)
+
+		if msg_payload.get("error") in ("worker_error", "timeout"):
+			return default
+
+		value = msg_payload.get("value", default)
+		if decode and isinstance(value, (bytes, bytearray)):
+			try:
+				return bytes(value).decode(encoding, errors="replace")
+			except Exception:
+				return default
+		return value
+
 	# -------------------------- TwinCAT helpers -------------------------
 
 	def plc_write(

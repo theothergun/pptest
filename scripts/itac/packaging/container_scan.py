@@ -30,7 +30,7 @@ def main(ctx: PublicStepChainContext):
             ctx.goto(901)
             return
         ctx.ui.popup_clear(key="scan_success")
-        ctx.ui.popup_message(key="scan_success", message="Packaging container scanned successfully")
+        ctx.ui.popup_message(key="scan_success", message="Packaging container scanned successfully", status="success")
         ctx.set_cycle_time(1)
         ctx.goto(20)
     elif step == 20:
@@ -39,7 +39,7 @@ def main(ctx: PublicStepChainContext):
         ctx.goto(0)
     elif step == 900: # itac call execption connection?
         ctx.set_cycle_time(1)
-        res = ctx.ui.popup_message(key="connection_issue" , message="Itac connection issue - box scan failed")
+        res = ctx.ui.popup_message(key="connection_issue" , message="Itac connection issue - box scan failed", status="error")
         if res:
             ctx.set_cycle_time(0.1)
             ctx.goto(0)
@@ -49,7 +49,7 @@ def main(ctx: PublicStepChainContext):
         result_text = ctx.data["scan_info_result"]["result"]["customErrorString"]
         result_text = (f"Itac call failed with return code "
                        f"{return_value} \r\n {result_text}")
-        res = ctx.ui.popup_message(key="connection_issue", message=result_text)
+        res = ctx.ui.popup_message(key="connection_issue", message=result_text, status="error")
         if res:
             ctx.set_cycle_time(0.1)
             ctx.goto(0)

@@ -418,6 +418,7 @@ class UiApi:
 		message: str,
 		*,
 		title: str = "Message",
+		status: str = "info",
 		buttons: Optional[list] = None,
 		wait_step_desc: str = "Waiting for operator...",
 	) -> Optional[dict]:
@@ -454,6 +455,9 @@ class UiApi:
 		self._ctx._modal_mark_pending(k, request_id)
 
 		btns = buttons if isinstance(buttons, list) else []
+		status_value = str(status or "info").strip().lower()
+		if status_value not in ("error", "info", "success"):
+			status_value = "info"
 		payload = {
 			"type": "message",
 			"request_id": request_id,
@@ -462,6 +466,7 @@ class UiApi:
 			"key": k,
 			"title": str(title or "Message"),
 			"message": str(message or ""),
+			"status": status_value,
 			"buttons": btns,
 		}
 

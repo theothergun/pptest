@@ -98,32 +98,32 @@ class StepChainContext:
         self._modal_result_by_key[key] = result
         self._modal_clear_pending(key)
 
-        def _modal_reset(self, key: Optional[str] = None) -> None:
-            """
-            Clear modal pending/result state.
+    def _modal_reset(self, key: Optional[str] = None) -> None:
+        """
+        Clear modal pending/result state.
 
-            If key is None: clears ALL modal state.
-            If key is provided: clears only that key.
+        If key is None: clears ALL modal state.
+        If key is provided: clears only that key.
 
-            Does not talk to UI. Use UiApi.popup_clear(...) to also close UI popup.
-            """
-            if key is None:
-                self._modal_pending.clear()
-                self._modal_result_by_key.clear()
-                self._modal_key_by_request_id.clear()
-                return
+        Does not talk to UI. Use UiApi.popup_clear(...) to also close UI popup.
+        """
+        if key is None:
+            self._modal_pending.clear()
+            self._modal_result_by_key.clear()
+            self._modal_key_by_request_id.clear()
+            return
 
-            k = str(key or "").strip()
-            if not k:
-                return
+        k = str(key or "").strip()
+        if not k:
+            return
 
-            # clear pending mapping
-            req_id = self._modal_pending.pop(k, None)
-            if req_id:
-                self._modal_key_by_request_id.pop(req_id, None)
+        # clear pending mapping
+        req_id = self._modal_pending.pop(k, None)
+        if req_id:
+            self._modal_key_by_request_id.pop(req_id, None)
 
-            # clear any stored result
-            self._modal_result_by_key.pop(k, None)
+        # clear any stored result
+        self._modal_result_by_key.pop(k, None)
 
     @property
     def public(self) -> "PublicStepChainContext":

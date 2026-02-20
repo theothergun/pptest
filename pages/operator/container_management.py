@@ -102,21 +102,21 @@ def build_page(ctx: PageContext) -> None:
 			with ui.element("div").classes("w-full bg-primary text-white font-semibold px-3 py-2"):
 				ui.label(t("container_management.search_container", "Search Container")).classes("text-white")
 
-	with ui.row().classes("w-full items-start gap-4"):
-				with ui.column().classes("flex-1 gap-2"):
-					ui.input().classes("w-full app-input") \
-						.bind_value_from(ctx.state, "container_mgmt_search_query", backward=lambda n: str(n or ""))
+		with ui.row().classes("w-full items-start gap-4"):
+			with ui.column().classes("flex-1 gap-2"):
+				ui.input().classes("w-full app-input") \
+					.bind_value_from(ctx.state, "container_mgmt_search_query", backward=lambda n: str(n or ""))
 
-					columns = [
-						{"name": "material_bin", "label": "MATERIAL_BIN", "field": "material_bin", "align": "left"},
-						{"name": "part_number", "label": "Partnumber", "field": "part_number", "align": "left"},
-						{"name": "current_qty", "label": "Current Qty", "field": "current_qty", "align": "center"},
-					]
-					table_containers = ui.table(columns=columns, rows=[], row_key="material_bin") \
-						.classes("w-full text-sm") \
-						.props("dense separator=cell")
+				columns = [
+					{"name": "material_bin", "label": "MATERIAL_BIN", "field": "material_bin", "align": "left"},
+					{"name": "part_number", "label": "Partnumber", "field": "part_number", "align": "left"},
+					{"name": "current_qty", "label": "Current Qty", "field": "current_qty", "align": "center"},
+				]
+				table_containers = ui.table(columns=columns, rows=[], row_key="material_bin") \
+					.classes("w-full text-sm") \
+					.props("dense separator=cell")
 
-				with ui.column().classes("w-[210px] gap-3"):
+			with ui.column().classes("w-[210px] gap-3"):
 					ui.button(t("container_management.search_by_container", "@Search by container"),
 							  on_click=lambda: _publish_cmd("search_container")) \
 						.props("outline").classes("w-full")

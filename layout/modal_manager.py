@@ -29,11 +29,34 @@ class ModalManager(object):
         self._active: Optional[Dict[str, Any]] = None  # active request payload
         self._active_key: Optional[str] = None
 
+        self._status_styles = {
+            "success": {
+                "icon": "check",
+                "icon_bg": "var(--positive)",
+                "icon_fg": "white",
+                "accent": "var(--positive)",
+            },
+            "error": {
+                "icon": "close",
+                "icon_bg": "var(--negative)",
+                "icon_fg": "white",
+                "accent": "var(--negative)",
+            },
+            "info": {
+                "icon": "info",
+                "icon_bg": "var(--info)",
+                "icon_fg": "white",
+                "accent": "var(--info)",
+            },
+        }
+
         self._dlg = ui.dialog()
         with self._dlg:
-            with ui.card().classes("w-[560px] max-w-[95vw]"):
-                self._title = ui.label("").classes("text-lg font-semibold")
-                self._msg = ui.label("").classes("text-base whitespace-pre-wrap mt-2")
+            with ui.card().classes("w-[560px] max-w-[95vw]") as self._card:
+                with ui.row().classes("w-full justify-center mt-1") as self._status_row:
+                    self._status_icon = ui.icon("info").classes("text-3xl")
+                self._title = ui.label("").classes("text-lg font-semibold text-center w-full")
+                self._msg = ui.label("").classes("text-base whitespace-pre-wrap mt-2 text-center w-full")
 
                 self._input_text = ui.input(label="").classes("w-full mt-3")
                 self._input_text.visible = False
@@ -97,12 +120,14 @@ class ModalManager(object):
 
         # configure UI by type
         if m_type == "confirm":
+            self._set_non_message_style()
             self._input.visible = False
             self._btn_primary.set_text(str(payload.get("ok_text") or "OK"))
             self._btn_secondary.set_text(str(payload.get("cancel_text") or "Cancel"))
             self._btn_secondary.visible = True
 
         elif m_type == "input":
+            self._set_non_message_style()
             self._hide_inputs()
 
             kind = str(payload.get("kind") or "text")  # text|number|select
@@ -173,6 +198,7 @@ class ModalManager(object):
 
         elif m_type == "message":
             self._input.visible = False
+            self._set_message_status(payload.get("status") or "info")
             buttons = payload.get("buttons") or []
             if not isinstance(buttons, list):
                 buttons = []
@@ -194,6 +220,40 @@ class ModalManager(object):
             else:
                 self._btn_secondary.visible = False
         self._dlg.open()
+
+    def _set_message_status(self, status: str) -> None:
+        st = str(status or "info").strip().lower()
+        cfg = self._status_styles.get(st) or self._status_styles["info"]
+
+        try:
+            self._status_icon.name = str(cfg["icon"])
+            self._status_icon.style(
+                "color: {fg}; background: {bg}; border-radius: 9999px; padding: 10px;".format(
+                    fg=cfg["icon_fg"], bg=cfg["icon_bg"]
+                )
+            )
+            self._status_icon.visible = True
+            self._status_row.visible = True
+            self._btn_primary.props(remove="color=primary color=positive color=negative color=info")
+            btn_color = {"success": "positive", "error": "negative", "info": "info"}.get(st, "info")
+            self._btn_primary.props(add="color={color}".format(color=btn_color))
+        except Exception:
+            logger.warning("Failed applying popup status style in modal manager")
+
+        try:
+            self._card.style("border-top: 4px solid {accent};".format(accent=cfg["accent"]))
+        except Exception:
+            logger.warning("Failed applying popup card status style in modal manager")
+
+    def _set_non_message_style(self) -> None:
+        try:
+            self._status_row.visible = False
+            self._status_icon.visible = False
+            self._card.style("")
+            self._btn_primary.props(remove="color=positive color=negative color=info color=primary")
+            self._btn_primary.props(add="color=primary")
+        except Exception:
+            logger.warning("Failed resetting popup status style in modal manager")
 
     def _poll_close(self) -> None:
         """

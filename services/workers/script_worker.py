@@ -3,8 +3,9 @@ from __future__ import annotations
 
 import time
 import queue
+import threading
 import traceback
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, Callable, Optional
 
 from loguru import logger
@@ -28,6 +29,9 @@ class ChainInstance:
 	active: bool = True
 	paused: bool = False
 	next_tick_ts: float = 0.0
+	stop_event: threading.Event = field(default_factory=threading.Event)
+	lock: threading.Lock = field(default_factory=threading.Lock)
+	thread: Optional[threading.Thread] = None
 
 
 class ScriptWorker(BaseWorker):
@@ -92,19 +96,20 @@ class ScriptWorker(BaseWorker):
 	def _build_chain_list_payload(self) -> list[dict[str, Any]]:
 		items: list[dict[str, Any]] = []
 		for chain_key, inst in self.chains.items():
-			ctx = inst.context
-			items.append({
-				"key": chain_key,
-				"script": inst.script_name,
-				"instance": inst.instance_id,
-				"active": bool(inst.active),
-				"paused": bool(inst.paused),
-				"error_flag": bool(getattr(ctx, "error_flag", False)),
-				"error_message": str(getattr(ctx, "error_message", "") or ""),
-				"step": getattr(ctx, "step", 0),
-				"cycle_count": getattr(ctx, "cycle_count", 0),
-				"step_time": getattr(ctx, "step_time", 0.0),
-			})
+			with inst.lock:
+				ctx = inst.context
+				items.append({
+					"key": chain_key,
+					"script": inst.script_name,
+					"instance": inst.instance_id,
+					"active": bool(inst.active),
+					"paused": bool(inst.paused),
+					"error_flag": bool(getattr(ctx, "error_flag", False)),
+					"error_message": str(getattr(ctx, "error_message", "") or ""),
+					"step": getattr(ctx, "step", 0),
+					"cycle_count": getattr(ctx, "cycle_count", 0),
+					"step_time": getattr(ctx, "step_time", 0.0),
+				})
 		return items
 
 	def _publish_scripts_if_changed(self, force: bool = False) -> None:
@@ -219,13 +224,15 @@ class ScriptWorker(BaseWorker):
 
 					inst = self.chains.get(str(chain_id or ""))
 					if inst and request_id is not None:
-						inst.context._modal_set_result_for_request(str(request_id), result)
+						with inst.lock:
+							inst.context._modal_set_result_for_request(str(request_id), result)
 					continue
 
 				for inst in self.chains.values():
-					if not inst.active:
-						continue
-					self._apply_bus_msg_to_ctx(inst.context, msg)
+					with inst.lock:
+						if not inst.active:
+							continue
+						self._apply_bus_msg_to_ctx(inst.context, msg)
 				processed += 1
 			return processed
 
@@ -264,9 +271,10 @@ class ScriptWorker(BaseWorker):
 			data = payload if isinstance(payload, dict) else {}
 
 			for inst in self.chains.values():
-				if not inst.active:
-					continue
-				self._apply_ui_state_msg_to_ctx(inst.context, topic, data)
+				with inst.lock:
+					if not inst.active:
+						continue
+					self._apply_ui_state_msg_to_ctx(inst.context, topic, data)
 
 	# ------------------------------------------------------------------ lifecycle
 
@@ -293,6 +301,71 @@ class ScriptWorker(BaseWorker):
 			except Exception:
 				return []
 		return []
+
+	def _chain_runner(self, chain_key: str, inst: ChainInstance) -> None:
+		self.log.info(f"[_chain_runner] started chain_key={chain_key}")
+		while not self.should_stop() and not inst.stop_event.is_set():
+			should_sleep = 0.02
+			with inst.lock:
+				if not inst.active:
+					break
+
+				if inst.paused:
+					now_ts = time.time()
+					if inst.context._step_started_ts <= 0:
+						inst.context._step_started_ts = now_ts
+					inst.context.step_elapsed_s = max(0.0, now_ts - inst.context._step_started_ts)
+					should_sleep = 0.02
+				else:
+					now = time.time()
+					if inst.next_tick_ts and now < inst.next_tick_ts:
+						should_sleep = max(0.0, min(0.05, inst.next_tick_ts - now))
+					else:
+						inst.context.cycle_count = inst.context.cycle_count + 1
+						try:
+							now_ts = time.time()
+							if inst.context._step_started_ts <= 0:
+								inst.context._step_started_ts = now_ts
+							inst.context.step_elapsed_s = max(0.0, now_ts - inst.context._step_started_ts)
+
+							start = time.time()
+							fn = inst.fn
+							fn(inst.context.public)
+							elapsed_ms = (time.time() - start) * 1000.0
+							inst.context.step_time = round(elapsed_ms, 2)
+
+							prev_step = int(getattr(inst.context, "step", 0))
+							next_step = int(getattr(inst.context, "next_step", prev_step))
+							if next_step != prev_step:
+								inst.context._step_started_ts = time.time()
+								inst.context.step_elapsed_s = 0.0
+							inst.context.step = next_step
+						except Exception:
+							err = "chain crashed chain_key=%s\n%s" % (chain_key, self._format_exc())
+							self.log.error("[_chain_runner] %s" % err)
+							self.publish_error_as(chain_key, key=chain_key, action="chain_tick", error=err)
+							inst.paused = True
+							inst.context.paused = True
+							inst.context.error_flag = True
+							inst.context.error_message = "StepChain crashed. Please review and press Retry."
+							self._publish_chain_log(chain_key, "chain crashed - paused; operator can retry", level="error")
+							self._publish_chain_state(chain_key, inst.context)
+							self._publish_chains_if_changed(True)
+							try:
+								self.bridge.emit_notify("⚠️ Script '%s' crashed. Open Scripts Lab and press Retry." % chain_key, "warning")
+							except Exception:
+								pass
+							should_sleep = 0.05
+						else:
+							cycle_s = self._get_cycle_time_s(inst.context)
+							inst.next_tick_ts = time.time() + cycle_s
+							self._publish_chain_state(chain_key, inst.context)
+							should_sleep = 0.001
+
+			if should_sleep > 0:
+				time.sleep(should_sleep)
+
+		self.log.info(f"[_chain_runner] stopped chain_key={chain_key}")
 
 	def run(self) -> None:
 		self.start()
@@ -340,82 +413,15 @@ class ScriptWorker(BaseWorker):
 				self._drain_ui_state_updates(200)
 				self.dispatch_commands(handlers, limit=200, unknown_handler=self._cmd_unknown)
 
-				next_due_ts: Optional[float] = None
-
-				for chain_key, inst in list(self.chains.items()):
-					if not inst.active:
-						continue
-
-					if inst.paused:
-						now_ts = time.time()
-						if inst.context._step_started_ts <= 0:
-							inst.context._step_started_ts = now_ts
-						inst.context.step_elapsed_s = max(0.0, now_ts - inst.context._step_started_ts)
-						continue
-
-					if inst.next_tick_ts and now < inst.next_tick_ts:
-						if next_due_ts is None or inst.next_tick_ts < next_due_ts:
-							next_due_ts = inst.next_tick_ts
-						continue
-
-					inst.context.cycle_count = inst.context.cycle_count + 1
-
-					try:
-						now_ts = time.time()
-						if inst.context._step_started_ts <= 0:
-							inst.context._step_started_ts = now_ts
-						inst.context.step_elapsed_s = max(0.0, now_ts - inst.context._step_started_ts)
-
-						start = time.time()
-						inst.fn(inst.context.public)
-						elapsed_ms = (time.time() - start) * 1000.0
-						inst.context.step_time = round(elapsed_ms, 2)
-
-						prev_step = int(getattr(inst.context, "step", 0))
-						next_step = int(getattr(inst.context, "next_step", prev_step))
-						if next_step != prev_step:
-							inst.context._step_started_ts = time.time()
-							inst.context.step_elapsed_s = 0.0
-						inst.context.step = next_step
-					except Exception:
-						err = "chain crashed chain_key=%s\n%s" % (chain_key, self._format_exc())
-						self.log.error("[run] %s" % err)
-						self.publish_error_as(chain_key, key=chain_key, action="chain_tick", error=err)
-						inst.paused = True
-						inst.context.paused = True
-						inst.context.error_flag = True
-						inst.context.error_message = "StepChain crashed. Please review and press Retry."
-						self._publish_chain_log(chain_key, "chain crashed - paused; operator can retry", level="error")
-						self._publish_chain_state(chain_key, inst.context)
-						self._publish_chains_if_changed(True)
-						try:
-							self.bridge.emit_notify("⚠️ Script '%s' crashed. Open Scripts Lab and press Retry." % chain_key, "warning")
-						except Exception:
-							pass
-						continue
-
-					cycle_s = self._get_cycle_time_s(inst.context)
-					inst.next_tick_ts = time.time() + cycle_s
-					if next_due_ts is None or inst.next_tick_ts < next_due_ts:
-						next_due_ts = inst.next_tick_ts
-
-					# publishing state must never kill the worker
-					self._publish_chain_state(chain_key, inst.context)
-
-				# Update UI once per loop
+				# Update UI once per loop while chain ticks run in per-chain threads
 				self._publish_chains_if_changed(False)
-
-				# Sleep once per loop (prevents busy-loop and command latency problems)
-				if next_due_ts is None:
-					time.sleep(0.05)
-				else:
-					sleep_s = max(0.0, min(0.05, next_due_ts - time.time()))
-					if sleep_s > 0:
-						time.sleep(sleep_s)
+				time.sleep(0.05)
 
 		except Exception:
 			logger.error(self._format_exc())
 		finally:
+			for chain_key in list(self.chains.keys()):
+				self._stop_chain(chain_key, "worker_shutdown")
 			self.close_subscriptions()
 			self.mark_stopped()
 			self.log.info("[run] stopped")
@@ -479,7 +485,7 @@ class ScriptWorker(BaseWorker):
 			self.publish_error_as(chain_key, key=chain_key, action="start_chain", error=err)
 			return
 
-		self.chains[chain_key] = ChainInstance(
+		inst = ChainInstance(
 			script_name=script_name,
 			instance_id=instance_id,
 			context=ctx,
@@ -488,8 +494,16 @@ class ScriptWorker(BaseWorker):
 			paused=False,
 			next_tick_ts=0.0,
 		)
+		self.chains[chain_key] = inst
+		inst.thread = threading.Thread(
+			target=self._chain_runner,
+			args=(chain_key, inst),
+			daemon=True,
+			name=f"chain:{chain_key}",
+		)
+		inst.thread.start()
 
-		self.log.info(f"[_cmd_start_chain] started chain_key={chain_key}")
+		self.log.info(f"[_cmd_start_chain] started chain_key={chain_key} thread={inst.thread.name}")
 		self._publish_chain_log(chain_key, "chain started", level="info")
 		self._publish_chains_if_changed(True)
 		self._publish_chain_state(chain_key, ctx)
@@ -523,8 +537,9 @@ class ScriptWorker(BaseWorker):
 			self.publish_error_as(chain_key, key=chain_key, action="pause_chain", error="chain not running")
 			return
 
-		inst.paused = True
-		inst.context.paused = True
+		with inst.lock:
+			inst.paused = True
+			inst.context.paused = True
 		self.log.info(f"[_cmd_pause_chain] paused chain_key={chain_key}")
 		self._publish_chain_log(chain_key, "chain paused", level="info")
 		self._publish_chains_if_changed(True)
@@ -541,9 +556,10 @@ class ScriptWorker(BaseWorker):
 			self.publish_error_as(chain_key, key=chain_key, action="resume_chain", error="chain not running")
 			return
 
-		inst.paused = False
-		inst.context.paused = False
-		inst.next_tick_ts = 0.0
+		with inst.lock:
+			inst.paused = False
+			inst.context.paused = False
+			inst.next_tick_ts = 0.0
 		self.log.info(f"[_cmd_resume_chain] resumed chain_key={chain_key}")
 		self._publish_chain_log(chain_key, "chain resumed", level="info")
 		self._publish_chains_if_changed(True)
@@ -560,11 +576,12 @@ class ScriptWorker(BaseWorker):
 			self.publish_error_as(chain_key, key=chain_key, action="retry_chain", error="chain not running")
 			return
 
-		inst.context.error_flag = False
-		inst.context.error_message = ""
-		inst.paused = False
-		inst.context.paused = False
-		inst.next_tick_ts = 0.0
+		with inst.lock:
+			inst.context.error_flag = False
+			inst.context.error_message = ""
+			inst.paused = False
+			inst.context.paused = False
+			inst.next_tick_ts = 0.0
 		self.log.info(f"[_cmd_retry_chain] retrying chain_key={chain_key}")
 		self._publish_chain_log(chain_key, "retry requested by operator", level="info")
 		self._publish_chains_if_changed(True)
@@ -578,7 +595,8 @@ class ScriptWorker(BaseWorker):
 				try:
 					fn = self.loader.load_script(inst.script_name, force=True)
 					if fn:
-						inst.fn = fn
+						with inst.lock:
+							inst.fn = fn
 						self.log.info(f"[_apply_reloaded_scripts] updated chain_key={chain_key}")
 				except Exception:
 					err = "apply_reload failed\n%s" % self._format_exc()
@@ -638,7 +656,13 @@ class ScriptWorker(BaseWorker):
 		if not inst:
 			return
 
-		inst.active = False
+		with inst.lock:
+			inst.active = False
+			inst.stop_event.set()
+
+		if inst.thread and inst.thread.is_alive():
+			inst.thread.join(timeout=1.0)
+
 		try:
 			del self.chains[chain_key]
 		except Exception:

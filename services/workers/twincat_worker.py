@@ -140,6 +140,10 @@ class TwinCatWorker(BaseWorker):
 			elif cmd == Commands.WRITE:
 				self._write(log, plcs, payload)
 
+			elif cmd == Commands.RESET:
+				client_id = str(payload.get("client_id") or "").strip()
+				self._reset_plc(log, plcs, client_id)
+
 			else:
 				log.debug(f"unknown command ignored: cmd={cmd!r} payload={payload!r}")
 
@@ -216,6 +220,20 @@ class TwinCatWorker(BaseWorker):
 			log.debug(f"disconnect: client_id={client_id} reason={reason} (was not connected)")
 
 		self._schedule_reconnect(log, st, reason=f"disconnect_{reason}")
+
+	def _reset_plc(self, log, plcs: Dict[str, PlcState], client_id: str) -> None:
+		if not client_id:
+			log.warning("RESET ignored: missing client_id")
+			return
+		st = plcs.get(client_id)
+		if not st:
+			log.warning(f"RESET ignored: unknown client_id={client_id}")
+			return
+		self._disconnect(log, plcs, client_id, reason="reset")
+		st.values.clear()
+		st.last_error = ""
+		st.next_reconnect_at = 0.0
+		self._connect_and_subscribe(log, st)
 
 	# ------------------------------------------------------------------ Health + Reconnect
 

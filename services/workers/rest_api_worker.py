@@ -41,6 +41,15 @@ class _ThreadLocalHttp:
 			setattr(self._local, "session", sess)
 		return sess
 
+	def reset_session(self) -> None:
+		sess = getattr(self._local, "session", None)
+		if sess is not None:
+			try:
+				sess.close()
+			except Exception:
+				pass
+			setattr(self._local, "session", None)
+
 
 # ------------------------------------------------------------------ Worker
 
@@ -146,8 +155,27 @@ class RestApiWorker(BaseWorker):
 				fut = exec_.submit(job)
 				pending[fut] = (source_id, publish_key)
 
+			elif cmd == Commands.RESET:
+				endpoint_name = str(payload.get("name") or payload.get("endpoint") or "").strip()
+				self._reset_endpoint(log, http, pending, endpoint_name)
+
 			else:
 				log.debug(f"unknown command ignored: cmd={cmd!r} payload={payload!r}")
+
+	def _reset_endpoint(self, log, http: _ThreadLocalHttp, pending: Dict[Future, Tuple[str, str]], endpoint_name: str) -> None:
+		source_id = endpoint_name or "rest"
+		for fut, meta in list(pending.items()):
+			if meta[0] == source_id:
+				try:
+					fut.cancel()
+				except Exception:
+					pass
+				pending.pop(fut, None)
+		http.reset_session()
+		self.publish_disconnected_as(source_id, reason="reset")
+		self.publish_connected_as(source_id)
+		log.info(f"endpoint reset: name={source_id}")
+
 
 	# ------------------------------------------------------------------ Future polling
 

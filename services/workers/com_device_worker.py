@@ -382,6 +382,22 @@ class ComDeviceWorker(BaseWorker):
 			self._publish_error(device_id, "send", err)
 			self._close(rt, err)
 
+	def _cmd_reset(self, payload: dict[str, Any]) -> None:
+		device_id = str(payload.get("device_id") or payload.get("id") or "").strip()
+		if not device_id:
+			self._publish_error("com_device", "reset", "missing device_id")
+			return
+		rt = self._devices.get(device_id)
+		if rt is None:
+			self._publish_error(device_id, "reset", "unknown device_id")
+			return
+		self._close(rt, "reset")
+		rt.last_error = ""
+		rt.rx_buf = bytearray()
+		rt.reconnect_s = float(rt.cfg.reconnect_min_s)
+		self._publish_status_if_changed(rt, True)
+
+
 	# ------------------------------------------------------------------ loop
 
 	def run(self) -> None:
@@ -393,6 +409,7 @@ class ComDeviceWorker(BaseWorker):
 			Commands.REMOVE_DEVICE: self._cmd_remove_device,
 			Commands.LIST_DEVICES: self._cmd_list_devices,
 			Commands.SEND: self._cmd_send,
+			Commands.RESET: self._cmd_reset,
 		}
 
 		try:

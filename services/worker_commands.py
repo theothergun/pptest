@@ -34,6 +34,7 @@ class ItacCommands(StrEnum):
 
 	RAW_CALL = "itac.raw_call"
 	STOP = "itac.stop"
+	RESET = "itac.reset"
 
 
 # ------------------------------------------------------------------ TCP Client Worker
@@ -46,6 +47,7 @@ class TcpClientCommands(StrEnum):
 	SEND = "tcp.send"
 	BROADCAST = "tcp.broadcast"
 	STOP = "tcp.stop"
+	RESET = "tcp.reset"
 
 
 # ------------------------------------------------------------------ REST API Worker
@@ -55,6 +57,7 @@ class RestApiCommands(StrEnum):
 	REMOVE_ENDPOINT = "rest.remove_endpoint"
 	REQUEST = "rest.request"
 	STOP = "rest.stop"
+	RESET = "rest.reset"
 
 
 # ------------------------------------------------------------------ Device Worker
@@ -63,6 +66,7 @@ class DeviceWorkerCommands(StrEnum):
 	CONNECT = "device.connect"
 	DISCONNECT = "device.disconnect"
 	TRIGGER = "device.trigger"
+	RESET = "device.reset"
 
 
 # ------------------------------------------------------------------ Job Worker
@@ -71,6 +75,7 @@ class JobWorkerCommands(StrEnum):
 	START = "job.start"
 	STOP = "job.stop"
 	RUN_JOB = "job.run_job"
+	RESET = "job.reset"
 
 
 # ------------------------------------------------------------------ TwinCAT Worker
@@ -81,6 +86,7 @@ class TwinCatCommands(StrEnum):
 	WRITE = "twincat.write"
 	ADD_PLC = "twincat.add_plc"
 	STOP = "twincat.stop"
+	RESET = "twincat.reset"
 
 
 # ------------------------------------------------------------------ COM Device Worker
@@ -91,6 +97,7 @@ class ComDeviceCommands(StrEnum):
 	LIST_DEVICES = "com.list_devices"
 	SEND = "com.send"
 	STOP = "com.stop"
+	RESET = "com.reset"
 
 
 # ------------------------------------------------------------------ OPC UA Worker
@@ -103,3 +110,4 @@ class OpcUaCommands(StrEnum):
 	READ = "opcua.read"
 	WRITE = "opcua.write"
 	STOP = "opcua.stop"
+	RESET = "opcua.reset"

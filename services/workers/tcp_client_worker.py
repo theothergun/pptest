@@ -139,6 +139,11 @@ class TcpClientWorker(BaseWorker):
 				log.debug(f"SEND requested: client_id={cid} bytes~={size}")
 				self._queue_send(log, selector, clients, cid, data)
 
+			elif cmd == Commands.RESET:
+				cid = payload.get("client_id")
+				log.info(f"RESET requested: client_id={cid}")
+				self._reset_client(log, selector, clients, cid)
+
 			else:
 				log.debug(f"unknown command ignored: cmd={cmd} payload={payload!r}")
 
@@ -231,6 +236,24 @@ class TcpClientWorker(BaseWorker):
 			log.debug(f"disconnect: client_id={client_id} reason={reason} (was not connected)")
 
 		self._schedule_reconnect(log, st, client_id, reason=f"disconnect_{reason}")
+
+	def _reset_client(self, log, selector, clients, client_id):
+		if not client_id:
+			log.warning("reset ignored: missing client_id")
+			return
+		st = clients.get(client_id)
+		if not st:
+			log.warning(f"reset ignored: unknown client_id={client_id}")
+			return
+		self._disconnect_client(log, selector, clients, client_id, "reset")
+		st.rx_buf = bytearray()
+		st.tx_buf = bytearray()
+		st.bytes_rx = 0
+		st.bytes_tx = 0
+		st.last_error = ""
+		st.reconnect_backoff_s = 0.0
+		st.next_reconnect_at = 0.0
+		self._connect_client(log, selector, clients, client_id)
 
 	# ------------------------------------------------------------------ Poll
 

@@ -112,6 +112,15 @@ class _ThreadLocalHttp:
 			setattr(self._local, "session", sess)
 		return sess
 
+	def reset_session(self) -> None:
+		sess = getattr(self._local, "session", None)
+		if sess is not None:
+			try:
+				sess.close()
+			except Exception:
+				pass
+			setattr(self._local, "session", None)
+
 
 # ------------------------------------------------------------------ Worker
 
@@ -237,10 +246,34 @@ class ItacWorker(BaseWorker):
 				log.info(f"cmd RAW_CALL: id={cid} request_id={request_id} function={function_name!r} body={_shorten_json(_redact_body(body), 1200)}")
 				self._schedule_raw_call(log, http, session_mgr, connections, exec_, pending, cid, function_name, body, request_id)
 
+			elif cmd == Commands.RESET:
+				cid = str(payload.get("connection_id") or "")
+				self._reset_connection(log, http, session_mgr, connections, exec_, pending, cid)
+
 			else:
 				log.debug(f"unknown command ignored: cmd={cmd!r} payload={payload!r}")
 
 	# ------------------------------------------------------------------ Scheduling (async)
+
+
+	def _reset_connection(self, log, http: _ThreadLocalHttp, session_mgr: ItacSessionManager, connections: Dict[str, ItacConnectionState], exec_, pending: Dict[Future, Tuple[str, str, str]], connection_id: str) -> None:
+		st = connections.get(connection_id)
+		if not st:
+			log.warning(f"RESET ignored: unknown connection_id={connection_id!r}")
+			return
+		for fut, meta in list(pending.items()):
+			if meta[0] == connection_id:
+				try:
+					fut.cancel()
+				except Exception:
+					pass
+				pending.pop(fut, None)
+		session_mgr.clear(reason=f"reset:{connection_id}")
+		http.reset_session()
+		st.connected = False
+		st.last_error = ""
+		self.publish_disconnected_as(connection_id, reason="reset")
+		self._schedule_login(log, http, session_mgr, connections, exec_, pending, connection_id)
 
 	def _schedule_login(self, log, http, session_mgr, connections, exec_, pending, connection_id: str) -> None:
 		st = connections.get(connection_id)

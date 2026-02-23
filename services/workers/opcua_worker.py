@@ -130,6 +130,10 @@ class OpcUaWorker(BaseWorker):
 			elif cmd == Commands.WRITE:
 				self._write_node(log, endpoints, payload)
 
+			elif cmd == Commands.RESET:
+				name = str(payload.get("name") or "").strip()
+				self._reset_endpoint(log, endpoints, name)
+
 	def _connect_endpoint(self, log, endpoints: Dict[str, OpcUaEndpointState], name: str) -> None:
 		if not name:
 			return
@@ -183,6 +187,17 @@ class OpcUaWorker(BaseWorker):
 			self.publish_disconnected_as(name, reason=reason)
 			self.publish_value_as(name, f"opcua.{name}.connected", False)
 			log.info(f"disconnected: endpoint={name} reason={reason}")
+
+	def _reset_endpoint(self, log, endpoints: Dict[str, OpcUaEndpointState], name: str) -> None:
+		if not name:
+			return
+		st = endpoints.get(name)
+		if not st:
+			return
+		self._disconnect_endpoint(log, endpoints, name, reason="reset")
+		st.last_error = ""
+		st.next_poll_at.clear()
+		self._connect_endpoint(log, endpoints, name)
 
 	def _read_node(self, log, endpoints: Dict[str, OpcUaEndpointState], payload: Dict[str, Any]) -> None:
 		name = str(payload.get("name") or "").strip()

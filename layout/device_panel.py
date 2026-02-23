@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import queue
+import time
 from typing import Any
 
 from nicegui import ui
@@ -16,6 +17,14 @@ from services.app_config import (
 	get_twincat_plc_endpoints,
 )
 from services.worker_topics import WorkerTopics
+from services.worker_commands import (
+	TcpClientCommands,
+	ComDeviceCommands,
+	OpcUaCommands,
+	ItacCommands,
+	RestApiCommands,
+	TwinCatCommands,
+)
 
 
 def build_device_panel(ctx: PageContext) -> ui.right_drawer:
@@ -42,6 +51,69 @@ def build_device_panel(ctx: PageContext) -> ui.right_drawer:
 		if v in ("error", "bad", "offline", "disconnected", "negative"):
 			return "negative"
 		return "info"
+
+	def _truncate_status(value: str, max_len: int = 40) -> str:
+		text = str(value or "").strip()
+		if len(text) <= max_len:
+			return text
+		return f"{text[:max_len - 1]}…"
+
+
+	_reset_cmd_map: dict[str, tuple[str, Any, str]] = {
+		"tcp_client": ("tcp_client", TcpClientCommands.RESET, "client_id"),
+		"com_device": ("com_device", ComDeviceCommands.RESET, "device_id"),
+		"opcua": ("opcua", OpcUaCommands.RESET, "name"),
+		"itac": ("itac", ItacCommands.RESET, "connection_id"),
+		"rest_api": ("rest_api", RestApiCommands.RESET, "name"),
+		"twincat": ("twincat", TwinCatCommands.RESET, "client_id"),
+	}
+	_reset_debounce_s = 1.2
+	_last_reset_at: dict[str, float] = {}
+
+	def _send_reset(item: dict[str, Any]) -> None:
+		source = str(item.get("source") or "").strip()
+		source_id = str(item.get("source_id") or "").strip()
+		if not source or not source_id:
+			ui.notify("Reset skipped: missing device info", color="warning")
+			return
+		cmd_info = _reset_cmd_map.get(source)
+		if not cmd_info:
+			ui.notify(f"Reset not supported for {source}", color="warning")
+			return
+		now = time.monotonic()
+		key = f"{source}:{source_id}"
+		last = float(_last_reset_at.get(key, 0.0))
+		if (now - last) < _reset_debounce_s:
+			return
+		_last_reset_at[key] = now
+		worker_name, cmd, payload_key = cmd_info
+		h = ctx.workers.get(worker_name) if ctx.workers is not None else None
+		if h is None:
+			ui.notify(f"Reset failed: worker '{worker_name}' is not available", color="negative")
+			return
+		h.send(cmd, **{payload_key: source_id})
+		ui.notify(f"Reset requested for {source_id}", color="info")
+
+	def _open_details(item: dict[str, Any], runtime: dict[str, Any]) -> None:
+		with ui.dialog() as dialog, ui.card().classes("min-w-[360px] max-w-[520px] p-4"):
+			ui.label("Device Details").classes("text-base font-semibold")
+			with ui.column().classes("w-full gap-1 text-sm"):
+				ui.label(f'Name: {str(item.get("name") or "-")}')
+				ui.label(f'Source: {str(item.get("source") or "-")}')
+				ui.label(f'Source ID: {str(item.get("source_id") or "-")}')
+				ui.label(f'Worker: {str(runtime.get("worker") or str(item.get("source") or "-"))}')
+				ui.label(f'Connected: {"Yes" if bool(item.get("connected", False)) else "No"}')
+				ui.label(f'State: {str(item.get("state") or "-")}')
+				ui.label(f'Status: {str(item.get("status") or "-")}')
+				error_text = str(runtime.get("error") or "")
+				if error_text:
+					ui.separator()
+					ui.label("Last Error").classes("font-semibold")
+					ui.label(error_text).classes("whitespace-pre-wrap text-red-700")
+			with ui.row().classes("w-full justify-end gap-2 pt-2"):
+				ui.button("Reset", on_click=lambda i=dict(item): _send_reset(i)).props("color=warning").on("click.stop")
+				ui.button("Close", on_click=dialog.close).props("flat")
+		dialog.open()
 
 	def _apply() -> None:
 		if ctx.state is None:
@@ -105,6 +177,7 @@ def build_device_panel(ctx: PageContext) -> ui.right_drawer:
 				"state": state_text,
 				"connected": connected,
 				"source": str(entry["source"]),
+				"source_id": str(entry["source_id"]),
 			})
 
 		body.clear()
@@ -121,14 +194,18 @@ def build_device_panel(ctx: PageContext) -> ui.right_drawer:
 					connected = bool(item.get("connected", True))
 					icon_name = "check_circle" if connected else "error"
 					icon_color = "text-green-600" if connected else "text-red-600"
-					with ui.card().classes("w-full px-2 py-1"):
+					item_key = f'{str(item.get("source") or "")}:{str(item.get("source_id") or "")}'
+					runtime = runtime_by_key.get(item_key, {})
+					with ui.card().classes("w-full px-2 py-1 cursor-pointer") as device_card:
+						ui.tooltip("Click for details")
 						with ui.row().classes("w-full items-center gap-2"):
 							ui.icon(icon_name).classes(icon_color)
 							with ui.column().classes("gap-0"):
 								ui.label(name).classes("text-sm font-semibold")
 								ui.label(str(item.get("source") or "")).classes("text-[10px] text-gray-500")
 							ui.space()
-							ui.badge(status).props(f"color={state_color} text-color=white").classes("text-[10px]")
+							ui.badge(_truncate_status(status)).props(f"color={state_color} text-color=white").classes("text-[10px]")
+					device_card.on("click", lambda _e, i=dict(item), r=dict(runtime): _open_details(i, r))
 
 		if ctx.device_panel_toggle_btn is not None:
 			try:
@@ -160,6 +237,7 @@ def build_device_panel(ctx: PageContext) -> ui.right_drawer:
 	def _set_rt(source: str, source_id: str, **values: Any) -> None:
 		k = f"{source}:{source_id}"
 		current = dict(runtime_by_key.get(k, {}))
+		current.setdefault("worker", str(source))
 		current.update(values)
 		runtime_by_key[k] = current
 
@@ -186,7 +264,7 @@ def build_device_panel(ctx: PageContext) -> ui.right_drawer:
 				continue
 			if topic == str(WorkerTopics.ERROR):
 				err = str(payload.get("error") or "Error")
-				_set_rt(source, source_id, connected=False, state="error", status=err)
+				_set_rt(source, source_id, connected=False, state="error", status=err, error=err)
 				continue
 			if topic != str(WorkerTopics.VALUE_CHANGED):
 				continue

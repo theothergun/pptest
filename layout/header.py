@@ -7,6 +7,7 @@ from auth.auth_service import unregister_itac_user
 from auth.session import get_user, has_role, logout
 from services.app_config import get_app_config, save_app_config
 from services.i18n import SUPPORTED_LANGUAGES, get_language, set_language, t
+from loguru import logger
 
 
 def build_header(ctx: PageContext) -> ui.header:
@@ -20,7 +21,7 @@ def build_header(ctx: PageContext) -> ui.header:
             ui.button(
                 icon="menu",
                 on_click=lambda: ctx.drawer.toggle() if ctx.drawer else None,
-            ).props("flat round dense").classes("mr-2")
+            ).props("flat round dense").classes("mr-2").tooltip(t("header.tooltip.toggle_menu", "Toggle navigation menu"))
 
             ui.label(t("app.title", "Shopfloor application")).classes("text-lg font-semibold")
             ui.space()
@@ -28,11 +29,12 @@ def build_header(ctx: PageContext) -> ui.header:
             ctx.device_panel_toggle_btn = ui.button(
                 icon="monitor_heart",
                 on_click=lambda: ctx.right_drawer.toggle() if ctx.right_drawer else None,
-            ).props("flat round dense").classes("mr-1")
+            ).props("flat round dense").classes("mr-1").tooltip(t("header.tooltip.device_panel", "Toggle device status panel"))
 
             language_options = {entry["code"]: entry["label"] for entry in SUPPORTED_LANGUAGES}
 
             def on_language_change(e) -> None:
+                logger.info(f"[on_language_change] - user_language_change - selected={e.value}")
                 lang = set_language(e.value)
                 ui.notify(f"Language switched to: {language_options[lang]}", type="positive")
                 ui.run_javascript("location.reload()")
@@ -41,19 +43,21 @@ def build_header(ctx: PageContext) -> ui.header:
                 options=language_options,
                 value=get_language(),
                 on_change=on_language_change,
-                label="Language",
-            ).props("dense outlined").classes("min-w-[180px] app-input")
+                label=t("header.language", "Language"),
+            ).props("dense outlined").classes("min-w-[180px] app-input").tooltip(t("header.tooltip.language", "Choose UI language"))
 
             mode_label = "Dark" if is_dark else "Light"
             mode_icon = "dark_mode" if is_dark else "light_mode"
 
             def on_toggle_theme() -> None:
                 cfg_local = get_app_config()
-                cfg_local.ui.navigation.dark_mode = not bool(getattr(cfg_local.ui.navigation, "dark_mode", False))
+                current = bool(getattr(cfg_local.ui.navigation, "dark_mode", False))
+                cfg_local.ui.navigation.dark_mode = not current
+                logger.info(f"[on_toggle_theme] - theme_mode_changed - old={current} new={cfg_local.ui.navigation.dark_mode}")
                 save_app_config(cfg_local)
                 ui.run_javascript("location.reload()")
 
-            ui.button(mode_label, icon=mode_icon, on_click=on_toggle_theme).props("flat no-caps")
+            ui.button(mode_label, icon=mode_icon, on_click=on_toggle_theme).props("flat no-caps").tooltip(t("header.tooltip.theme", "Switch between light and dark mode"))
 
             # Live date/time
             dt_label = ui.label("").classes("ml-3 text-sm")
@@ -82,6 +86,7 @@ def build_header(ctx: PageContext) -> ui.header:
 
             # Logout
             def do_logout() -> None:
+                logger.info(f"[do_logout] - logout_clicked - username={username}")
                 if user:
                     ok, detail = unregister_itac_user(user.username)
                     if not ok:
@@ -90,6 +95,6 @@ def build_header(ctx: PageContext) -> ui.header:
                 ui.run_javascript("window.location.href = '/login'")
 
             ui.button(t("header.logout", "Logout"), icon="logout", on_click=do_logout).props("flat no-caps") \
-                .classes("ml-2")
+                .classes("ml-2").tooltip(t("header.tooltip.logout", "Sign out from current session"))
 
     return header

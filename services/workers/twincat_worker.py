@@ -128,7 +128,7 @@ class TwinCatWorker(BaseWorker):
 	def run(self) -> None:
 		self.start()
 		log = logger.bind(worker="twincat")
-		log.info("TwinCatWorker started")
+		log.info("[run] - worker_started - worker=TwinCatWorker")
 
 		plcs: Dict[str, PlcState] = {}
 		last_status_log_ts = 0.0
@@ -166,12 +166,12 @@ class TwinCatWorker(BaseWorker):
 				time.sleep(0.02)
 
 		finally:
-			log.info("TwinCatWorker stopping")
+			log.info("[run] - worker_stopping - worker=TwinCatWorker")
 			for cid in list(plcs.keys()):
 				self._disconnect(log, plcs, cid, reason="shutdown")
 			self.close_subscriptions()
 			self.mark_stopped()
-			log.info("TwinCatWorker stopped")
+			log.info("[run] - worker_stopped - worker=TwinCatWorker")
 
 	# ------------------------------------------------------------------ Commands
 
@@ -183,7 +183,7 @@ class TwinCatWorker(BaseWorker):
 				return
 
 			if cmd in ("__stop__", Commands.STOP):
-				log.info("received stop command")
+				log.info("[_execute_cmds] - received_stop_command")
 				return
 
 			if cmd == Commands.ADD_PLC:

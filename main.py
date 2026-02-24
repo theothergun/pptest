@@ -46,18 +46,21 @@ from services.logging_setup import (
 	setup_logging,
 	get_error_popup_events_since,
 	get_latest_error_popup_event_id,
+	get_logger,
+	log_timing,
+	summarize_for_log,
 )
 from services.i18n import bootstrap_defaults
 from services.ui_theme import apply_ui_theme
-from loguru import logger
 
 
 # ------------------------------------------------------------------
 # GLOBAL BACKEND (PROCESS LIFETIME)
 # ------------------------------------------------------------------
 
-setup_logging(app_name="mes_app", log_level="DEBUG")
-logger.info("Starting NiceGUI")
+setup_logging(app_name="mes_app")
+logger = get_logger("main")
+logger.info(f"[module] - startup_begin - component=main")
 bootstrap_defaults()
 
 def _apply_proxy_env(cfg) -> None:
@@ -80,11 +83,13 @@ def _apply_proxy_env(cfg) -> None:
 			os.environ["no_proxy"] = p.no_proxy
 
 	except Exception:
-		logger.exception("Failed applying proxy environment from config")
+		logger.exception(f"[_apply_proxy_env] - failed_apply_proxy_env")
 		return
 
-APP_CONFIG = load_app_config()
+with log_timing("load_app_config"):
+	APP_CONFIG = load_app_config()
 _apply_proxy_env(APP_CONFIG)
+logger.info(f"[config] - app_config_loaded - enabled_workers={summarize_for_log(APP_CONFIG.workers.enabled_workers)}")
 
 GLOBAL_WORKER_BUS = WorkerBus()
 GLOBAL_BRIDGE = UiBridge()
@@ -117,8 +122,9 @@ WORKER_CATALOG = {
 for worker_name in APP_CONFIG.workers.enabled_workers:
 	target = WORKER_CATALOG.get(worker_name)
 	if not target:
-		logger.warning("Unknown worker in config: {}", worker_name)
+		logger.warning(f"[worker_bootstrap] - unknown_worker_in_config - worker_name={worker_name}")
 		continue
+	logger.info(f"[worker_bootstrap] - start_worker - worker_name={worker_name} target={target.__name__}")
 	GLOBAL_WORKERS.start_worker(worker_name, target)
 
 
@@ -151,7 +157,7 @@ if com_handle:
 					reconnect_max_s=e.reconnect_max_s,
 				)
 			except Exception:
-				logger.exception("Failed to add com device")
+				logger.exception(f"[com_bootstrap] - failed_add_device - device={getattr(e, 'device_id', 'unknown')}")
 
 
 tcp_handle = GLOBAL_WORKERS.get(WorkerName.TCP_CLIENT)

@@ -10,6 +10,7 @@ from layout.action_bar import Action
 from layout.errors_state import (get_active_errors, upsert_error,
                 resolve_error, clear_all_errors, get_error_count)
 from services.i18n import t
+from loguru import logger
 
 
 def _random_id(prefix: str) -> str:
@@ -17,6 +18,7 @@ def _random_id(prefix: str) -> str:
     return f"{prefix}:{tail}"
 
 def render(container: ui.element, ctx: PageContext) -> None:
+    logger.debug(f"[render] - errors_page_render")
     #update button state according to the error list
     def sync_actions() -> None:
         if not ctx.action_bar:
@@ -43,7 +45,7 @@ def render(container: ui.element, ctx: PageContext) -> None:
                     ui.button(
                         icon="done",
                         on_click=lambda eid=error_id: (resolve_error(ctx, eid), error_list.refresh(), sync_actions()),
-                    ).props("dense round flat").classes("text-xs")
+                    ).props("dense round flat").classes("text-xs").tooltip(t("errors.tooltip.resolve", "Resolve this error"))
 
                 # message line: clickable expansion only if details exist
                 details = (e.get("details") or "").strip()
@@ -59,6 +61,7 @@ def render(container: ui.element, ctx: PageContext) -> None:
             clear_all_errors(ctx)     # updates badge
             error_list.refresh()      # updates list immediately
             sync_actions()
+            logger.info(f"[on_action_clicked] - clear_all_errors")
             ui.notify(t("errors.notify.cleared", "Cleared all errors"))
             return
 
@@ -97,6 +100,7 @@ def render(container: ui.element, ctx: PageContext) -> None:
 
             error_list.refresh()
             sync_actions()
+            logger.info(f"[on_action_clicked] - add_random_error - kind={kind}")
             ui.notify(t("errors.notify.random_added", "Random error added"))
             return
 

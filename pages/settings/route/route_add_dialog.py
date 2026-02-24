@@ -25,10 +25,10 @@ def create_add_route_dialog(
 				ui.label(t("route.add_route", "Add route")).classes("text-base font-semibold")
 
 			with ui.column().classes("w-full p-4 gap-4"):
-				key_input = ui.input(t("route.key_hint", "Route key (e.g. packaging)")).classes("w-full")
+				key_input = ui.input(t("route.key_hint", "Route key (e.g. packaging)")).classes("w-full").tooltip(t("route.tooltip.key", "Unique route id used in URL"))
 				label_input = ui.input(t("common.label", "Label")).classes("w-full")
 				icon_input = ui.input(t("route.icon_hint", "Icon (material icon name)")).classes("w-full").props("placeholder=settings")
-				path_input = ui.input(t("route.path_hint", "File path (e.g. packaging/packaging.py)")).classes("w-full")
+				path_input = ui.input(t("route.path_hint", "File path (e.g. packaging/packaging.py)")).classes("w-full").tooltip(t("route.tooltip.path", "Python page file relative to pages folder"))
 				roles_input = ui.input(t("route.allowed_roles", "Allowed roles (comma separated)")).classes("w-full")
 
 				def clear_inputs() -> None:
@@ -52,8 +52,8 @@ def create_add_route_dialog(
 					dialog.close()
 
 				with ui.row().classes("w-full justify-end gap-2"):
-					ui.button(t("common.cancel", "Cancel"), on_click=dialog.close).props("flat")
-					ui.button(t("route.add_route", "Add route"), on_click=handle_add).props("color=primary")
+					ui.button(t("common.cancel", "Cancel"), on_click=dialog.close).props("flat").tooltip(t("common.tooltip.cancel", "Close without saving"))
+					ui.button(t("route.add_route", "Add route"), on_click=handle_add).props("color=primary").tooltip(t("route.tooltip.confirm_add", "Create route with current values"))
 
 	def open_dialog() -> None:
 		dialog.open()

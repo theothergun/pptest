@@ -25,9 +25,11 @@ from pages.dummy.config import render as render_dummy_config
 from pages.dummy.results_view import render as render_dummy_results
 from pages.dummy.test_view import render as render_manual_dummy_test
 from services.i18n import t
+from loguru import logger
 
 
 def render(container: ui.element, ctx: PageContext) -> None:
+	logger.debug(f"[render] - settings_page_render_start")
 	# IMPORTANT:
 	# The page scaffold usually wraps `container` in an overflow-auto scroll area.
 	# For Settings we want scrolling INSIDE the settings panels, not on the outer scaffold.
@@ -135,6 +137,7 @@ def render(container: ui.element, ctx: PageContext) -> None:
 					right_col = ui.column().classes("flex-1 h-full min-h-0 min-w-0 overflow-hidden")
 
 					def render_panel(panel_id: str) -> None:
+						logger.info(f"[render_panel] - panel_selected - panel_id={panel_id}")
 						right_col.clear()
 
 						with right_col:
@@ -192,6 +195,7 @@ def render(container: ui.element, ctx: PageContext) -> None:
 
 					def on_select(e) -> None:
 						node_id = getattr(e, "value", None)
+						logger.debug(f"[on_select] - tree_node_selected - node_id={node_id}")
 						if node_id in leaf_ids:
 							render_panel(node_id)
 
@@ -199,8 +203,8 @@ def render(container: ui.element, ctx: PageContext) -> None:
 						with ui.row().classes("w-full items-end justify-between gap-1 pb-0 mt-0"):
 							ui.label(t("settings.sections", "Sections")).classes("text-sm text-gray-500 leading-none")
 							with ui.row().classes("items-center gap-1"):
-								ui.button("+", on_click=lambda: nav_tree.expand()).props("dense flat size=sm")
-								ui.button("-", on_click=lambda: nav_tree.collapse()).props("dense flat size=sm")
+								ui.button("+", on_click=lambda: nav_tree.expand()).props("dense flat size=sm").tooltip(t("settings.tooltip.expand", "Expand all sections"))
+								ui.button("-", on_click=lambda: nav_tree.collapse()).props("dense flat size=sm").tooltip(t("settings.tooltip.collapse", "Collapse all sections"))
 						nav_tree = ui.tree(nodes, label_key="label", on_select=on_select).classes("w-full mt-0 pt-0")
 						nav_tree.props("dense")
 						nav_tree.expand()

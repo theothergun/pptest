@@ -6,6 +6,7 @@ from nicegui import ui
 from layout.context import PageContext
 from services.app_config import get_app_config
 from services.i18n import t
+from loguru import logger
 from services.ui_theme import get_theme_color
 from services.ui.view_cmd import install_wait_dialog, view_wait_key
 from services.ui.view_action import publish_standard_view_action
@@ -17,6 +18,7 @@ PACKAGING_WAIT_MODAL_KEY = view_wait_key(PACKAGING_VIEW)
 
 
 def render(container: ui.element, ctx: PageContext) -> None:
+	logger.debug(f"[render] - page_render - page=packaging")
 	with container:
 		build_page(ctx)
 

@@ -10,6 +10,7 @@ from pages.utils.expandable_list import ExpandableList
 from pages.utils.scroll_fx import generate_wrapper_id
 from services.app_config import get_app_config, save_app_config
 from services.i18n import t
+from loguru import logger
 
 ROUTE_LIST = ExpandableList(scroller_id="routes-scroll", id_prefix ="route-card",
 							expanded_storage_key= "route_expanded_name",
@@ -35,6 +36,7 @@ def _save(cfg) -> None:
 
 
 def render(container: ui.element, ctx: PageContext) -> None:
+	logger.debug(f"[render] - route_settings_render")
 	set_on_routes_changed(ctx.refresh_drawer)
 	with container.classes("w-full h-full min-h-0 overflow-hidden"):
 		# Full height layout so only the list scrolls
@@ -49,7 +51,7 @@ def render(container: ui.element, ctx: PageContext) -> None:
 			with ui.column().classes("w-full shrink-0 z-10"):
 				with ui.row().classes("w-full items-center justify-between"):
 					ui.label(t("route.settings_title", "Route Settings")).classes("text-2xl font-bold")
-					ui.button(t("route.add_route", "Add route"), on_click=open_add_dialog).props("color=primary")
+					ui.button(t("route.add_route", "Add route"), on_click=open_add_dialog).props("color=primary").tooltip(t("route.tooltip.add", "Add a new custom route"))
 				ui.label(t("route.settings_subtitle", "Add / Edit custom routes (including subfolders like packaging/packaging.py).")).classes(
 					"text-sm text-gray-500"
 				)
@@ -92,8 +94,8 @@ def _render_routes(scroll_to: str | None = None, highlight: str | None = None) -
 					ui.label(" - " + ", ".join(roles)).classes("text-xs text-gray-400 truncate")
 
 			with ui.row().classes("items-center gap-2 shrink-0"):
-				ui.button(t("common.edit", "Edit"), on_click=toggle).props("flat color=primary")
-				ui.button(t("common.delete", "Delete"), on_click=delete).props("flat color=negative")
+				ui.button(t("common.edit", "Edit"), on_click=toggle).props("flat color=primary").tooltip(t("route.tooltip.edit", "Edit this route"))
+				ui.button(t("common.delete", "Delete"), on_click=delete).props("flat color=negative").tooltip(t("route.tooltip.delete", "Delete this route"))
 
 	def render_editor(route: dict, idx: int, toggle: Callable[[], None], delete: Callable[[], None]) -> None:
 		key = route.get("key", "")

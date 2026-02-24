@@ -55,7 +55,7 @@ class TcpClientWorker(BaseWorker):
 	def run(self) -> None:
 		self.start()
 		log = logger.bind(worker="tcp")
-		log.info("TcpClientWorker started")
+		log.info("[run] - worker_started - worker=TcpClientWorker")
 
 		selector = selectors.DefaultSelector()
 		clients: Dict[str, TcpClientState] = {}
@@ -88,13 +88,13 @@ class TcpClientWorker(BaseWorker):
 
 				time.sleep(0.02)
 		finally:
-			log.info("TcpClientWorker stopping")
+			log.info("[run] - worker_stopping - worker=TcpClientWorker")
 			for cid in list(clients.keys()):
 				self._disconnect_client(log, selector, clients, cid, "shutdown")
 			selector.close()
 			self.close_subscriptions()
 			self.mark_stopped()
-			log.info("TcpClientWorker stopped")
+			log.info("[run] - worker_stopped - worker=TcpClientWorker")
 
 	# ------------------------------------------------------------------ Commands
 
@@ -106,7 +106,7 @@ class TcpClientWorker(BaseWorker):
 				return
 
 			if cmd in ("__stop__", Commands.STOP):
-				log.info("received stop command")
+				log.info("[_execute_cmds] - received_stop_command")
 				return
 
 			if cmd == Commands.ADD_CLIENT:

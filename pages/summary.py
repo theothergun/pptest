@@ -10,9 +10,11 @@ from services.app_config import get_app_config
 from services.worker_commands import ScriptWorkerCommands as ScriptCommands
 from services.worker_topics import ScriptWorkerTopics as ScriptTopics
 from services.i18n import t
+from loguru import logger
 
 
 def render(container: ui.element, ctx: PageContext) -> None:
+    logger.debug(f"[render] - summary_page_render")
     worker_registry = ctx.workers
     bus = ctx.worker_bus
     config = get_app_config()

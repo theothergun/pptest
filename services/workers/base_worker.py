@@ -53,7 +53,7 @@ class BaseWorker:
 
 	def start(self) -> None:
 		self._running = True
-		self.log.info("worker started")
+		self.log.info(f"[start] - worker_started - worker={self.name}")
 
 	def stop(self) -> None:
 		self.stop_event.set()
@@ -62,17 +62,17 @@ class BaseWorker:
 		except queue.Full:
 			pass
 		self._running = False
-		self.log.info("worker stop requested")
+		self.log.info(f"[stop] - worker_stop_requested - worker={self.name}")
 
 	def mark_stopped(self) -> None:
 		self._running = False
-		self.log.info("worker stopped")
+		self.log.info(f"[mark_stopped] - worker_stopped - worker={self.name}")
 
 	def set_connected(self, connected: bool) -> None:
 		if self._connected == connected:
 			return
 		self._connected = connected
-		self.log.info(f"connection status changed: connected={connected}")
+		self.log.info(f"[set_connected] - connection_state_changed - worker={self.name} connected={connected}")
 
 	def is_connected(self) -> bool:
 		return self._connected
@@ -96,7 +96,7 @@ class BaseWorker:
 				if hasattr(sub, "close") and callable(getattr(sub, "close")):
 					sub.close()
 			except Exception as ex:
-				self.log.debug(f"failed closing subscription: {ex!r}")
+				self.log.debug(f"[close_subscriptions] - failed_close_subscription - worker={self.name} error={ex!r}")
 		self._subs = []
 
 	# ------------------------------------------------------------------ UI bridge
@@ -117,7 +117,7 @@ class BaseWorker:
 
 	def _pub(self, topic: WorkerTopics, **payload: Any) -> None:
 		if not self.current_source_id:
-			self.log.error(f"publish without source_id! topic={topic} payload={payload}")
+			self.log.error(f"[_pub] - missing_source_id - worker={self.name} topic={topic} payload={payload}")
 			return
 
 		self.worker_bus.publish(

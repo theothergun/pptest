@@ -1,13 +1,18 @@
 from __future__ import annotations
 
+import inspect
 import json
 import os
+import threading
 from copy import deepcopy
+from datetime import datetime, timezone
 from typing import Any
 
+from loguru import logger
 from nicegui import app
 
 I18N_PATH = "config/i18n/translations.json"
+MISSING_I18N_PATH = "config/i18n/missing_keys.json"
 DEFAULT_LANGUAGE = "en"
 SUPPORTED_LANGUAGES: list[dict[str, str]] = [
     {"code": "en", "label": "English"},
@@ -68,6 +73,8 @@ _DEFAULT_TRANSLATIONS: dict[str, dict[str, str]] = {
     },
 }
 
+_i18n_lock = threading.RLock()
+
 
 def _ensure_i18n_file() -> None:
     os.makedirs(os.path.dirname(I18N_PATH), exist_ok=True)
@@ -76,10 +83,80 @@ def _ensure_i18n_file() -> None:
     save_translations(_DEFAULT_TRANSLATIONS)
 
 
+def _ensure_missing_i18n_file() -> None:
+    os.makedirs(os.path.dirname(MISSING_I18N_PATH), exist_ok=True)
+    if os.path.exists(MISSING_I18N_PATH):
+        return
+    with open(MISSING_I18N_PATH, "w", encoding="utf-8") as f:
+        json.dump({}, f, indent=2, ensure_ascii=False, sort_keys=True)
+
+
+def _safe_load_missing_entries() -> dict[str, dict[str, Any]]:
+    _ensure_missing_i18n_file()
+    try:
+        with open(MISSING_I18N_PATH, "r", encoding="utf-8") as f:
+            raw = json.load(f)
+        if not isinstance(raw, dict):
+            return {}
+        return {str(k): v for k, v in raw.items() if isinstance(v, dict)}
+    except Exception:
+        logger.exception(f"[_safe_load_missing_entries] - failed_read_missing_store - path={MISSING_I18N_PATH}")
+        return {}
+
+
+def _safe_write_missing_entries(entries: dict[str, dict[str, Any]]) -> None:
+    tmp_path = f"{MISSING_I18N_PATH}.tmp"
+    with open(tmp_path, "w", encoding="utf-8") as f:
+        json.dump(entries, f, indent=2, ensure_ascii=False, sort_keys=True)
+    os.replace(tmp_path, MISSING_I18N_PATH)
+
+
+def _guess_category(key: str) -> str:
+    if ".tooltip" in key or key.startswith("tooltip"):
+        return "tooltips"
+    prefix = key.split(".", 1)[0]
+    if prefix in {"errors", "status", "buttons", "ui"}:
+        return prefix
+    return "ui"
+
+
+def _capture_missing_key(key: str, default_text: str, *, location: str) -> None:
+    now = datetime.now(timezone.utc).isoformat()
+    with _i18n_lock:
+        entries = _safe_load_missing_entries()
+        existing = entries.get(key, {})
+        entries[key] = {
+            "key": key,
+            "default_text": default_text,
+            "first_seen": existing.get("first_seen", now),
+            "last_seen": now,
+            "count": int(existing.get("count", 0)) + 1,
+            "location": location,
+            "category": existing.get("category", _guess_category(key)),
+        }
+        try:
+            _safe_write_missing_entries(entries)
+        except Exception:
+            logger.exception(f"[_capture_missing_key] - failed_write_missing_store - key={key} location={location}")
+
+
+def _get_callsite() -> str:
+    frame = inspect.currentframe()
+    if frame is None:
+        return "unknown"
+    caller = frame.f_back.f_back
+    if caller is None:
+        return "unknown"
+    module = caller.f_globals.get("__name__", "unknown")
+    fn_name = caller.f_code.co_name
+    return f"{module}.{fn_name}"
+
+
 def load_translations() -> dict[str, dict[str, str]]:
-    _ensure_i18n_file()
-    with open(I18N_PATH, "r", encoding="utf-8") as f:
-        raw = json.load(f)
+    with _i18n_lock:
+        _ensure_i18n_file()
+        with open(I18N_PATH, "r", encoding="utf-8") as f:
+            raw = json.load(f)
     parsed: dict[str, dict[str, str]] = {}
     for key, values in raw.items():
         if not isinstance(values, dict):
@@ -91,9 +168,10 @@ def load_translations() -> dict[str, dict[str, str]]:
 
 
 def save_translations(translations: dict[str, dict[str, str]]) -> None:
-    os.makedirs(os.path.dirname(I18N_PATH), exist_ok=True)
-    with open(I18N_PATH, "w", encoding="utf-8") as f:
-        json.dump(translations, f, indent=2, ensure_ascii=False, sort_keys=True)
+    with _i18n_lock:
+        os.makedirs(os.path.dirname(I18N_PATH), exist_ok=True)
+        with open(I18N_PATH, "w", encoding="utf-8") as f:
+            json.dump(translations, f, indent=2, ensure_ascii=False, sort_keys=True)
 
 
 def get_language() -> str:
@@ -106,6 +184,7 @@ def get_language() -> str:
 def set_language(language: str) -> str:
     language = language if language in SUPPORTED_LANGUAGE_CODES else DEFAULT_LANGUAGE
     app.storage.user["language"] = language
+    logger.info(f"[set_language] - language_updated - language={language}")
     return language
 
 
@@ -116,7 +195,10 @@ def t(key: str, default: str | None = None, **kwargs: Any) -> str:
     if not text:
         text = translations.get(key, {}).get(DEFAULT_LANGUAGE)
     if not text:
-        text = default if default is not None else key
+        fallback = default if default is not None else key
+        _capture_missing_key(key, fallback, location=_get_callsite())
+        logger.debug(f"[t] - missing_translation - key={key} lang={lang} location={_get_callsite()}")
+        text = fallback
     if kwargs:
         return text.format(**kwargs)
     return text
@@ -153,6 +235,7 @@ def import_rows(rows: list[dict[str, str]]) -> dict[str, dict[str, str]]:
 
 def bootstrap_defaults() -> None:
     _ensure_i18n_file()
+    _ensure_missing_i18n_file()
     data = load_translations()
     merged = deepcopy(data)
     for key, values in _DEFAULT_TRANSLATIONS.items():
@@ -160,3 +243,4 @@ def bootstrap_defaults() -> None:
         for lang, text in values.items():
             merged[key].setdefault(lang, text)
     save_translations(merged)
+    logger.info(f"[bootstrap_defaults] - i18n_bootstrapped - keys={len(merged)}")

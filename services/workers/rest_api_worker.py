@@ -58,7 +58,7 @@ class RestApiWorker(BaseWorker):
 	def run(self) -> None:
 		self.start()
 		log = logger.bind(worker="rest")
-		log.info("RestApiWorker started")
+		log.info("[run] - worker_started - worker=RestApiWorker")
 
 		http = _ThreadLocalHttp()
 		endpoints: Dict[str, RestApiEndpoint] = {}
@@ -85,7 +85,7 @@ class RestApiWorker(BaseWorker):
 				time.sleep(0.02)
 
 		finally:
-			log.info("RestApiWorker stopping")
+			log.info("[run] - worker_stopping - worker=RestApiWorker")
 			try:
 				exec_.shutdown(wait=False, cancel_futures=True)
 			except Exception as ex:
@@ -93,7 +93,7 @@ class RestApiWorker(BaseWorker):
 			self.close_subscriptions()
 			self.set_connected(False)
 			self.mark_stopped()
-			log.info("RestApiWorker stopped")
+			log.info("[run] - worker_stopped - worker=RestApiWorker")
 
 	# ------------------------------------------------------------------ Commands
 
@@ -112,7 +112,7 @@ class RestApiWorker(BaseWorker):
 				return
 
 			if cmd in ("__stop__", Commands.STOP):
-				log.info("received stop command")
+				log.info("[_execute_cmds] - received_stop_command")
 				return
 
 			if cmd == Commands.ADD_ENDPOINT:

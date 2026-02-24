@@ -50,7 +50,7 @@ class OpcUaWorker(BaseWorker):
 	def run(self) -> None:
 		self.start()
 		log = logger.bind(worker="opcua")
-		log.info("OpcUaWorker started")
+		log.info("[run] - worker_started - worker=OpcUaWorker")
 
 		endpoints: Dict[str, OpcUaEndpointState] = {}
 		last_status_log_ts = 0.0
@@ -72,12 +72,12 @@ class OpcUaWorker(BaseWorker):
 							self.publish_disconnected_as(st.cfg.name, reason=reason)
 				time.sleep(0.02)
 		finally:
-			log.info("OpcUaWorker stopping")
+			log.info("[run] - worker_stopping - worker=OpcUaWorker")
 			for name in list(endpoints.keys()):
 				self._disconnect_endpoint(log, endpoints, name, reason="shutdown")
 			self.close_subscriptions()
 			self.mark_stopped()
-			log.info("OpcUaWorker stopped")
+			log.info("[run] - worker_stopped - worker=OpcUaWorker")
 
 	def _execute_cmds(self, log, endpoints: Dict[str, OpcUaEndpointState]) -> None:
 		for _ in range(50):
@@ -87,7 +87,7 @@ class OpcUaWorker(BaseWorker):
 				return
 
 			if cmd in ("__stop__", Commands.STOP):
-				log.info("received stop command")
+				log.info("[_execute_cmds] - received_stop_command")
 				return
 
 			if cmd == Commands.ADD_ENDPOINT:

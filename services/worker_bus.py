@@ -90,6 +90,14 @@ class WorkerBus:
 		# Treat glob metacharacters as pattern subscription.
 		return any(ch in topic_str for ch in ("*", "?", "["))
 
+	def _summarize_payload(self, payload: dict[str, Any], *, max_items: int = 12, max_text: int = 180) -> dict[str, Any]:
+		items = list(payload.items())[:max_items]
+		summary: dict[str, Any] = {}
+		for k, v in items:
+			text = str(v)
+			summary[str(k)] = f"{text[:max_text]}...({len(text)} chars)" if len(text) > max_text else text
+		return summary
+
 	# ------------------------------------------------------------------ subscribe
 
 	def subscribe(
@@ -169,6 +177,9 @@ class WorkerBus:
 			# fnmatch is case-sensitive with fnmatchcase
 			if fnmatch.fnmatchcase(topic_str, pat):
 				targets.append(q)
-		logger.trace(f"[publish] Bus-Message published {msg}")
+		payload_summary = self._summarize_payload(payload)
+		logger.trace(
+			f"[publish] - bus_message - topic={topic_str} source={source} source_id={source_id} targets={len(targets)} payload={payload_summary}"
+		)
 		for q in targets:
 			q.put(msg)

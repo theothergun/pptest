@@ -4,7 +4,9 @@ import logging
 import os
 import sys
 import threading
+import time
 from collections import deque
+from contextlib import contextmanager
 from typing import Any
 from loguru import logger
 import traceback
@@ -17,6 +19,8 @@ LOG_FORMAT = (
 	"<white>{name}.{function}:{line}</white> | "
 	"<level>{message}</level>"
 )
+
+AUDIT_FILE_LEVEL = "DEBUG"
 
 
 _ERROR_EVENTS_MAX = 500
@@ -78,9 +82,9 @@ def _install_global_exception_hooks() -> None:
 
 	def _thread_hook(args):
 		try:
+			thread_name = getattr(args.thread, "name", "unknown")
 			logger.opt(exception=(args.exc_type, args.exc_value, args.exc_traceback)).critical(
-				"Uncaught thread exception in '{}'",
-				getattr(args.thread, "name", "unknown"),
+				f"[_thread_hook] - uncaught_thread_exception - thread={thread_name}"
 			)
 		except Exception:
 			try:
@@ -121,7 +125,7 @@ def _parse_level(level_value) -> str:
 def setup_logging(
 	app_name: str = "app",
 	log_dir: str = "log",
-	log_level: str | int = "INFO",
+	log_level: str | int | None = None,
 ) -> None:
 	"""
 	Loguru config similar to your reference script:
@@ -131,7 +135,8 @@ def setup_logging(
 	- custom level colors
 	"""
 
-	level = _parse_level(log_level)
+	configured_level = log_level if log_level is not None else os.getenv("LOG_LEVEL", "INFO")
+	console_level = _parse_level(configured_level)
 
 	if not os.path.exists(log_dir):
 		os.makedirs(log_dir)
@@ -147,7 +152,7 @@ def setup_logging(
 				"sink": sys.stdout,
 				"format": LOG_FORMAT,
 				"colorize": True,
-				"level": level,
+				"level": console_level,
 			},
 			{
 				"sink": log_path,
@@ -156,7 +161,7 @@ def setup_logging(
 				"compression": "zip",
 				"retention": 50,      # keep 50 rotated files
 				"colorize": False,
-				"level": level,
+				"level": AUDIT_FILE_LEVEL,
 			},
 		]
 	)
@@ -174,4 +179,40 @@ def setup_logging(
 	logger.level("TRACE", color="<white>")
 	logger.level("SUCCESS", color="<fg #00ff22>")
 
-	logger.info("Logger initialized")
+	logger.info(
+		f"[setup_logging] - logger_initialized - app_name={app_name} console_level={console_level} file_level={AUDIT_FILE_LEVEL} log_path={log_path}"
+	)
+
+
+def get_logger(component: str):
+	return logger.bind(component=component)
+
+
+def summarize_for_log(payload: Any, *, max_items: int = 10, max_text: int = 140) -> Any:
+	if payload is None:
+		return None
+	if isinstance(payload, dict):
+		items = list(payload.items())[:max_items]
+		return {str(k): summarize_for_log(v, max_items=max_items, max_text=max_text) for k, v in items}
+	if isinstance(payload, (list, tuple, set)):
+		limited = list(payload)[:max_items]
+		return [summarize_for_log(v, max_items=max_items, max_text=max_text) for v in limited]
+	text = str(payload)
+	if len(text) > max_text:
+		return f"{text[:max_text]}...({len(text)} chars)"
+	return text
+
+
+@contextmanager
+def log_timing(method_name: str, **context: Any):
+	start = time.perf_counter()
+	context_txt = " ".join([f"{k}={summarize_for_log(v)}" for k, v in context.items()])
+	logger.debug(f"[{method_name}] - start {context_txt}".strip())
+	try:
+		yield
+		duration_ms = round((time.perf_counter() - start) * 1000, 2)
+		logger.debug(f"[{method_name}] - end - duration_ms={duration_ms} {context_txt}".strip())
+	except Exception:
+		duration_ms = round((time.perf_counter() - start) * 1000, 2)
+		logger.exception(f"[{method_name}] - failed - duration_ms={duration_ms} {context_txt}".strip())
+		raise

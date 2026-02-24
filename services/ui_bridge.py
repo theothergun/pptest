@@ -8,6 +8,7 @@ from enum import StrEnum
 from typing import Any, Callable, DefaultDict, Union
 
 from nicegui import ui
+from loguru import logger
 
 Topic = Union[str, StrEnum]
 
@@ -338,6 +339,16 @@ class UiBridge:
         setattr(state, "error_count", count)
         self._deliver_to_subscribers(UiBusMessage("state.error_count", {"error_count": count}))
 
+
+
+    def _summarize_payload(self, payload: dict[str, Any], *, max_items: int = 12, max_text: int = 180) -> dict[str, Any]:
+        items = list(payload.items())[:max_items]
+        summary: dict[str, Any] = {}
+        for k, v in items:
+            text = str(v)
+            summary[str(k)] = f"{text[:max_text]}...({len(text)} chars)" if len(text) > max_text else text
+        return summary
+
     def _deliver_to_subscribers(self, msg: UiBusMessage) -> None:
         with self._sub_lock:
             exact_targets = list(self._subs.get(msg.topic, ()))
@@ -356,6 +367,9 @@ class UiBridge:
                 continue
             seen.add(qid)
             targets.append(q)
+
+        payload_summary = self._summarize_payload(msg.payload)
+        logger.trace(f"[_deliver_to_subscribers] - ui_bus_message - topic={msg.topic} targets={len(targets)} payload={payload_summary}")
 
         for q in targets:
             q.put(msg)

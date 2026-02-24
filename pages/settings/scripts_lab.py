@@ -487,7 +487,7 @@ def build_page(ctx: PageContext) -> None:
 					"Reload Script",
 					icon="refresh",
 					on_click=lambda sn=chain.get("script", "unknown"): worker_handle.send(Commands.RELOAD_SCRIPT, script_name=sn),
-				).props("color=info flat dense").tooltip("Hot-reload this script")
+				).props("color=info flat dense").tooltip(t("scripts.tooltip.reload", "Hot-reload this script"))
 
 		with card2:
 			data = ui.json_editor({

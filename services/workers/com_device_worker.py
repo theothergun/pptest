@@ -143,16 +143,7 @@ class ComDeviceWorker(BaseWorker):
 
 	def _publish_status_if_changed(self, rt: _Runtime, force: bool = False) -> None:
 		payload = self._status_payload(rt)
-		sig = "%s|%s|%s|%s|%s|%s|%s|%s" % (
-			payload.get("device_id"),
-			payload.get("port"),
-			payload.get("connected"),
-			payload.get("error"),
-			payload.get("baudrate"),
-			payload.get("bytesize"),
-			payload.get("parity"),
-			payload.get("stopbits"),
-		)
+		sig = f"{payload.get('device_id')}|{payload.get('port')}|{payload.get('connected')}|{payload.get('error')}|{payload.get('baudrate')}|{payload.get('bytesize')}|{payload.get('parity')}|{payload.get('stopbits')}"
 		if force or sig != rt._last_status_sig:
 			rt._last_status_sig = sig
 			self._publish_value(rt.cfg.device_id, KEY_STATUS, payload)
@@ -204,7 +195,7 @@ class ComDeviceWorker(BaseWorker):
 		rt.reconnect_s = float(cfg.reconnect_min_s)
 		rt.rx_buf = bytearray()
 
-		self._log.info("[connect] device_id=%s port=%s" % (cfg.device_id, cfg.port))
+		self._log.info(f"[_connect] - connected - device_id={cfg.device_id} port={cfg.port}")
 		self._publish_status_if_changed(rt, True)
 
 	def _close(self, rt: _Runtime, reason: str) -> None:
@@ -266,7 +257,7 @@ class ComDeviceWorker(BaseWorker):
 
 			if text:
 				# global loguru (your requirement style)
-				logger.bind(worker=self.name, device_id=cfg.device_id).info("rx: %s" % text)
+				logger.bind(worker=self.name, device_id=cfg.device_id).info(f"[_drain_lines] - rx_line - text={text}")
 				self._publish_value(cfg.device_id, KEY_LINE, text)
 
 	# ------------------------------------------------------------------ command handlers

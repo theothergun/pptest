@@ -5,12 +5,15 @@ from layout.action_bar.event_types import ActionBarEvent
 from layout.context import PageContext
 from layout.page_scaffold import build_page
 from services.i18n import t
+from loguru import logger
 
 
 def render(container: ui.element, ctx: PageContext) -> None:
+    logger.debug(f"[render] - render_home_page")
 
     # listeners can be anywhere, but only need to be registered once per page build/render
     def on_action_clicked(action_id, action: Action):
+        logger.info(f"[on_action_clicked] - action_clicked - action_id={action_id} active={action.is_active}")
         ui.notify(t("home.notify.clicked", "clicked: {action_id}", action_id=action_id))
         # example behavior: toggle active state
         if ctx.action_bar:
@@ -26,7 +29,7 @@ def render(container: ui.element, ctx: PageContext) -> None:
     def build_content(_parent: ui.element) -> None:
         with ui.column().classes("w-full"):
             with ui.card().classes("w-full self-end p-r-5"):
-                ui.label(t("home.counters", "contains the counters"))
+                ui.label(t("home.counters", "contains the counters")).tooltip(t("home.tooltip.counters", "Production counters summary"))
                 #first row containing the counters
             with ui.column():
                 ui.label(t("home.instruction", "instruction comes here"))

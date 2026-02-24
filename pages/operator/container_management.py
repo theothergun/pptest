@@ -5,6 +5,7 @@ from typing import Any
 from nicegui import ui
 from layout.context import PageContext
 from services.i18n import t
+from loguru import logger
 from services.ui.view_action import publish_standard_view_action
 from services.ui.view_cmd import install_wait_dialog, view_wait_key
 
@@ -15,6 +16,7 @@ CONTAINER_MGMT_WAIT_MODAL_KEY = view_wait_key(CONTAINER_MGMT_VIEW)
 
 
 def render(container: ui.element, ctx: PageContext) -> None:
+	logger.debug(f"[render] - page_render - page=container_management")
 	with container:
 		build_page(ctx)
 

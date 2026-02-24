@@ -9,6 +9,7 @@ def main(ctx: PublicStepChainContext):
     Packaging NOX container scan, this listen on tcp worker endpoint
     PACK_NOX_SCANNER
     """
+    res = ctx.ui.popup_message(key="connection_issue", message="test1223", status="error")
     step = ctx.step
     ctx.set_cycle_time(0.01)
     if step == 0:

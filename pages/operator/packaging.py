@@ -7,7 +7,8 @@ from layout.context import PageContext
 from services.app_config import get_app_config
 from services.i18n import t
 from services.ui_theme import get_theme_color
-from services.ui.view_cmd import install_wait_dialog, publish_view_cmd, view_wait_key
+from services.ui.view_cmd import install_wait_dialog, view_wait_key
+from services.ui.view_action import publish_standard_view_action
 
 
 PACKAGING_CMD_KEY = "packaging.cmd"
@@ -121,11 +122,12 @@ def build_page(ctx: PageContext) -> None:
 	)
 
 	def _publish_cmd(cmd: str) -> None:
-		publish_view_cmd(
+		publish_standard_view_action(
 			worker_bus=worker_bus,
 			view=PACKAGING_VIEW,
 			cmd_key=PACKAGING_CMD_KEY,
-			cmd=cmd,
+			name=cmd,
+			event="click",
 			wait_key=PACKAGING_WAIT_MODAL_KEY,
 			open_wait=wait_dialog["open"],
 			source_id=PACKAGING_VIEW,

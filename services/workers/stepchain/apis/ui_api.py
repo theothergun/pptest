@@ -106,7 +106,10 @@ class UiApi:
 		event_id = None
 
 		if isinstance(raw, dict):
-			cmd = str(raw.get(value_field) or "").strip()
+			if value_field == "cmd" and isinstance(raw.get("action"), dict):
+				cmd = str(raw.get("action", {}).get("name") or "").strip()
+			else:
+				cmd = str(raw.get(value_field) or "").strip()
 			event_id = raw.get("event_id")
 		else:
 			cmd = str(raw).strip()
@@ -178,15 +181,45 @@ class UiApi:
 		self._ctx._vars[last_fallback_key] = fallback
 		return payload
 
-	def consume_view_cmd(self, pattern: str = "view.cmd.*", *, dedupe: bool = True) -> Optional[dict]:
+	def consume_view_cmd(
+		self,
+		pattern: str = "view.cmd.*",
+		*,
+		command: Optional[str] = None,
+		commands: Optional[list[str]] = None,
+		event: Optional[str] = None,
+		events: Optional[list[str]] = None,
+		dedupe: bool = True,
+		normalize: bool = True,
+	) -> Optional[dict]:
 		"""
 		Return the latest view command payload matching a topic pattern.
 		Example topics: "view.cmd.container_management", "view.cmd.packaging".
+
+		Optional filters:
+		- command / commands: match by action name
+		- event / events: match by action event
 		"""
 		pat = str(pattern or "").strip() or "view.cmd.*"
 		bus_last = self._ctx.data.get("bus_last", {})
 		if not isinstance(bus_last, dict):
 			return None
+
+		def _normalize_set(single: Optional[str], multi: Optional[list[str]]) -> set[str]:
+			out: set[str] = set()
+			if single is not None:
+				v = str(single or "").strip()
+				if v:
+					out.add(v.lower() if normalize else v)
+			if isinstance(multi, list):
+				for item in multi:
+					v = str(item or "").strip()
+					if v:
+						out.add(v.lower() if normalize else v)
+			return out
+
+		command_filter = _normalize_set(command, commands)
+		event_filter = _normalize_set(event, events)
 
 		best = None
 		best_ts = None
@@ -200,6 +233,27 @@ class UiApi:
 				continue
 			if not fnmatch.fnmatchcase(topic, pat):
 				continue
+			payload = entry.get("payload")
+			if not isinstance(payload, dict):
+				continue
+
+			raw_name = ""
+			action = payload.get("action")
+			if isinstance(action, dict):
+				raw_name = str(action.get("name") or "")
+
+			raw_event = ""
+			if isinstance(action, dict):
+				raw_event = str(action.get("event") or "")
+
+			name_cmp = raw_name.lower() if normalize else raw_name
+			event_cmp = raw_event.lower() if normalize else raw_event
+
+			if command_filter and name_cmp not in command_filter:
+				continue
+			if event_filter and event_cmp not in event_filter:
+				continue
+
 			ts = entry.get("ts", 0)
 			if best is None or (isinstance(ts, (int, float)) and ts > (best_ts or 0)):
 				best = entry
@@ -215,7 +269,11 @@ class UiApi:
 
 		topic = str(best.get("topic") or "")
 		event_id = payload.get("event_id")
-		last_key = "__view_cmd_last:%s:%s" % (topic, str(best_source or ""))
+		filter_sig = "|".join([
+			",".join(sorted(command_filter)) if command_filter else "*",
+			",".join(sorted(event_filter)) if event_filter else "*",
+		])
+		last_key = "__view_cmd_last:%s:%s:%s" % (topic, str(best_source or ""), filter_sig)
 		last_val = self._ctx._vars.get(last_key)
 
 		if dedupe:

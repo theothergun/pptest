@@ -135,7 +135,8 @@ def publish_view_cmd(
 	worker_bus,
 	view: str,
 	cmd_key: str,
-	cmd: str,
+	name: str,
+	event: str = "click",
 	wait_key: Optional[str] = None,
 	open_wait: Optional[Callable[[], Any]] = None,
 	extra: Optional[dict] = None,
@@ -155,7 +156,11 @@ def publish_view_cmd(
 		open_wait()
 
 	payload = {
-		"cmd": str(cmd),
+		"action": {
+			"view": str(view),
+			"name": str(name),
+			"event": str(event),
+		},
 		"event_id": int(time.time_ns()),
 	}
 	wait_key_value = str(wait_key or view_wait_key(view))

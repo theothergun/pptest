@@ -84,4 +84,8 @@ def register_login_page() -> None:
                         submit_state["busy"] = False
                         login_button.enable()
 
+            async def on_password_enter(_event) -> None:
+                await do_login()
+
             login_button = ui.button("Sign in", on_click=do_login).props("color=primary").classes("w-full mt-2")
+            password.on("keydown.enter", on_password_enter)

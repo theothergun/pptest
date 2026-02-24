@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import json
+import re
 from typing import Any, Callable
 
 from nicegui import ui
@@ -26,23 +26,336 @@ def _parse_int(value: str, message: str) -> int | None:
         return None
 
 
-def _parse_subscriptions(value: str) -> list[dict[str, Any]] | None:
-    raw = (value or "").strip()
-    if not raw:
-        return []
+def _coerce_int(value: Any, default: int) -> int:
     try:
-        parsed = json.loads(raw)
+        return int(str(value).strip())
     except Exception:
-        ui.notify("Subscriptions must be valid JSON.", type="negative")
-        return None
-    if not isinstance(parsed, list):
-        ui.notify("Subscriptions JSON must be a list.", type="negative")
-        return None
-    for item in parsed:
+        return int(default)
+
+
+def _infer_alias_from_name(name: str) -> str:
+    raw = str(name or "").strip()
+    if not raw:
+        return ""
+    return raw.split(".")[-1].replace("[", "_").replace("]", "").strip("_")
+
+
+def _infer_plc_type(symbol_type: str, default_len: int) -> tuple[str, int]:
+    t = str(symbol_type or "").strip().upper()
+    if not t:
+        return "UINT", default_len
+
+    m = re.match(r"^(W?STRING)(?:\s*[\(\[]\s*(\d+)\s*[\)\]])?$", t)
+    if m:
+        n = int(m.group(2) or default_len or 80)
+        return f"{m.group(1)}({n})", n
+
+    known = {
+        "BOOL", "BYTE", "WORD", "DWORD", "LWORD",
+        "SINT", "USINT", "INT", "UINT", "DINT", "UDINT", "LINT", "ULINT",
+        "REAL", "LREAL", "TIME", "DATE", "DT", "TOD",
+    }
+    if t in known:
+        return t, default_len
+    return t, default_len
+
+
+def _normalize_subscriptions(items: list[dict[str, Any]], default_string_len: int) -> list[dict[str, Any]]:
+    out: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    for item in items:
         if not isinstance(item, dict):
-            ui.notify("Each subscription item must be an object.", type="negative")
-            return None
-    return parsed
+            continue
+        name = str(item.get("name") or "").strip()
+        if not name:
+            continue
+        alias = str(item.get("alias") or "").strip()
+        plc_type_raw = str(item.get("plc_type") or "UINT").strip()
+        string_len = _coerce_int(item.get("string_len", default_string_len), default_string_len)
+        plc_type, inferred_len = _infer_plc_type(plc_type_raw, string_len)
+        if plc_type.startswith(("STRING", "WSTRING")):
+            string_len = inferred_len
+        if name in seen:
+            continue
+        seen.add(name)
+        out.append(
+            {
+                "name": name,
+                "alias": alias,
+                "plc_type": plc_type,
+                "string_len": max(1, int(string_len)),
+            }
+        )
+    return out
+
+
+def _load_pyads():
+    try:
+        import pyads as _pyads  # type: ignore
+        return _pyads
+    except Exception:
+        pass
+
+    try:
+        from services.workers.twincat_worker import _import_pyads_with_dll_dirs
+        return _import_pyads_with_dll_dirs()
+    except Exception:
+        return None
+
+
+def _read_plc_symbols(ams_net_id: str, plc_ip: str, ads_port: int, timeout_ms: int = 2000) -> list[dict[str, Any]]:
+    pyads = _load_pyads()
+    if pyads is None:
+        raise RuntimeError("pyads not available")
+
+    conn = pyads.Connection(str(ams_net_id).strip(), int(ads_port), str(plc_ip).strip())
+    conn.open()
+    conn.set_timeout(int(timeout_ms))
+    conn.read_device_info()
+    try:
+        symbols = conn.get_all_symbols()
+    finally:
+        conn.close()
+
+    result: list[dict[str, Any]] = []
+    for sym in symbols or []:
+        name = str(getattr(sym, "name", "") or "").strip()
+        if not name:
+            continue
+        symbol_type = str(getattr(sym, "symbol_type", "") or "").strip()
+        plc_type, string_len = _infer_plc_type(symbol_type, 80)
+        result.append(
+            {
+                "name": name,
+                "symbol_type": symbol_type,
+                "plc_type": plc_type,
+                "string_len": string_len,
+                "comment": str(getattr(sym, "comment", "") or ""),
+            }
+        )
+
+    result.sort(key=lambda x: x["name"])
+    return result
+
+
+def _build_subscriptions_editor(
+    initial_subscriptions: list[dict[str, Any]],
+    default_len_getter: Callable[[], Any],
+    plc_params_getter: Callable[[], tuple[str, str, int]],
+) -> Callable[[], list[dict[str, Any]]]:
+    state = {
+        "rows": _normalize_subscriptions(
+            list(initial_subscriptions or []),
+            max(1, _coerce_int(default_len_getter(), 80)),
+        )
+    }
+
+    def _current_default_len() -> int:
+        return max(1, _coerce_int(default_len_getter(), 80))
+
+    @ui.refreshable
+    def _render_rows() -> None:
+        if not state["rows"]:
+            ui.label("No variables configured yet.").classes("text-sm text-gray-500")
+            return
+
+        for idx, row in enumerate(state["rows"]):
+            with ui.card().classes("w-full p-3 gap-2"):
+                with ui.row().classes("w-full items-center gap-2"):
+                    ui.input(
+                        "Variable name",
+                        value=row.get("name", ""),
+                        on_change=lambda e, r=row: r.__setitem__("name", str(e.value or "").strip()),
+                    ).classes("flex-[2]")
+                    ui.input(
+                        "Alias",
+                        value=row.get("alias", ""),
+                        on_change=lambda e, r=row: r.__setitem__("alias", str(e.value or "").strip()),
+                    ).classes("flex-1")
+                    ui.input(
+                        "PLC type",
+                        value=row.get("plc_type", "UINT"),
+                        on_change=lambda e, r=row: r.__setitem__("plc_type", str(e.value or "UINT").strip()),
+                    ).classes("w-40")
+                    ui.input(
+                        "String len",
+                        value=str(row.get("string_len", 80)),
+                        on_change=lambda e, r=row: r.__setitem__("string_len", _coerce_int(e.value, _current_default_len())),
+                    ).classes("w-32")
+                    ui.button("Remove", on_click=lambda i=idx: _remove_row(i)).props("flat color=negative")
+
+    def _remove_row(index: int) -> None:
+        if 0 <= index < len(state["rows"]):
+            state["rows"].pop(index)
+            _render_rows.refresh()
+
+    def _add_row(item: dict[str, Any] | None = None) -> None:
+        current_default = _current_default_len()
+        seed = {
+            "name": "",
+            "alias": "",
+            "plc_type": "UINT",
+            "string_len": current_default,
+        }
+        if isinstance(item, dict):
+            seed.update(item)
+        state["rows"].append(seed)
+        _render_rows.refresh()
+
+    def _open_symbol_picker() -> None:
+        ams_net_id, plc_ip, ads_port = plc_params_getter()
+        if not str(ams_net_id or "").strip() or not str(plc_ip or "").strip():
+            ui.notify("Set PLC IP and AMS Net ID first.", type="negative")
+            return
+
+        dialog = ui.dialog()
+        symbols_state: dict[str, Any] = {"all": [], "selected": set(), "page": 0, "page_size": 300}
+
+        with dialog, ui.card().classes("w-[1100px] max-w-[95vw]"):
+            ui.label("Import PLC Symbols").classes("text-lg font-semibold")
+            ui.label(f"{plc_ip}:{ads_port}  |  AMS {ams_net_id}").classes("text-sm text-gray-500")
+
+            filter_input = ui.input(
+                "Filter",
+                placeholder="e.g. MAIN.module.zenonVisu",
+                on_change=lambda _e: _render_symbols.refresh(),
+            ).classes("w-full")
+            quick_add_input = ui.input("Add by full variable name", placeholder="MAIN.module.zenonVisu.Stop").classes("w-full")
+
+            @ui.refreshable
+            def _render_symbols() -> None:
+                items = list(symbols_state["all"])
+                needle = str(filter_input.value or "").strip().lower()
+                if needle:
+                    items = [s for s in items if needle in str(s.get("name", "")).lower()]
+
+                if not items:
+                    ui.label("No symbols loaded (or no match).").classes("text-sm text-gray-500")
+                    return
+
+                page_size = max(50, int(symbols_state.get("page_size", 300) or 300))
+                page = max(0, int(symbols_state.get("page", 0) or 0))
+                pages = max(1, (len(items) + page_size - 1) // page_size)
+                if page >= pages:
+                    page = pages - 1
+                    symbols_state["page"] = page
+                start = page * page_size
+                end = min(len(items), start + page_size)
+                page_items = items[start:end]
+
+                ui.label(f"Showing {start + 1}-{end} of {len(items)} symbols").classes("text-xs text-gray-500")
+                with ui.row().classes("w-full items-center justify-end gap-2"):
+                    ui.button("Prev", on_click=lambda: _set_page(page - 1)).props("flat")
+                    ui.label(f"Page {page + 1}/{pages}").classes("text-xs text-gray-500")
+                    ui.button("Next", on_click=lambda: _set_page(page + 1)).props("flat")
+
+                with ui.column().classes("w-full h-96 overflow-y-auto gap-1"):
+                    for sym in page_items:
+                        name = str(sym.get("name", ""))
+                        checked = name in symbols_state["selected"]
+                        with ui.row().classes("w-full items-center gap-2"):
+                            ui.checkbox(
+                                value=checked,
+                                on_change=lambda e, n=name: _set_selected(n, bool(e.value)),
+                            )
+                            ui.label(name).classes("flex-1 text-sm")
+                            ui.label(str(sym.get("symbol_type", ""))).classes("w-44 text-xs text-gray-500")
+
+            def _set_page(new_page: int) -> None:
+                symbols_state["page"] = max(0, int(new_page))
+                _render_symbols.refresh()
+
+            def _set_selected(name: str, checked: bool) -> None:
+                if checked:
+                    symbols_state["selected"].add(name)
+                else:
+                    symbols_state["selected"].discard(name)
+
+            def _load_symbols() -> None:
+                try:
+                    rows = _read_plc_symbols(ams_net_id, plc_ip, int(ads_port), timeout_ms=2000)
+                except Exception as ex:
+                    ui.notify(f"Failed to read symbols: {ex}", type="negative")
+                    return
+                symbols_state["all"] = rows
+                symbols_state["selected"] = set()
+                symbols_state["page"] = 0
+                _render_symbols.refresh()
+                ui.notify(f"Loaded {len(rows)} symbols.", type="positive")
+
+            def _quick_add() -> None:
+                full_name = str(quick_add_input.value or "").strip()
+                if not full_name:
+                    ui.notify("Enter a full variable name.", type="negative")
+                    return
+                existing_names = {str(r.get("name", "")).strip() for r in state["rows"]}
+                if full_name in existing_names:
+                    ui.notify("Variable already in list.", type="warning")
+                    return
+                state["rows"].append(
+                    {
+                        "name": full_name,
+                        "alias": _infer_alias_from_name(full_name),
+                        "plc_type": "UINT",
+                        "string_len": _current_default_len(),
+                    }
+                )
+                _render_rows.refresh()
+                ui.notify("Variable added. Adjust PLC type if needed.", type="positive")
+                dialog.close()
+
+            def _add_selected() -> None:
+                selected_names = set(symbols_state["selected"])
+                if not selected_names:
+                    ui.notify("No symbols selected.", type="negative")
+                    return
+
+                existing_names = {str(r.get("name", "")).strip() for r in state["rows"]}
+                added = 0
+                for sym in symbols_state["all"]:
+                    name = str(sym.get("name", "")).strip()
+                    if not name or name not in selected_names or name in existing_names:
+                        continue
+                    existing_names.add(name)
+                    state["rows"].append(
+                        {
+                            "name": name,
+                            "alias": _infer_alias_from_name(name),
+                            "plc_type": str(sym.get("plc_type", "UINT") or "UINT"),
+                            "string_len": _coerce_int(sym.get("string_len", _current_default_len()), _current_default_len()),
+                        }
+                    )
+                    added += 1
+
+                _render_rows.refresh()
+                ui.notify(f"Added {added} variable(s).", type="positive")
+                dialog.close()
+
+            with ui.row().classes("w-full justify-between"):
+                with ui.row().classes("gap-2"):
+                    ui.button("Load symbols", on_click=_load_symbols).props("color=primary")
+                    ui.button("Refresh view", on_click=lambda: _render_symbols.refresh()).props("flat")
+                with ui.row().classes("gap-2"):
+                    ui.button("Add typed name", on_click=_quick_add).props("flat")
+                    ui.button("Cancel", on_click=dialog.close).props("flat")
+                    ui.button("Add selected", on_click=_add_selected).props("color=primary")
+
+            _render_symbols()
+
+        dialog.open()
+
+    with ui.column().classes("w-full gap-2"):
+        with ui.row().classes("w-full items-center justify-between"):
+            ui.label("Variables").classes("text-sm font-medium")
+            with ui.row().classes("gap-2"):
+                ui.button("Add variable", on_click=lambda: _add_row()).props("flat color=primary")
+                ui.button("Import from PLC symbols", on_click=_open_symbol_picker).props("flat color=primary")
+        _render_rows()
+
+    def _collect() -> list[dict[str, Any]]:
+        return _normalize_subscriptions(state["rows"], _current_default_len())
+
+    return _collect
 
 
 def render(container: ui.element, _ctx: PageContext) -> None:
@@ -100,16 +413,32 @@ def _render_endpoints(scroll_to: str | None = None, highlight: str | None = None
             value=bool(ep.get("visible_on_device_panel", False)),
         )
 
-        subs = ui.textarea(
-            "Subscriptions (JSON list: [{\"name\":\"Main.CURRENTIP\",\"alias\":\"CurrentIp\",\"plc_type\":\"STRING\",\"string_len\":64}])",
-            value=json.dumps(ep.get("subscriptions", []), indent=2),
-        ).classes("w-full")
+        subs_getter = _build_subscriptions_editor(
+            initial_subscriptions=list(ep.get("subscriptions", [])),
+            default_len_getter=lambda sl=str_len: sl.value,
+            plc_params_getter=lambda a=ams, i=plc_ip, p=ads_port: (
+                str(a.value or "").strip(),
+                str(i.value or "").strip(),
+                _coerce_int(p.value, 851),
+            ),
+        )
 
         with ui.row().classes("w-full justify-end gap-2"):
             ui.button(
                 "Save",
-                on_click=lambda i=idx, cid=ep.get("client_id", ""), ip=plc_ip, net=ams, ap=ads_port, tm=trans_mode, cm=cycle_ms, sl=str_len, su=subs:
-                _update_endpoint(i, cid, ip.value, net.value, ap.value, tm.value, cm.value, sl.value, su.value, bool(visible_on_device_panel.value)),
+                on_click=lambda i=idx, cid=ep.get("client_id", ""), ip=plc_ip, net=ams, ap=ads_port, tm=trans_mode, cm=cycle_ms, sl=str_len:
+                _update_endpoint(
+                    i,
+                    cid,
+                    ip.value,
+                    net.value,
+                    ap.value,
+                    tm.value,
+                    cm.value,
+                    sl.value,
+                    subs_getter(),
+                    bool(visible_on_device_panel.value),
+                ),
             ).props("color=primary")
             ui.button("Delete", on_click=delete).props("flat color=negative")
 
@@ -136,10 +465,15 @@ def _open_add_dialog() -> None:
         cycle_ms = ui.input("Default cycle (ms)", value="200").classes("w-full")
         str_len = ui.input("Default string len", value="80").classes("w-full")
         visible_on_device_panel = ui.switch("Visible on device panel", value=False)
-        subs = ui.textarea(
-            "Subscriptions (JSON list: [{\"name\":\"Main.CURRENTIP\",\"alias\":\"CurrentIp\",\"plc_type\":\"STRING\",\"string_len\":64}])",
-            value="[]",
-        ).classes("w-full")
+        subs_getter = _build_subscriptions_editor(
+            initial_subscriptions=[],
+            default_len_getter=lambda sl=str_len: sl.value,
+            plc_params_getter=lambda a=ams, i=plc_ip, p=ads_port: (
+                str(a.value or "").strip(),
+                str(i.value or "").strip(),
+                _coerce_int(p.value, 851),
+            ),
+        )
 
         with ui.row().classes("w-full justify-end gap-2"):
             ui.button("Cancel", on_click=d.close).props("flat")
@@ -154,7 +488,7 @@ def _open_add_dialog() -> None:
                     trans_mode.value,
                     cycle_ms.value,
                     str_len.value,
-                    subs.value,
+                    subs_getter(),
                     bool(visible_on_device_panel.value),
                 ),
             ).props("color=primary")
@@ -162,16 +496,16 @@ def _open_add_dialog() -> None:
 
 
 def _add_endpoint(dlg: ui.dialog, client_id: str, plc_ip: str, plc_ams_net_id: str, ads_port: str, default_trans_mode: str,
-                  default_cycle_ms: str, default_string_len: str, subscriptions_raw: str, visible_on_device_panel: bool) -> None:
+                  default_cycle_ms: str, default_string_len: str, subscriptions: list[dict[str, Any]], visible_on_device_panel: bool) -> None:
     if not client_id.strip() or not plc_ip.strip() or not plc_ams_net_id.strip():
         ui.notify("Client ID, PLC IP and AMS Net ID are required.", type="negative")
         return
     ads_port_v = _parse_int(ads_port, "ADS Port must be an integer.")
     cycle_ms_v = _parse_int(default_cycle_ms, "Default cycle must be an integer.")
     str_len_v = _parse_int(default_string_len, "Default string len must be an integer.")
-    subs_v = _parse_subscriptions(subscriptions_raw)
-    if ads_port_v is None or cycle_ms_v is None or str_len_v is None or subs_v is None:
+    if ads_port_v is None or cycle_ms_v is None or str_len_v is None:
         return
+    subs_v = _normalize_subscriptions(subscriptions, max(1, int(str_len_v)))
 
     cfg = get_app_config()
     tw_cfg = cfg.workers.configs.setdefault("twincat", {})
@@ -200,16 +534,16 @@ def _add_endpoint(dlg: ui.dialog, client_id: str, plc_ip: str, plc_ams_net_id: s
 
 
 def _update_endpoint(index: int, client_id: str, plc_ip: str, plc_ams_net_id: str, ads_port: str, default_trans_mode: str,
-                     default_cycle_ms: str, default_string_len: str, subscriptions_raw: str, visible_on_device_panel: bool) -> None:
+                     default_cycle_ms: str, default_string_len: str, subscriptions: list[dict[str, Any]], visible_on_device_panel: bool) -> None:
     if not client_id.strip() or not plc_ip.strip() or not plc_ams_net_id.strip():
         ui.notify("Client ID, PLC IP and AMS Net ID are required.", type="negative")
         return
     ads_port_v = _parse_int(ads_port, "ADS Port must be an integer.")
     cycle_ms_v = _parse_int(default_cycle_ms, "Default cycle must be an integer.")
     str_len_v = _parse_int(default_string_len, "Default string len must be an integer.")
-    subs_v = _parse_subscriptions(subscriptions_raw)
-    if ads_port_v is None or cycle_ms_v is None or str_len_v is None or subs_v is None:
+    if ads_port_v is None or cycle_ms_v is None or str_len_v is None:
         return
+    subs_v = _normalize_subscriptions(subscriptions, max(1, int(str_len_v)))
 
     cfg = get_app_config()
     tw_cfg = cfg.workers.configs.setdefault("twincat", {})

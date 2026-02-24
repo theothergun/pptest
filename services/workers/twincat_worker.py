@@ -1,17 +1,83 @@
 from __future__ import annotations
 
+import os
 import time
 import queue
+import sys
 from dataclasses import dataclass, field
 from ctypes import sizeof
 from typing import Any, Optional, Callable, Dict, Tuple
 
 from loguru import logger
 
-try:
-	import pyads
-except Exception:
-	pyads = None  # type: ignore
+def _import_pyads_with_dll_dirs():
+	"""
+	Import pyads with Windows DLL search path bootstrap.
+
+	Python 3.8+ tightened DLL loading; `TcAdsDll.dll` may be present but not found
+	unless its directory is explicitly added via `os.add_dll_directory`.
+	"""
+	try:
+		import pyads as _pyads  # type: ignore
+		return _pyads
+	except Exception:
+		pass
+
+	if sys.platform != "win32":
+		return None
+
+	candidates: list[str] = []
+
+	# Optional explicit override.
+	for env_key in ("TCADSDLL_DIR", "TCADSDLL_PATH"):
+		raw = str(os.environ.get(env_key, "") or "").strip()
+		if raw:
+			candidates.append(raw)
+
+	# Project root often contains TcAdsDll.dll in this repository.
+	try:
+		project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+		candidates.append(project_root)
+	except Exception:
+		pass
+
+	# Common TwinCAT install locations.
+	candidates.extend([
+		r"C:\TwinCAT\AdsApi\TcAdsDll\x64",
+		r"C:\TwinCAT\AdsApi\TcAdsDll\x86",
+	])
+
+	# Current process working directory as a last resort.
+	candidates.append(os.getcwd())
+
+	seen: set[str] = set()
+	for entry in candidates:
+		d = os.path.abspath(str(entry or "").strip())
+		if not d or d in seen or not os.path.isdir(d):
+			continue
+		seen.add(d)
+
+		dll_file = os.path.join(d, "TcAdsDll.dll")
+		if not os.path.exists(dll_file):
+			continue
+
+		try:
+			os.add_dll_directory(d)
+		except Exception:
+			# Fallback for environments where add_dll_directory is unavailable/restricted.
+			if d not in str(os.environ.get("PATH", "")):
+				os.environ["PATH"] = d + os.pathsep + str(os.environ.get("PATH", ""))
+
+		try:
+			import pyads as _pyads  # type: ignore
+			return _pyads
+		except Exception:
+			continue
+
+	return None
+
+
+pyads = _import_pyads_with_dll_dirs()  # type: ignore
 
 from services.worker_commands import TwinCatCommands as Commands
 from services.workers.base_worker import BaseWorker
@@ -86,6 +152,13 @@ class TwinCatWorker(BaseWorker):
 					for st in plcs.values():
 						if st.connected:
 							self.publish_connected_as(st.cfg.client_id)
+							# Re-publish cached values so late subscribers (e.g. newly opened UI panel)
+							# receive current data even without a fresh PLC value change event.
+							for k, v in list(st.values.items()):
+								try:
+									self.publish_value_as(st.cfg.client_id, str(k), v)
+								except Exception:
+									pass
 						else:
 							reason = st.last_error or "not_connected"
 							self.publish_disconnected_as(st.cfg.client_id, reason=reason)
@@ -165,6 +238,8 @@ class TwinCatWorker(BaseWorker):
 			conn = pyads.Connection(st.cfg.ams_net_id, st.cfg.port, st.cfg.ip)
 			conn.open()
 			conn.set_timeout(int(st.cfg.timeout_ms))
+			# open() only opens the local ADS port. Verify remote target is reachable.
+			conn.read_device_info()
 
 			st.conn = conn
 			st.connected = True
@@ -292,33 +367,33 @@ class TwinCatWorker(BaseWorker):
 		data_type, byte_size, is_string, is_wstring = _ads_datatype_and_size(sub.plc_type, sub.string_len)
 		attr = pyads.NotificationAttrib(byte_size)
 
+		def _normalize_ads_value(value: Any) -> Any:
+			if not is_string:
+				return value
+			# value is typically a ctypes BYTE array for STRING/WSTRING
+			try:
+				raw = bytes(value)
+			except Exception:
+				raw = value if isinstance(value, (bytes, bytearray)) else b""
+			looks_utf16 = (len(raw) >= 4 and raw[1:2] == b"\x00")
+			if is_wstring or looks_utf16:
+				try:
+					raw = raw.split(b"\x00\x00", 1)[0]
+					return raw.decode("utf-16-le", "ignore")
+				except Exception:
+					return value
+			try:
+				return raw.split(b"\x00", 1)[0].decode("latin1", "ignore")
+			except Exception:
+				return value
+
 		def _callback(notification, _user):
 			try:
 				_, _, value = conn.parse_notification(notification, data_type)
 			except Exception as e:
 				self.publish_error_as(client_id, key=publish_key, action="notify_parse", error=str(e))
 				return
-
-			if is_string:
-				# value is a ctypes BYTE array -> make raw bytes
-				try:
-					raw = bytes(value)
-				except Exception:
-					raw = value if isinstance(value, (bytes, bytearray)) else b""
-
-				# Heuristic: if it looks like UTF-16-LE (zero bytes at odd positions), decode as utf-16-le
-				looks_utf16 = (len(raw) >= 4 and raw[1:2] == b"\x00")
-				if is_wstring or looks_utf16:
-					try:
-						raw = raw.split(b"\x00\x00", 1)[0]
-						value = raw.decode("utf-16-le", "ignore")
-					except Exception:
-						pass
-				else:
-					try:
-						value = raw.split(b"\x00", 1)[0].decode("latin1", "ignore")
-					except Exception:
-						pass
+			value = _normalize_ads_value(value)
 
 			st.values[publish_key] = value
 			self.publish_value_as(client_id, publish_key, value)
@@ -333,9 +408,26 @@ class TwinCatWorker(BaseWorker):
 			sub.notification_handle = int(notification_handle or 0)
 			sub.user_handle = int(user_handle or 0)
 			log.info(f"subscribed: client_id={client_id} name={name} plc_type={sub.plc_type} byte_size={byte_size}")
+			# Publish an initial snapshot so UI doesn't stay at None until value changes.
+			try:
+				initial = conn.read_by_name(name, data_type)
+				initial = _normalize_ads_value(initial)
+				st.values[publish_key] = initial
+				self.publish_value_as(client_id, publish_key, initial)
+				if publish_key != name:
+					self.publish_value_as(client_id, name, initial)
+			except Exception as init_err:
+				log.debug(f"initial read failed: client_id={client_id} name={name} err={init_err!r}")
 		except Exception as e:
-			self.publish_error_as(client_id, key=name, action="subscribe", error=str(e))
-			log.error(f"subscribe failed: client_id={client_id} name={name} err={e!r}")
+			hint = _ads_error_hint(e)
+			err_text = str(e)
+			if hint:
+				err_text = f"{err_text} ({hint})"
+			self.publish_error_as(client_id, key=name, action="subscribe", error=err_text)
+			if hint:
+				log.error(f"subscribe failed: client_id={client_id} name={name} err={e!r} hint={hint}")
+			else:
+				log.error(f"subscribe failed: client_id={client_id} name={name} err={e!r}")
 
 
 	# ------------------------------------------------------------------ Write
@@ -485,4 +577,11 @@ def _ads_datatype_and_size(plc_type_raw: str, string_len: int):
 	dt = getattr(pyads, "PLCTYPE_%s" % t_raw, pyads.PLCTYPE_UINT)
 	dt_cls = _ensure_ads_type_class(dt)
 	return dt_cls, int(sizeof(dt_cls)), False, False
+
+
+def _ads_error_hint(err: Exception) -> str:
+	text = f"{err!r}"
+	if "ADSError(7)" in text:
+		return "possible AMS Net ID/route mismatch (target not reachable)"
+	return ""
 

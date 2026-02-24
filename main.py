@@ -13,6 +13,7 @@ from layout.drawer import build_drawer
 from layout.device_panel import build_device_panel
 from layout.errors_state import refresh_errors_count
 from layout.modal_manager import install_modal_manager
+from pages.dummy.dummy_service import DummyController
 
 from services.ui_bridge import UiBridge
 from services.worker_registry import WorkerRegistry
@@ -88,6 +89,7 @@ _apply_proxy_env(APP_CONFIG)
 GLOBAL_WORKER_BUS = WorkerBus()
 GLOBAL_BRIDGE = UiBridge()
 GLOBAL_APP_STATE = AppState()
+DUMMY_CONTROLLER = DummyController()
 GLOBAL_WORKERS = WorkerRegistry(GLOBAL_BRIDGE, GLOBAL_WORKER_BUS)
 
 
@@ -278,8 +280,15 @@ def index():
 	ctx.worker_bus = GLOBAL_WORKER_BUS
 	ctx.workers = GLOBAL_WORKERS
 	ctx.bridge = GLOBAL_BRIDGE
+	ctx.dummy_controller = DUMMY_CONTROLLER
 	ctx.modal_manager = install_modal_manager(GLOBAL_WORKER_BUS)
 	refresh_errors_count(ctx)
+
+	# Only detach this UI session — NEVER stop workers
+	def on_disconnect():
+		ctx.dummy_controller.stop_client(ui.context.client)
+
+	ui.context.client.on_disconnect(on_disconnect)
 
 	# UI flush loop
 	ui.timer(0.5, lambda: ctx.bridge.flush(ctx))
@@ -404,6 +413,7 @@ def index():
 	build_header(ctx)
 	build_drawer(ctx)
 	build_device_panel(ctx)
+	ctx.dummy_controller.start(ctx)
 
 	with ui.row().classes("w-full").style(
 		f"height: calc(100vh - {HEADER_PX}px - {FOOTER_PX}px);"

@@ -23,7 +23,7 @@ OnEnterFn = Callable[[PageContext],None]
 class Route:
     label: str
     icon: str
-    render: RenderFn
+    render: RenderFn | None = None
     actions: list[Action] = None
     on_enter: Optional[OnEnterFn] = None
 

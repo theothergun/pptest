@@ -42,11 +42,8 @@ class AppState:
     description: str = ""
     current_container_qty: str = ""
     max_container_qty: str = ""
-    current_serialnumber: str = ""
     last_serial_number: str = ""
-    view_button_states: dict[str, bool] = field(default_factory=dict)
-    operator_show_device_panel: bool | None = None
-    operator_device_panel_items: list[dict[str, Any]] = field(default_factory=list)
+    current_serialnumber: str = ""
     packaging_search_query: str = ""
     packaging_container_selected: str = ""
     packaging_active_container: str = ""
@@ -61,3 +58,10 @@ class AppState:
     container_mgmt_serial_rows: list[dict[str, Any]] = field(default_factory=list)
 
     test_new_kea: str= ""
+
+    # ----- Dummy -----
+    dummy_is_enabled: bool = False #True the dummy window show up
+    dummy_test_is_running: bool = False # True if a dummy test start
+    dummy_result_available: bool = False # True if dummy result are ready for evaluation
+    dummy_program_changed: bool = False # True if program changed and dummy should be started
+

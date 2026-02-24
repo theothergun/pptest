@@ -21,6 +21,9 @@ from pages.settings import com_device_settings
 from pages.settings import opcua_settings
 from pages.settings import rest_api_settings
 from pages.settings import language_manager
+from pages.dummy.config import render as render_dummy_config
+from pages.dummy.results_view import render as render_dummy_results
+from pages.dummy.test_view import render as render_manual_dummy_test
 from services.i18n import t
 
 
@@ -42,8 +45,6 @@ def render(container: ui.element, ctx: PageContext) -> None:
 
 			# Body must be flex-1 + min-h-0 so inner scroll containers can work
 			with ui.column().classes("w-full flex-1 min-h-0 min-w-0"):
-				ui.label(t("settings.sections", "Sections")).classes("text-sm text-gray-500 mt-2")
-
 				# Keep a strict 2-column split; wrapping here can clip the right panel.
 				with ui.row().classes("w-full flex-1 min-h-0 min-w-0 overflow-hidden gap-4 no-wrap items-stretch"):
 					# Left navigation scroll
@@ -96,6 +97,24 @@ def render(container: ui.element, ctx: PageContext) -> None:
 							"label": f"🌍 {t('settings.languages.title', 'Languages')}",
 							"children": [
 								{"id": "languages.manager", "label": f"🗣️ {t('settings.languages.manager', 'Language Manager')}"},
+							],
+						},
+						{
+							"id": "dummy",
+							"label": f"🧩 {t('dummy.languages.title', 'Dummy')}",
+							"children": [
+								{
+									"id": "dummy.config",
+									"label": f"🛠️ {t('dummy.languages.config', 'Config')}"
+								},
+								{
+									"id": "dummy.test_result",
+									"label": f"📈 {t('dummy.languages.test_result', 'Test Results')}"
+								},
+								{
+									"id": "dummy.manual_test",
+									"label": f"🔬 {t('dummy.languages.manual_test', 'Manual Test')}"
+								},
 							],
 						},
 					]
@@ -162,6 +181,12 @@ def render(container: ui.element, ctx: PageContext) -> None:
 									rest_api_settings.render(target, ctx)
 								elif panel_id == "languages.manager":
 									language_manager.render(target, ctx)
+								elif panel_id == "dummy.config":
+									render_dummy_config(target, ctx)
+								elif panel_id == "dummy.test_result":
+									render_dummy_results(target, ctx)
+								elif panel_id == "dummy.manual_test":
+									render_manual_dummy_test(target, ctx)
 								else:
 									ui.label(t("settings.select_hint", "Select a section from the tree.")).classes("text-sm text-gray-500")
 
@@ -171,8 +196,14 @@ def render(container: ui.element, ctx: PageContext) -> None:
 							render_panel(node_id)
 
 					with left_col:
-						nav_tree = ui.tree(nodes, label_key="label", on_select=on_select).classes("w-full")
+						with ui.row().classes("w-full items-end justify-between gap-1 pb-0 mt-0"):
+							ui.label(t("settings.sections", "Sections")).classes("text-sm text-gray-500 leading-none")
+							with ui.row().classes("items-center gap-1"):
+								ui.button("+", on_click=lambda: nav_tree.expand()).props("dense flat size=sm")
+								ui.button("-", on_click=lambda: nav_tree.collapse()).props("dense flat size=sm")
+						nav_tree = ui.tree(nodes, label_key="label", on_select=on_select).classes("w-full mt-0 pt-0")
 						nav_tree.props("dense")
+						nav_tree.expand()
 
 					# default view
 					render_panel("general.core")

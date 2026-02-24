@@ -5,7 +5,8 @@ from typing import Any
 from nicegui import ui
 from layout.context import PageContext
 from services.i18n import t
-from services.ui.view_cmd import install_wait_dialog, publish_view_cmd, view_wait_key
+from services.ui.view_action import publish_standard_view_action
+from services.ui.view_cmd import install_wait_dialog, view_wait_key
 
 
 CONTAINER_MGMT_CMD_KEY = "container_management.cmd"
@@ -53,22 +54,24 @@ def build_page(ctx: PageContext) -> None:
 	)
 
 	def _publish_cmd(cmd: str) -> None:
-		publish_view_cmd(
+		publish_standard_view_action(
 			worker_bus=worker_bus,
 			view=CONTAINER_MGMT_VIEW,
 			cmd_key=CONTAINER_MGMT_CMD_KEY,
-			cmd=cmd,
+			name=cmd,
+			event="click",
 			wait_key=CONTAINER_MGMT_WAIT_MODAL_KEY,
 			open_wait=wait_dialog["open"],
 			source_id=CONTAINER_MGMT_VIEW,
 		)
 
 	def _publish_cmd_payload(cmd: str, **extra: Any) -> None:
-		publish_view_cmd(
+		publish_standard_view_action(
 			worker_bus=worker_bus,
 			view=CONTAINER_MGMT_VIEW,
 			cmd_key=CONTAINER_MGMT_CMD_KEY,
-			cmd=cmd,
+			name=cmd,
+			event="click",
 			wait_key=CONTAINER_MGMT_WAIT_MODAL_KEY,
 			open_wait=wait_dialog["open"],
 			extra=extra,

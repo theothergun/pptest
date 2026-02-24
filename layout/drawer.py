@@ -14,10 +14,15 @@ def _render_drawer_content(ctx: PageContext) -> None:
 	active_key = app.storage.user.get("current_route", "")
 	is_dark = bool(getattr(get_app_config().ui.navigation, "dark_mode", False))
 	inactive_color = "grey-3" if is_dark else "grey-8"
+	routes = get_visible_routes()
+	if ctx.dummy_controller.is_feature_enabled():
+		routes["start_dummy_test"] = Route(icon="rocket_launch", label="Dummy Test")
 	# Build buttons
-	for key, route in get_visible_routes().items():
+	for key, route in routes.items():
 		if key == "errors":
 			btn = _add_error_button(ctx, route, key)
+		elif key == "start_dummy_test":
+			btn = _add_dummy_test_button(ctx, route, key)
 		else:
 			btn = _add_standard_button(ctx, route, key)
 		if key == active_key:
@@ -54,8 +59,8 @@ def _add_standard_button(ctx: PageContext, route: Route, key:str):
 		route.label,
 		icon=route.icon,
 		on_click=lambda k=key: navigate(ctx, k),
-	).props("flat no-caps").classes(
-		"w-full justify-start px-4")  # w-full justify-start makes the icon/text stay left, even with full width.
+	).props("flat no-caps stack").classes(
+		"w-full stack align-left px-4")  # w-full justify-start makes the icon/text stay left, even with full width.
 	ctx.nav_buttons[key] = btn
 	return btn
 
@@ -63,8 +68,8 @@ def _add_error_button(ctx: PageContext, route: Route, key:str):
 	with ui.row().classes("w-full items-center px-2"):
 		# Create a flat button with custom content
 		btn = ui.button(on_click=lambda k=key: navigate(ctx, k)) \
-			.props("flat no-caps") \
-			.classes("flex-1 justify-start px-2 gap-2")
+			.props("flat no-caps stack") \
+			.classes("flex-1 stack align-left px-2 gap-2")
 
 		with btn:
 			with ui.row().classes("items-center gap-2 no-wrap"):
@@ -84,9 +89,18 @@ def _add_error_button(ctx: PageContext, route: Route, key:str):
 					errors_badge.bind_visibility_from(ctx.state, "error_count",
 													  backward= lambda n: int(n) > 0)
 				# the error label
-				ui.label(route.label)
+			ui.label(route.label)
 
 		ctx.errors_icon_wrap = icon_wrap
 		ctx.nav_buttons[key] = btn
 	return btn
 
+def _add_dummy_test_button(ctx: PageContext, route: Route, key:str):
+	btn = ui.button(
+		route.label,
+		icon=route.icon,
+		on_click= ctx.dummy_controller.start_dummy_test,
+	).props("flat no-caps stack").classes(
+		"w-full stack align-left px-4")  # w-full justify-start makes the icon/text stay left, even with full width.
+	ctx.nav_buttons[key] = btn
+	return btn

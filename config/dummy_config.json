@@ -1,0 +1,81 @@
+{
+  "version": 1,
+  "sets": [
+    {
+      "id": 1,
+      "name": "Set 1",
+      "dummies": [
+        {
+          "id": 1,
+          "name": "OK_dummy",
+          "inspections": [
+            {
+              "id": 11,
+              "name": "Leak rate",
+              "state_field_name": "ltc_result",
+              "expected_value": "[0.00,0.10]",
+              "type_of_value": "Range"
+            }
+          ]
+        },
+        {
+          "id": 2,
+          "name": "NOK_dummy",
+          "inspections": [
+            {
+              "id": 21,
+              "name": "Leak rate",
+              "state_field_name": "ltc_result",
+              "expected_value": "]0.45,0.60]",
+              "type_of_value": "Range"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Set 2",
+      "dummies": [
+        {
+          "id": 4,
+          "name": "Dummy A",
+          "inspections": [
+            {
+              "id": 41,
+              "name": "Inspection A",
+              "state_field_name": "vc_result",
+              "expected_value": "1",
+              "type_of_value": "Int"
+            }
+          ]
+        },
+        {
+          "id": 5,
+          "name": "Dummy B",
+          "inspections": [
+            {
+              "id": 51,
+              "name": "Inspection A",
+              "state_field_name": "vc_result",
+              "expected_value": "1",
+              "type_of_value": "Int"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "scheduler": {
+    "is_dummy_activated": false,
+    "on_machine_start": true,
+    "on_program_change": true,
+    "on_interval": true,
+    "interval_value": 12,
+    "interval_unit": "hour",
+    "is_predetermined": true,
+    "clean_enabled": true,
+    "clean_older_value": 1,
+    "clean_older_unit": "year"
+  }
+}

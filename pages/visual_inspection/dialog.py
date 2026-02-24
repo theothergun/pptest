@@ -6,6 +6,7 @@ from nicegui import ui
 
 from layout.context import PageContext
 from pages.visual_inspection.failure_catalogue import FailureCatalogue, ErrorWeight
+from services.ui.view_action import make_action_event
 
 
 catalogue = FailureCatalogue()
@@ -95,13 +96,12 @@ def create_failure_catalogue_dialog(ctx:PageContext) -> tuple[ui.dialog, callabl
                         pn_value.bind_text_from(state, "pn")
 
                 # right + close
-                with ui.row().classes("items-center gap-4"):
-                    with ui.row().classes("items-center gap-2"):
-                        ui.icon("assignment_late").classes("text-white text-2xl")
-                        ui.label("Assigned Failures").classes("text-lg font-semibold")
+                    with ui.row().classes("items-center gap-4"):
+                        with ui.row().classes("items-center gap-2"):
+                            ui.icon("assignment_late").classes("text-white text-2xl")
+                            ui.label("Assigned Failures").classes("text-lg font-semibold")
 
-                    ui.button(icon="refresh", on_click = lambda: (refresh_catalogue(),
-                        )).props("flat round dense").classes(
+                    ui.button(icon="refresh", on_click=lambda: on_toolbar_click("refresh_catalogue")).props("flat round dense").classes(
                         "text-white")
 
             # ---------------- content ----------------
@@ -145,13 +145,13 @@ def create_failure_catalogue_dialog(ctx:PageContext) -> tuple[ui.dialog, callabl
             # ---------------- bottom bar ----------------
             with ui.element("div").classes("w-full"):
                 with ui.row().classes("w-full gap-0"):
-                    btn_pass = ui.button("PASS", on_click=lambda: on_action_click('btn_pass')).props("unelevated color=positive").classes(
+                    btn_pass = ui.button("PASS", on_click=lambda: on_action_click("pass")).props("unelevated color=positive").classes(
                         "w-1/3 h-20 text-2xl font-bold text-black rounded-none"
                     )
-                    btn_fail = ui.button("FAIL", on_click=lambda: on_action_click('btn_fail')).props("unelevated color=warning").classes(
+                    btn_fail = ui.button("FAIL", on_click=lambda: on_action_click("fail")).props("unelevated color=warning").classes(
                         "w-1/3 h-20 text-2xl font-bold text-black rounded-none"
                     )
-                    btn_scrap = ui.button("SCRAP", on_click=lambda: on_action_click('btn_scrap')).props("unelevated color=negative").classes(
+                    btn_scrap = ui.button("SCRAP", on_click=lambda: on_action_click("scrap")).props("unelevated color=negative").classes(
                         "w-1/3 h-20 text-2xl font-bold text-black rounded-none"
                     )
 
@@ -168,10 +168,16 @@ def create_failure_catalogue_dialog(ctx:PageContext) -> tuple[ui.dialog, callabl
         btn_fail.set_enabled(failure and weight < ErrorWeight.SCRAP)
         btn_scrap.set_enabled(failure is not None)
 
-    def on_action_click(btn_id: str):
+    def on_toolbar_click(action_name: str) -> None:
+        action_event = make_action_event(view="vi_failure_catalogue", name=action_name, event="click")
+        if action_event["name"] == "refresh_catalogue":
+            refresh_catalogue()
+
+    def on_action_click(action_name: str):
         #TO DO make the booking
-        status = 1 if btn_id == "btn_pass" else 2 if btn_id == "btn_fail" else 3
-        result = "PASS" if btn_id == "btn_pass" else "RECHECK" if btn_id == "btn_fail" else "SCRAP"
+        action_event = make_action_event(view="vi_failure_catalogue", name=action_name, event="submit")
+        status = 1 if action_event["name"] == "pass" else 2 if action_event["name"] == "fail" else 3
+        result = "PASS" if action_event["name"] == "pass" else "RECHECK" if action_event["name"] == "fail" else "SCRAP"
         ctx.set_state_many_and_publish(vc_error_status = status, vc_result = result)
         close()
 

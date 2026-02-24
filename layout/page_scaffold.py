@@ -6,7 +6,6 @@ from nicegui import ui
 from layout.action_bar import Action, ActionBarEvent
 from layout.context import PageContext
 
-
 ContentBuilder = Callable[[ui.element], None]
 ActionHandler = Callable[[str, Action], None]
 ScrollMode = Literal["scaffold", "none"]
@@ -35,6 +34,7 @@ def build_page(
 	"""
 
 	def has_action_bar() -> bool:
+		# If action_bar exists but has no actions, you likely don't want to show it.
 		return ctx.action_bar is not None
 
 	with container:

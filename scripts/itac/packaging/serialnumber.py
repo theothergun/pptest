@@ -10,27 +10,11 @@ def main(ctx: PublicStepChainContext):
     Uses ctx.view.packaging (alias: ctx.view.packagin).
     """
     ctx.set_cycle_time(1)
+    msg = ctx.ui.consume_view_cmd("view.cmd.packaging_nox", command="reset")
 
+    return
     step = ctx.step
-    print(step)
     if step == 0:
-        print("*" * 50)
-        ctx.view.set_operator_device_panel_visible(True)
-
-        ctx.view.upsert_operator_device_state(
-            name="Scanner Proxy",
-            status="connection lost",
-            state="error",
-            connected=True,
-            source="test",
-        )
-        ctx.view.upsert_operator_device_state(
-            name="MES Mirror",
-            status="OK",
-            state="success",  # success|warn|error|info (plus common aliases)
-            connected=False,
-            source="custom_api",
-        )
         curr_qty =  ctx.get_state("current_container_qty" ,0)
         max_qty =    ctx.get_state("max_container_qty" ,0)
         if curr_qty >= max_qty:

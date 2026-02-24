@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Optional, Any, Callable
+from typing import Optional, Any, Callable, TYPE_CHECKING
 from nicegui import ui
 
 from layout.action_bar import EventBus, ActionBar
@@ -10,6 +10,9 @@ from layout.observable_wrapper import ObservableWrapper
 from services.ui_bridge import UiBridge
 from services.worker_registry import WorkerRegistry
 from services.worker_bus import WorkerBus
+
+if TYPE_CHECKING:
+	from pages.dummy.dummy_service import DummyController
 
 
 @dataclass
@@ -20,7 +23,12 @@ class PageContext:
 
 	# Reference to the left navigation drawer element (so header can toggle it)
 	drawer: Optional[ui.left_drawer] = None
+
+	# Reference to the right device panel drawer.
 	right_drawer: Optional[ui.right_drawer] = None
+
+	# Header toggle button for device panel (used for active-state highlighting).
+	device_panel_toggle_btn: Optional[ui.button] = None
 
 	# Dynamic container inside the drawer. Only this element should be cleared and rebuilt when routes change.
 	drawer_content: Optional[ui.element] = None
@@ -30,7 +38,6 @@ class PageContext:
 
 	# Label shown in the main area (often used as breadcrumb like "/home")
 	breadcrumb: Optional[ui.label] = None
-	device_panel_toggle_btn: Optional[ui.button] = None
 
 	# The container where the current page content is rendered
 	# (router clears it and renders the selected page inside)
@@ -108,6 +115,8 @@ class PageContext:
 	# bus: Optional[EventBus] = None
 	# errors_badge: Optional[ui.badge] = None
 
+	dummy_controller: Optional[DummyController] = None
+
 
 	def set_state_and_publish(self, key: str, value: Any) -> None:
 		setattr(self.state, key, value)
@@ -120,4 +129,3 @@ class PageContext:
 
 		# 2️⃣ publish once (batch event)
 		#self.worker_bus.publish("ui.state", **values)
-

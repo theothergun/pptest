@@ -152,7 +152,7 @@ This is chain-owned `ui_state` included in exported chain state.
 
 - `consume_command(key, value_field="cmd", dedupe=True, normalize=True) -> Optional[str]`
 - `consume_payload(key, dedupe=True) -> Optional[dict]`
-- `consume_view_cmd(pattern="view.cmd.*", dedupe=True) -> Optional[dict]`
+- `consume_view_cmd(pattern="view.cmd.*", command=None, commands=None, event=None, events=None, dedupe=True, normalize=True) -> Optional[dict]`
 - `subscribe_view_cmd(pattern="view.cmd.*") -> Subscription|None`
 
 Dedupe strategy uses `event_id` when present and falls back to payload fingerprints.
@@ -329,14 +329,14 @@ Meaning:
 
 Buttons in operator pages publish standardized payloads through `publish_view_cmd(...)`:
 
-- Legacy message: `topic=VALUE_CHANGED`, key=`<cmd_key>`, value includes `cmd`, `event_id`, `wait_modal_key`
+- Legacy message: `topic=VALUE_CHANGED`, key=`<cmd_key>`, value includes `action`, `event_id`, `wait_modal_key`
 - New message: `topic=view.cmd.<view>`, payload includes above + `view`, `cmd_key`
 
 Use in scripts:
 
-- `ctx.ui.consume_command("packaging.cmd")`
+- `ctx.ui.consume_payload("packaging.cmd")` (if using cmd_key channel, then read `payload["action"]["name"]`)
 - `ctx.view.packaging.wait_cmd(...)`
-- or wildcard read: `ctx.ui.consume_view_cmd("view.cmd.*")`
+- or wildcard read: `ctx.ui.consume_view_cmd("view.cmd.*", command="refresh")`
 
 ---
 

@@ -78,6 +78,13 @@ class TcpClientWorker(BaseWorker):
 					connected = sum(1 for st in clients.values() if st.connected)
 					connecting = sum(1 for st in clients.values() if st.connecting)
 					log.debug(f"status: clients={total} connected={connected} connecting={connecting}")
+					# Heartbeat publish so UI panels opened later can still resolve current connection state.
+					for cid, st in clients.items():
+						if st.connected:
+							self.publish_connected_as(cid)
+						else:
+							reason = st.last_error or "not_connected"
+							self.publish_disconnected_as(cid, reason=reason)
 
 				time.sleep(0.02)
 		finally:

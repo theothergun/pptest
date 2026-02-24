@@ -74,8 +74,8 @@ def _build_tree_from_script_paths(script_paths: list[str]) -> tuple[list[dict], 
 def build_page(ctx: PageContext) -> None:
 	"""Scripts Lab page: bus-driven, stable cards, editor, and auto-scrolling logs."""
 
-	worker_handle = ctx.workers.get("script_worker")
-	bus = ctx.workers.worker_bus
+	worker_handle = ctx.script_runtime or (ctx.workers.get("script_worker") if ctx.workers else None)
+	bus = ctx.worker_bus
 
 	# --- lifecycle management ---
 	page_timers: list = []

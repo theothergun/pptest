@@ -16,15 +16,15 @@ from services.workers.base_worker import BaseWorker
 from services.worker_commands import ScriptWorkerCommands as Commands
 from services.worker_topics import WorkerTopics as Topics
 
-from services.workers.stepchain.context import StepChainContext
-from services.workers.stepchain.loader import ScriptLoader
+from services.automation_runtime.context import AutomationContext
+from services.automation_runtime.loader import AutomationScriptLoader
 
 
 @dataclass
 class ChainInstance:
 	script_name: str
 	instance_id: str
-	context: StepChainContext
+	context: AutomationContext
 	fn: Callable[[Any], None]
 	active: bool = True
 	paused: bool = False
@@ -56,7 +56,7 @@ class ScriptWorker(BaseWorker):
 		)
 
 		self.scripts_dir = str(scripts_dir or "scripts")
-		self.loader = ScriptLoader(scripts_dir=self.scripts_dir)
+		self.loader = AutomationScriptLoader(scripts_dir=self.scripts_dir)
 
 		self.reload_check_interval = float(reload_check_interval or 1.0)
 		self.hot_reload_enabled = False
@@ -142,7 +142,7 @@ class ScriptWorker(BaseWorker):
 			self._last_chain_sig = sig
 			self.publish_value_as("script_worker", Commands.LIST_CHAINS, payload)
 
-	def _publish_chain_state(self, chain_key: str, ctx: StepChainContext) -> None:
+	def _publish_chain_state(self, chain_key: str, ctx: AutomationContext) -> None:
 		"""
 		MUST NOT crash the worker if ctx.get_state() contains cycles / deep structures.
 		"""
@@ -184,7 +184,7 @@ class ScriptWorker(BaseWorker):
 	def _expected_topic_value_changed(self) -> str:
 		return str(getattr(Topics.VALUE_CHANGED, "value", str(Topics.VALUE_CHANGED)))
 
-	def _apply_bus_msg_to_ctx(self, ctx: StepChainContext, msg: BusMessage) -> None:
+	def _apply_bus_msg_to_ctx(self, ctx: AutomationContext, msg: BusMessage) -> None:
 		try:
 			topic = str(getattr(msg, "topic", "") or "")
 			source = getattr(msg, "source", "") or "unknown"
@@ -248,7 +248,7 @@ class ScriptWorker(BaseWorker):
 		if processed < max_items:
 			_drain_queue(self.bus_sub_view_cmd.queue, handle_modal=False)
 
-	def _apply_ui_state_msg_to_ctx(self, ctx: StepChainContext, topic: str, payload: dict[str, Any]) -> None:
+	def _apply_ui_state_msg_to_ctx(self, ctx: AutomationContext, topic: str, payload: dict[str, Any]) -> None:
 		try:
 			if topic == "state":
 				if isinstance(payload, dict):
@@ -290,7 +290,7 @@ class ScriptWorker(BaseWorker):
 
 	# ------------------------------------------------------------------ lifecycle
 
-	def _get_cycle_time_s(self, ctx: StepChainContext) -> float:
+	def _get_cycle_time_s(self, ctx: AutomationContext) -> float:
 		try:
 			v = getattr(ctx, "cycle_time", None)
 			if v is None:
@@ -370,7 +370,7 @@ class ScriptWorker(BaseWorker):
 						inst.paused = True
 						inst.context.paused = True
 						inst.context.error_flag = True
-						inst.context.error_message = "StepChain crashed. Please review and press Retry."
+						inst.context.error_message = "Automation Runtime crashed. Please review and press Retry."
 					self._publish_chain_log(chain_key, "chain crashed - paused; operator can retry", level="error")
 					self._publish_chain_state(chain_key, inst.context)
 					should_publish_changed = True
@@ -496,7 +496,7 @@ class ScriptWorker(BaseWorker):
 			return
 
 		try:
-			ctx = StepChainContext(
+			ctx = AutomationContext(
 				chain_id=chain_key,
 				worker_bus=self.worker_bus,
 				bridge=self.bridge,
@@ -504,7 +504,7 @@ class ScriptWorker(BaseWorker):
 				send_cmd=self.send_cmd,
 			)
 		except Exception:
-			err = "StepChainContext init failed\n%s" % self._format_exc()
+			err = "AutomationContext init failed\n%s" % self._format_exc()
 			self.publish_error_as(chain_key, key=chain_key, action="start_chain", error=err)
 			return
 

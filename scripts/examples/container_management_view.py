@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import time
-from services.workers.stepchain.context import PublicStepChainContext
+from services.automation_runtime.context import PublicAutomationContext
 
 
 def _demo_container_rows() -> list[dict]:
@@ -23,7 +23,7 @@ def _demo_serial_rows() -> list[dict]:
 	]
 
 
-def main(ctx: PublicStepChainContext):
+def main(ctx: PublicAutomationContext):
 	"""
 	Example script for container_management view.
 	"""

@@ -1,7 +1,7 @@
 import time
 from enum import StrEnum
 
-from services.workers.stepchain.context import PublicStepChainContext
+from services.automation_runtime.context import PublicAutomationContext
 
 class UI(StrEnum) :
 
@@ -10,7 +10,7 @@ class UI(StrEnum) :
 
 	SCANNER_1 = "scanner_1"
 
-def main(ctx: PublicStepChainContext):
+def main(ctx: PublicAutomationContext):
 	"""
 	Simple demo chain.
 

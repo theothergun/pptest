@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 import time
-from services.workers.stepchain.context import PublicStepChainContext
+from services.automation_runtime.context import PublicAutomationContext
 
 
-def main(ctx: PublicStepChainContext):
+def main(ctx: PublicAutomationContext):
 	"""
 	Example script for the new packaging view (form with buttons).
 	Uses ctx.view.packaging (alias: ctx.view.packagin).

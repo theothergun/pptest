@@ -1,7 +1,7 @@
 from enum import StrEnum
 
-from services.workers.stepchain.context import PublicStepChainContext
-from services.workers.stepchain.apis.api_utils import to_int
+from services.automation_runtime.context import PublicAutomationContext
+from services.automation_runtime.apis.api_utils import to_int
 
 
 # ------------------------------------------------------------------ UI keys (AppState)
@@ -49,7 +49,7 @@ class STEP(object):
 
 # ------------------------------------------------------------------ Small helpers (script-local)
 
-def ui_wait(ctx: PublicStepChainContext, instruction: str, feedback: str) -> None:
+def ui_wait(ctx: PublicAutomationContext, instruction: str, feedback: str) -> None:
 	ctx.ui.show(
 		instruction=instruction,
 		feedback=feedback,
@@ -58,7 +58,7 @@ def ui_wait(ctx: PublicStepChainContext, instruction: str, feedback: str) -> Non
 	)
 
 
-def ui_ok(ctx: PublicStepChainContext, instruction: str, feedback: str) -> None:
+def ui_ok(ctx: PublicAutomationContext, instruction: str, feedback: str) -> None:
 	ctx.ui.show(
 		instruction=instruction,
 		feedback=feedback,
@@ -67,7 +67,7 @@ def ui_ok(ctx: PublicStepChainContext, instruction: str, feedback: str) -> None:
 	)
 
 
-def ui_error(ctx: PublicStepChainContext, instruction: str, feedback: str) -> None:
+def ui_error(ctx: PublicAutomationContext, instruction: str, feedback: str) -> None:
 	ctx.ui.show(
 		instruction=instruction,
 		feedback=feedback,
@@ -77,7 +77,7 @@ def ui_error(ctx: PublicStepChainContext, instruction: str, feedback: str) -> No
 	ctx.ui.inc_state_int(UI_VAR.ERRORS, amount=1, default=0)
 
 
-def apply_packinfo_to_ui(ctx: PublicStepChainContext, out_args: list) -> None:
+def apply_packinfo_to_ui(ctx: PublicAutomationContext, out_args: list) -> None:
 	# Expected: [container, part_number, description, current_qty, max_qty, ...]
 	container = out_args[0] if len(out_args) > 0 else ""
 	part_number = out_args[1] if len(out_args) > 1 else ""
@@ -94,7 +94,7 @@ def apply_packinfo_to_ui(ctx: PublicStepChainContext, out_args: list) -> None:
 
 # ------------------------------------------------------------------ Main
 
-def main(ctx: PublicStepChainContext):
+def main(ctx: PublicAutomationContext):
 	"""
 	Packaging demo chain (rewritten to be script-author friendly):
 

@@ -3,21 +3,34 @@ from __future__ import annotations
 from enum import StrEnum
 
 
-# ------------------------------------------------------------------ Script Worker
+# ------------------------------------------------------------------ Automation Runtime
 
-class ScriptWorkerCommands(StrEnum):
-	START_CHAIN = "script.start_chain"
-	STOP_CHAIN = "script.stop_chain"
-	PAUSE_CHAIN = "script.pause_chain"
-	RESUME_CHAIN = "script.resume_chain"
-	RETRY_CHAIN = "script.retry_chain"
+class AutomationRuntimeCommands(StrEnum):
+	START_PROGRAM = "script.start_chain"
+	STOP_PROGRAM = "script.stop_chain"
+	PAUSE_PROGRAM = "script.pause_chain"
+	RESUME_PROGRAM = "script.resume_chain"
+	RETRY_PROGRAM = "script.retry_chain"
 	RELOAD_SCRIPT = "script.reload_script"
 	RELOAD_ALL = "script.reload_all"
 	LIST_SCRIPTS = "script.scripts_list"
-	LIST_CHAINS = "script.chains_list"
-	UPDATE_CHAIN_STATE = "script.chain_state"
+	LIST_PROGRAMS = "script.chains_list"
+	UPDATE_PROGRAM_STATE = "script.chain_state"
 	UPDATE_LOG = "script.log"
 	SET_HOT_RELOAD = "script.set_hot_reload"
+
+	# Compatibility aliases
+	START_CHAIN = START_PROGRAM
+	STOP_CHAIN = STOP_PROGRAM
+	PAUSE_CHAIN = PAUSE_PROGRAM
+	RESUME_CHAIN = RESUME_PROGRAM
+	RETRY_CHAIN = RETRY_PROGRAM
+	LIST_CHAINS = LIST_PROGRAMS
+	UPDATE_CHAIN_STATE = UPDATE_PROGRAM_STATE
+
+
+# Legacy naming retained for compatibility.
+ScriptWorkerCommands = AutomationRuntimeCommands
 
 
 # ------------------------------------------------------------------ iTAC (IMSApi REST) Worker

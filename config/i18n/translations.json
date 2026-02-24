@@ -1629,13 +1629,13 @@
     "zh": "步骤 Text:"
   },
   "auto.stepchain_stopped_due_to_an_error": {
-    "cs": "⚠️ StepChain se zastavil kvůli chybě",
-    "de": "⚠️ StepChain wegen eines Fehlers gestoppt",
-    "en": "⚠️ StepChain stopped due to an error",
-    "es-MX": "⚠️ StepChain se detuvo por un error",
-    "mk": "⚠️ StepChain запрен поради грешка",
-    "sk": "⚠️ StepChain sa zastavil kvôli chybe",
-    "zh": "⚠️ StepChain 因错误已停止"
+    "cs": "⚠️ Automation Runtime se zastavil kvůli chybě",
+    "de": "⚠️ Automation Runtime wegen eines Fehlers gestoppt",
+    "en": "⚠️ Automation Runtime stopped due to an error",
+    "es-MX": "⚠️ Automation Runtime se detuvo por un error",
+    "mk": "⚠️ Automation Runtime запрен поради грешка",
+    "sk": "⚠️ Automation Runtime sa zastavil kvôli chybe",
+    "zh": "⚠️ Automation Runtime 因错误已停止"
   },
   "auto.stop": {
     "cs": "Zastavit",
@@ -2572,5 +2572,14 @@
     "mk": "Workers",
     "sk": "Workers",
     "zh": "Workers"
+  },
+  "auto.automation_runtime_stopped_due_to_an_error": {
+    "cs": "⚠️ Automation Runtime se zastavil kvůli chybě",
+    "de": "⚠️ Automation Runtime wegen eines Fehlers gestoppt",
+    "en": "⚠️ Automation Runtime stopped due to an error",
+    "es-MX": "⚠️ Automation Runtime se detuvo por un error",
+    "mk": "⚠️ Automation Runtime запрен поради грешка",
+    "sk": "⚠️ Automation Runtime sa zastavil kvôli chybe",
+    "zh": "⚠️ Automation Runtime 因错误已停止"
   }
 }

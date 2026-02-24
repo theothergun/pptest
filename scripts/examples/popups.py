@@ -1,15 +1,15 @@
 import json
 from enum import StrEnum
 
-from services.workers.stepchain.context import PublicStepChainContext
-from services.workers.stepchain.apis.api_utils import to_int
+from services.automation_runtime.context import PublicAutomationContext
+from services.automation_runtime.apis.api_utils import to_int
 
 
 
 
 # ------------------------------------------------------------------ Main
 
-def main(ctx: PublicStepChainContext):
+def main(ctx: PublicAutomationContext):
 	#ctx.set_cycle_time(1)
 
 	step = ctx.step

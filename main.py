@@ -59,10 +59,15 @@ from services.ui_theme import apply_ui_theme
 # GLOBAL BACKEND (PROCESS LIFETIME)
 # ------------------------------------------------------------------
 
-setup_logging(app_name="mes_app")
+bootstrap_defaults()
+APP_CONFIG = load_app_config()
+setup_logging(
+	app_name="mes_app",
+	log_level=getattr(APP_CONFIG.logging, "console_level", "INFO"),
+	file_level=getattr(APP_CONFIG.logging, "file_level", "DEBUG"),
+)
 logger = get_logger("main")
 logger.info(f"[module] - startup_begin - component=main")
-bootstrap_defaults()
 
 def _apply_proxy_env(cfg) -> None:
 	# process-local; affects only this app process

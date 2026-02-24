@@ -20,7 +20,7 @@ LOG_FORMAT = (
 	"<level>{message}</level>"
 )
 
-AUDIT_FILE_LEVEL = "DEBUG"
+DEFAULT_FILE_LEVEL = "DEBUG"
 
 
 _ERROR_EVENTS_MAX = 500
@@ -126,6 +126,7 @@ def setup_logging(
 	app_name: str = "app",
 	log_dir: str = "log",
 	log_level: str | int | None = None,
+	file_level: str | int | None = None,
 ) -> None:
 	"""
 	Loguru config similar to your reference script:
@@ -137,6 +138,8 @@ def setup_logging(
 
 	configured_level = log_level if log_level is not None else os.getenv("LOG_LEVEL", "INFO")
 	console_level = _parse_level(configured_level)
+	configured_file_level = file_level if file_level is not None else os.getenv("LOG_FILE_LEVEL", DEFAULT_FILE_LEVEL)
+	resolved_file_level = _parse_level(configured_file_level)
 
 	if not os.path.exists(log_dir):
 		os.makedirs(log_dir)
@@ -161,7 +164,7 @@ def setup_logging(
 				"compression": "zip",
 				"retention": 50,      # keep 50 rotated files
 				"colorize": False,
-				"level": AUDIT_FILE_LEVEL,
+				"level": resolved_file_level,
 			},
 		]
 	)
@@ -180,8 +183,24 @@ def setup_logging(
 	logger.level("SUCCESS", color="<fg #00ff22>")
 
 	logger.info(
-		f"[setup_logging] - logger_initialized - app_name={app_name} console_level={console_level} file_level={AUDIT_FILE_LEVEL} log_path={log_path}"
+		f"[setup_logging] - logger_initialized - app_name={app_name} console_level={console_level} file_level={resolved_file_level} log_path={log_path}"
 	)
+
+
+def get_log_file_path(app_name: str = "app", log_dir: str = "log") -> str:
+	return os.path.join(log_dir, f"{app_name}.log")
+
+
+def read_log_tail(*, app_name: str = "app", log_dir: str = "log", max_lines: int = 400) -> str:
+	path = get_log_file_path(app_name=app_name, log_dir=log_dir)
+	if not os.path.exists(path):
+		return f"Log file not found: {path}"
+	try:
+		with open(path, "r", encoding="utf-8", errors="replace") as f:
+			lines = f.readlines()
+		return "".join(lines[-max(1, int(max_lines)):])
+	except Exception as ex:
+		return f"Failed reading log file: {ex}"
 
 
 def get_logger(component: str):

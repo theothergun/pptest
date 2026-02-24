@@ -370,6 +370,13 @@ class ProxyConfig:
     https: str = ""
     no_proxy: str = ""  # comma separated: "localhost,127.0.0.1,10.1.2.
 
+
+
+@dataclass
+class LoggingConfig:
+    console_level: str = "INFO"
+    file_level: str = "DEBUG"
+
 @dataclass
 class WorkersConfig:
     # These names must match WORKER_* constants
@@ -387,6 +394,7 @@ class AppConfig:
     workers: WorkersConfig = field(default_factory=WorkersConfig)
     persistence: PersistenceConfig = field(default_factory=PersistenceConfig)
     proxy: ProxyConfig = field(default_factory=ProxyConfig)
+    logging: LoggingConfig = field(default_factory=LoggingConfig)
 
 
 _APP_CONFIG: AppConfig | None = None
@@ -563,6 +571,11 @@ def _from_dict(data: dict[str, Any]) -> AppConfig:
         persistence.json_path = get_config_path()
 
     proxy = ProxyConfig(**data.get("proxy", {}))
+    logging_data = data.get("logging", {}) if isinstance(data.get("logging", {}), dict) else {}
+    logging_cfg = LoggingConfig(
+        console_level=str(logging_data.get("console_level", "INFO") or "INFO").upper(),
+        file_level=str(logging_data.get("file_level", "DEBUG") or "DEBUG").upper(),
+    )
 
     return AppConfig(
         auth=auth,
@@ -571,6 +584,7 @@ def _from_dict(data: dict[str, Any]) -> AppConfig:
         workers=workers_cfg,
         persistence=persistence,
         proxy=proxy,
+        logging=logging_cfg,
     )
 
 

@@ -13,7 +13,7 @@ from pages.settings import app_state_view
 from pages.settings import online_status
 from pages.settings import enabled_workers_settings
 from pages.settings import scripts_lab
-from pages.settings import barfi_builder
+from pages.settings import blockly_builder
 from pages.settings.route import route_settings
 from pages.settings.tcp_client import tcp_settings
 from pages.settings import twincat_settings
@@ -80,7 +80,7 @@ def render(container: ui.element, ctx: PageContext) -> None:
 							"children": [
 								{"id": "workers.enabled", "label": f"✅ {t('settings.workers.enabled', 'Enabled Workers')}"},
 								{"id": "workers.scripts", "label": f"💻 {t('settings.workers.scripts', 'Scripts')}"},
-								{"id": "workers.barfi", "label": "🧱 Barfi Builder"},
+								{"id": "workers.blockly", "label": "🧩 Blockly Builder"},
 							],
 						},
 						{
@@ -170,8 +170,8 @@ def render(container: ui.element, ctx: PageContext) -> None:
 									enabled_workers_settings.render(target, ctx)
 								elif panel_id == "workers.scripts":
 									scripts_lab.render(target, ctx)
-								elif panel_id == "workers.barfi":
-									barfi_builder.render(target, ctx)
+								elif panel_id == "workers.blockly":
+									blockly_builder.render(target, ctx)
 								elif panel_id == "connectivity.routes":
 									route_settings.render(target, ctx)
 								elif panel_id == "connectivity.tcp":

@@ -8,7 +8,6 @@ from layout.context import PageContext
 from layout.page_scaffold import build_page
 from services.app_config import get_app_config
 from services.worker_commands import ScriptWorkerCommands as ScriptCommands
-from services.worker_topics import ScriptWorkerTopics as ScriptTopics
 from services.i18n import t
 from loguru import logger
 
@@ -20,7 +19,7 @@ def render(container: ui.element, ctx: PageContext) -> None:
     config = get_app_config()
     enabled_workers = list(config.workers.enabled_workers or [])
 
-    script_handle = worker_registry.get("script_worker") if worker_registry else None
+    script_handle = ctx.script_runtime or (worker_registry.get("script_worker") if worker_registry else None)
 
     page_timers: list = []
     page_subs: list = []
@@ -125,7 +124,7 @@ def render(container: ui.element, ctx: PageContext) -> None:
                 chains_list()
 
     if bus:
-        sub_chains = bus.subscribe(ScriptTopics.CHAINS_LIST)
+        sub_chains = bus.subscribe("VALUE_CHANGED")
         page_subs.append(sub_chains)
 
         def drain_chains() -> None:
@@ -135,7 +134,9 @@ def render(container: ui.element, ctx: PageContext) -> None:
                     msg = sub_chains.queue.get_nowait()
                 except queue.Empty:
                     break
-                chains_state["value"] = msg.payload.get("chains", []) or []
+                if msg.payload.get("key") != ScriptCommands.LIST_CHAINS:
+                    continue
+                chains_state["value"] = msg.payload.get("value", []) or []
                 updated = True
             if updated:
                 chains_list.refresh()

@@ -7,6 +7,7 @@ from nicegui import ui
 from layout.context import PageContext
 from pages.visual_inspection.failure_catalogue import FailureCatalogue, ErrorWeight
 from services.ui.view_action import make_action_event
+from services.ui.registry import UiActionName, UiEvent, ViewName
 
 
 catalogue = FailureCatalogue()
@@ -169,15 +170,15 @@ def create_failure_catalogue_dialog(ctx:PageContext) -> tuple[ui.dialog, callabl
         btn_scrap.set_enabled(failure is not None)
 
     def on_toolbar_click(action_name: str) -> None:
-        action_event = make_action_event(view="vi_failure_catalogue", name=action_name, event="click")
-        if action_event["name"] == "refresh_catalogue":
+        action_event = make_action_event(view=ViewName.VI_FAILURE_CATALOGUE, name=UiActionName(str(action_name)), event=UiEvent.CLICK)
+        if action_event["name"] == UiActionName.REFRESH_CATALOGUE.value:
             refresh_catalogue()
 
     def on_action_click(action_name: str):
         #TO DO make the booking
-        action_event = make_action_event(view="vi_failure_catalogue", name=action_name, event="submit")
-        status = 1 if action_event["name"] == "pass" else 2 if action_event["name"] == "fail" else 3
-        result = "PASS" if action_event["name"] == "pass" else "RECHECK" if action_event["name"] == "fail" else "SCRAP"
+        action_event = make_action_event(view=ViewName.VI_FAILURE_CATALOGUE, name=UiActionName(str(action_name)), event=UiEvent.SUBMIT)
+        status = 1 if action_event["name"] == UiActionName.PASS.value else 2 if action_event["name"] == UiActionName.FAIL.value else 3
+        result = "PASS" if action_event["name"] == UiActionName.PASS.value else "RECHECK" if action_event["name"] == UiActionName.FAIL.value else "SCRAP"
         ctx.set_state_many_and_publish(vc_error_status = status, vc_result = result)
         close()
 

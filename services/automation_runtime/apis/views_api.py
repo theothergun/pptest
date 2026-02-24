@@ -5,6 +5,7 @@ from typing import Any, Iterable, Optional
 
 from services.automation_runtime.apis.ui_api import UiApi
 from services.ui.view_cmd import ViewCommand, parse_view_cmd_payload
+from services.ui.registry import ViewRegistryError
 
 
 def _as_list(value: Any) -> list:
@@ -61,7 +62,10 @@ class _BaseViewApi:
 		payload = self._ui.consume_payload(self._cmd_key, dedupe=dedupe)
 		if payload is None:
 			return None
-		return parse_view_cmd_payload(payload)
+		try:
+			return parse_view_cmd_payload(payload, strict=True)
+		except ViewRegistryError as exc:
+			raise ValueError("invalid view command payload: %s" % str(exc))
 
 	def wait_cmd(
 		self,

@@ -8,11 +8,12 @@ from layout.context import PageContext
 from loguru import logger
 from services.i18n import t
 from services.ui.view_action import publish_standard_view_action
-from services.ui.view_cmd import install_wait_dialog, view_wait_key
+from services.ui.view_cmd import install_wait_dialog
+from services.ui.registry import UiActionName, UiEvent, ViewName, view_wait_key
 
 
 CONTAINER_MGMT_CMD_KEY = "container_management.cmd"
-CONTAINER_MGMT_VIEW = "container_management"
+CONTAINER_MGMT_VIEW = ViewName.CONTAINER_MANAGEMENT
 CONTAINER_MGMT_WAIT_MODAL_KEY = view_wait_key(CONTAINER_MGMT_VIEW)
 
 
@@ -146,29 +147,29 @@ def build_page(ctx: PageContext) -> None:
         add_timer=add_timer,
     )
 
-    def _publish_cmd(cmd: str) -> None:
+    def _publish_cmd(cmd: UiActionName | str) -> None:
         publish_standard_view_action(
             worker_bus=worker_bus,
             view=CONTAINER_MGMT_VIEW,
             cmd_key=CONTAINER_MGMT_CMD_KEY,
             name=cmd,
-            event="click",
+            event=UiEvent.CLICK,
             wait_key=CONTAINER_MGMT_WAIT_MODAL_KEY,
             open_wait=wait_dialog["open"],
-            source_id=CONTAINER_MGMT_VIEW,
+            source_id=CONTAINER_MGMT_VIEW.value,
         )
 
-    def _publish_cmd_payload(cmd: str, **extra: Any) -> None:
+    def _publish_cmd_payload(cmd: UiActionName | str, **extra: Any) -> None:
         publish_standard_view_action(
             worker_bus=worker_bus,
             view=CONTAINER_MGMT_VIEW,
             cmd_key=CONTAINER_MGMT_CMD_KEY,
             name=cmd,
-            event="click",
+            event=UiEvent.CLICK,
             wait_key=CONTAINER_MGMT_WAIT_MODAL_KEY,
             open_wait=wait_dialog["open"],
             extra=extra,
-            source_id=CONTAINER_MGMT_VIEW,
+            source_id=CONTAINER_MGMT_VIEW.value,
         )
 
     def _label(key: str, fallback: str) -> str:
@@ -283,17 +284,17 @@ def build_page(ctx: PageContext) -> None:
                         selected_container_labels.append(selected_container_label_top)
                         ui.button(
                             _label("container_management.search_by_container", "Search by container"),
-                            on_click=lambda: _publish_cmd("search_container"),
+                            on_click=lambda: _publish_cmd(UiActionName.SEARCH_CONTAINER),
                             icon="inventory",
                         ).props("color=primary text-color=white").classes("w-full h-[36px] cm-btn text-white")
                         ui.button(
                             _label("container_management.search_by_serial", "Search by Serialnumber"),
-                            on_click=lambda: _publish_cmd("search_serial"),
+                            on_click=lambda: _publish_cmd(UiActionName.SEARCH_SERIAL),
                             icon="qr_code_scanner",
                         ).props("color=secondary text-color=white").classes("w-full h-[36px] cm-btn text-white")
                         ui.button(
                             _label("container_management.activate", "Activate"),
-                            on_click=lambda: _publish_cmd("activate"),
+                            on_click=lambda: _publish_cmd(UiActionName.ACTIVATE),
                             icon="bolt",
                         ).props("color=positive text-color=white").classes("w-full h-[36px] cm-btn text-white")
 
@@ -321,18 +322,18 @@ def build_page(ctx: PageContext) -> None:
                     with ui.column().classes("cm-actions-col gap-2"):
                         selected_container_label_bottom = ui.label(_fmt_selected_container(selected_container["value"] or "-")).classes("text-xs text-gray-600")
                         selected_container_labels.append(selected_container_label_bottom)
-                        ui.button(t("common.search", "Search"), on_click=lambda: _publish_cmd("search"), icon="search") \
+                        ui.button(t("common.search", "Search"), on_click=lambda: _publish_cmd(UiActionName.SEARCH), icon="search") \
                             .props("color=primary text-color=white").classes("w-full h-[36px] cm-btn text-white")
-                        ui.button(t("common.refresh", "Refresh"), on_click=lambda: _publish_cmd("refresh"), icon="refresh") \
+                        ui.button(t("common.refresh", "Refresh"), on_click=lambda: _publish_cmd(UiActionName.REFRESH), icon="refresh") \
                             .props("color=secondary text-color=white").classes("w-full h-[36px] cm-btn text-white")
                         ui.button(
                             _label("container_management.remove_serial", "Remove Serial"),
-                            on_click=lambda: _publish_cmd_payload("remove_serial", serial=selected_serial.get("value", "")),
+                            on_click=lambda: _publish_cmd_payload(UiActionName.REMOVE_SERIAL, serial=selected_serial.get("value", "")),
                             icon="remove_circle",
                         ).props("color=warning text-color=white").classes("w-full h-[36px] cm-btn text-white")
                         ui.button(
                             _label("container_management.remove_all", "Remove All"),
-                            on_click=lambda: _publish_cmd("remove_all"),
+                            on_click=lambda: _publish_cmd(UiActionName.REMOVE_ALL),
                             icon="delete_forever",
                         ).props("color=negative text-color=white").classes("w-full h-[36px] cm-btn text-white")
                         selected_serial_label = ui.label(_fmt_selected_serial("-")).classes("text-xs text-gray-500")

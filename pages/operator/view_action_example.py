@@ -8,10 +8,10 @@ from nicegui import ui
 from layout.context import PageContext
 from layout.page_scaffold import build_page
 from services.ui.view_action import STANDARD_ACTIONS, make_action_event, publish_standard_view_action
-from services.ui.view_cmd import view_wait_key
+from services.ui.registry import UiActionName, UiEvent, ViewName, view_wait_key
 
 
-EXAMPLE_VIEW = "view_action_example"
+EXAMPLE_VIEW = ViewName.VIEW_ACTION_EXAMPLE
 EXAMPLE_CMD_KEY = "example.actions"
 EXAMPLE_WAIT_KEY = view_wait_key(EXAMPLE_VIEW)
 
@@ -28,7 +28,7 @@ def render(container: ui.element, ctx: PageContext) -> None:
             ui.code(text).classes("w-full")
 
     def on_action(name: str) -> None:
-        action_event = make_action_event(view=EXAMPLE_VIEW, name=name, event="click")
+        action_event = make_action_event(view=EXAMPLE_VIEW, name=UiActionName(str(name)), event=UiEvent.CLICK)
         last_event.clear()
         last_event.update(action_event)
         event_preview.refresh()
@@ -38,10 +38,10 @@ def render(container: ui.element, ctx: PageContext) -> None:
                 worker_bus=ctx.workers.worker_bus,
                 view=EXAMPLE_VIEW,
                 cmd_key=EXAMPLE_CMD_KEY,
-                name=name,
-                event="click",
+                name=UiActionName(str(name)),
+                event=UiEvent.CLICK,
                 wait_key=EXAMPLE_WAIT_KEY,
-                source_id=EXAMPLE_VIEW,
+                source_id=EXAMPLE_VIEW.value,
                 extra={"note": "developer example page"},
             )
 

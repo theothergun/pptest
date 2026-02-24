@@ -43,6 +43,10 @@
     "asset_id": "6e29b1d2-b578-11f0-88e3-005056a8f0c2",
     "station": 6410400821
   },
+  "logging": {
+    "console_level": "TRACE",
+    "file_level": "DEBUG"
+  },
   "persistence": {
     "backend": "json",
     "external_db": {
@@ -52,7 +56,7 @@
     "json_path": "config/app_config.json"
   },
   "proxy": {
-    "enabled": false,
+    "enabled": true,
     "http": "http://192.168.1.26:3128",
     "https": "http://192.168.1.26:3128",
     "no_proxy": "localhost,127.0.0.1,10.1.2.3"
@@ -413,19 +417,7 @@
         "auto_start_chains": [
           {
             "instance_id": "default",
-            "script_name": "itac/packaging/container_scan"
-          },
-          {
-            "instance_id": "default",
-            "script_name": "itac/packaging/container_update"
-          },
-          {
-            "instance_id": "default",
-            "script_name": "itac/packaging/pack_twincat"
-          },
-          {
-            "instance_id": "default",
-            "script_name": "itac/packaging/serialnumber"
+            "script_name": "itac/packaging/container_management"
           }
         ]
       },
@@ -580,12 +572,7 @@
       }
     },
     "enabled_workers": [
-      "script_worker",
-      "tcp_client",
-      "rest_api",
-      "twincat",
-      "itac",
-      "com_device"
+      "itac"
     ]
   }
 }

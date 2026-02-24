@@ -55,6 +55,7 @@ class StepChainContext:
         self.error_message = ""
         self.step_desc = ""
         self._suppress_slow_tick_warning_once = False
+        self._publish_changes = False
 
         self._vars: Dict[str, Any] = {}
         self._ui_state: Optional[Dict[str, Any]] = None
@@ -413,6 +414,15 @@ class PublicStepChainContext:
 
     def set_step_desc(self, value: str) -> None:
         self._ctx.step_desc = value
+
+    def publish_changes(self, enabled: bool = True) -> None:
+        """
+        Control automatic chain state publishing for this script instance.
+
+        enabled=True  -> runtime publishes UPDATE_CHAIN_STATE on ticks.
+        enabled=False -> runtime skips automatic UPDATE_CHAIN_STATE publishes.
+        """
+        self._ctx._publish_changes = bool(enabled)
 
     def snapshot(self) -> Dict[str, Any]:
         ui_state = self._ctx._ui_state if isinstance(self._ctx._ui_state, dict) else {}

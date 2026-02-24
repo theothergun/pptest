@@ -10,6 +10,7 @@ from nicegui import ui
 from layout.context import PageContext
 from services.app_config import DEFAULT_CONFIG_PATH, load_app_config, save_app_config
 from services.worker_commands import ScriptWorkerCommands as Commands
+from services.i18n import t
 from pages.utils.safe_json import safe_format_data
 
 

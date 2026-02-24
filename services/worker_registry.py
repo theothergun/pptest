@@ -143,9 +143,9 @@ class WorkerRegistry:
 
     # ------------------------------------------------------------------ commands
 
-    def send_to(self, name: str, cmd: Cmd, **payload: Any) -> None:
+    def send_to(self, target_worker: str, cmd: Cmd, **payload: Any) -> None:
         with self._lock:
-            h = self._workers.get(name)
+            h = self._workers.get(target_worker)
         if not h:
             return
         h.commands.put((str(cmd), payload))

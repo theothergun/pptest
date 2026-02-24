@@ -54,6 +54,7 @@ class StepChainContext:
         self.error_flag = False
         self.error_message = ""
         self.step_desc = ""
+        self._suppress_slow_tick_warning_once = False
 
         self._vars: Dict[str, Any] = {}
         self._ui_state: Optional[Dict[str, Any]] = None

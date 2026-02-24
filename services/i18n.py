@@ -5,14 +5,12 @@ import json
 import os
 import threading
 from copy import deepcopy
-from datetime import datetime, timezone
 from typing import Any
 
 from loguru import logger
 from nicegui import app
 
 I18N_PATH = "config/i18n/translations.json"
-MISSING_I18N_PATH = "config/i18n/missing_keys.json"
 DEFAULT_LANGUAGE = "en"
 SUPPORTED_LANGUAGES: list[dict[str, str]] = [
     {"code": "en", "label": "English"},
@@ -83,61 +81,18 @@ def _ensure_i18n_file() -> None:
     save_translations(_DEFAULT_TRANSLATIONS)
 
 
-def _ensure_missing_i18n_file() -> None:
-    os.makedirs(os.path.dirname(MISSING_I18N_PATH), exist_ok=True)
-    if os.path.exists(MISSING_I18N_PATH):
-        return
-    with open(MISSING_I18N_PATH, "w", encoding="utf-8") as f:
-        json.dump({}, f, indent=2, ensure_ascii=False, sort_keys=True)
-
-
-def _safe_load_missing_entries() -> dict[str, dict[str, Any]]:
-    _ensure_missing_i18n_file()
-    try:
-        with open(MISSING_I18N_PATH, "r", encoding="utf-8") as f:
-            raw = json.load(f)
-        if not isinstance(raw, dict):
-            return {}
-        return {str(k): v for k, v in raw.items() if isinstance(v, dict)}
-    except Exception:
-        logger.exception(f"[_safe_load_missing_entries] - failed_read_missing_store - path={MISSING_I18N_PATH}")
-        return {}
-
-
-def _safe_write_missing_entries(entries: dict[str, dict[str, Any]]) -> None:
-    tmp_path = f"{MISSING_I18N_PATH}.tmp"
-    with open(tmp_path, "w", encoding="utf-8") as f:
-        json.dump(entries, f, indent=2, ensure_ascii=False, sort_keys=True)
-    os.replace(tmp_path, MISSING_I18N_PATH)
-
-
-def _guess_category(key: str) -> str:
-    if ".tooltip" in key or key.startswith("tooltip"):
-        return "tooltips"
-    prefix = key.split(".", 1)[0]
-    if prefix in {"errors", "status", "buttons", "ui"}:
-        return prefix
-    return "ui"
-
-
 def _capture_missing_key(key: str, default_text: str, *, location: str) -> None:
-    now = datetime.now(timezone.utc).isoformat()
     with _i18n_lock:
-        entries = _safe_load_missing_entries()
-        existing = entries.get(key, {})
-        entries[key] = {
-            "key": key,
-            "default_text": default_text,
-            "first_seen": existing.get("first_seen", now),
-            "last_seen": now,
-            "count": int(existing.get("count", 0)) + 1,
-            "location": location,
-            "category": existing.get("category", _guess_category(key)),
-        }
+        data = load_translations()
+        if key in data:
+            return
+        fallback = str(default_text or key)
+        data[key] = {lang: fallback for lang in SUPPORTED_LANGUAGE_CODES}
         try:
-            _safe_write_missing_entries(entries)
+            save_translations(data)
+            logger.info(f"[_capture_missing_key] - added_missing_key_to_translations - key={key} location={location}")
         except Exception:
-            logger.exception(f"[_capture_missing_key] - failed_write_missing_store - key={key} location={location}")
+            logger.exception(f"[_capture_missing_key] - failed_write_translations - key={key} location={location}")
 
 
 def _get_callsite() -> str:
@@ -235,7 +190,6 @@ def import_rows(rows: list[dict[str, str]]) -> dict[str, dict[str, str]]:
 
 def bootstrap_defaults() -> None:
     _ensure_i18n_file()
-    _ensure_missing_i18n_file()
     data = load_translations()
     merged = deepcopy(data)
     for key, values in _DEFAULT_TRANSLATIONS.items():

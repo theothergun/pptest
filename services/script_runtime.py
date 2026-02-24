@@ -327,7 +327,9 @@ class ScriptRuntime:
                             inst.context.step_elapsed_s = 0.0
                         inst.context.step = next_step
                         inst.next_tick_ts = time.time() + self._get_cycle_time_s(inst.context)
-                    if elapsed_ms > 200:
+                        suppress_slow_warn = bool(getattr(inst.context, "_suppress_slow_tick_warning_once", False))
+                        inst.context._suppress_slow_tick_warning_once = False
+                    if elapsed_ms > 200 and not suppress_slow_warn:
                         self.log.warning(f"[chain] - slow_tick - chain_key={chain_key} duration_ms={elapsed_ms:.2f} cycle={cycle}")
                     self._publish_chain_state(chain_key, inst.context)
                     should_sleep = 0.001

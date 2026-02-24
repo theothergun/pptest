@@ -1808,6 +1808,222 @@
     "sk": "Workeri",
     "zh": "工作器"
   },
+  "common.current": {
+    "cs": "Current",
+    "de": "Current",
+    "en": "Current",
+    "es-MX": "Current",
+    "mk": "Current",
+    "sk": "Current",
+    "zh": "Current"
+  },
+  "common.description": {
+    "cs": "Description",
+    "de": "Description",
+    "en": "Description",
+    "es-MX": "Description",
+    "mk": "Description",
+    "sk": "Description",
+    "zh": "Description"
+  },
+  "common.max": {
+    "cs": "Max",
+    "de": "Max",
+    "en": "Max",
+    "es-MX": "Max",
+    "mk": "Max",
+    "sk": "Max",
+    "zh": "Max"
+  },
+  "common.new": {
+    "cs": "New",
+    "de": "New",
+    "en": "New",
+    "es-MX": "New",
+    "mk": "New",
+    "sk": "New",
+    "zh": "New"
+  },
+  "common.print": {
+    "cs": "Print",
+    "de": "Print",
+    "en": "Print",
+    "es-MX": "Print",
+    "mk": "Print",
+    "sk": "Print",
+    "zh": "Print"
+  },
+  "common.refresh": {
+    "cs": "Refresh",
+    "de": "Refresh",
+    "en": "Refresh",
+    "es-MX": "Refresh",
+    "mk": "Refresh",
+    "sk": "Refresh",
+    "zh": "Refresh"
+  },
+  "common.remove": {
+    "cs": "Remove",
+    "de": "Remove",
+    "en": "Remove",
+    "es-MX": "Remove",
+    "mk": "Remove",
+    "sk": "Remove",
+    "zh": "Remove"
+  },
+  "common.reset": {
+    "cs": "Reset",
+    "de": "Reset",
+    "en": "Reset",
+    "es-MX": "Reset",
+    "mk": "Reset",
+    "sk": "Reset",
+    "zh": "Reset"
+  },
+  "common.search": {
+    "cs": "Search",
+    "de": "Search",
+    "en": "Search",
+    "es-MX": "Search",
+    "mk": "Search",
+    "sk": "Search",
+    "zh": "Search"
+  },
+  "common.start": {
+    "cs": "Start",
+    "de": "Start",
+    "en": "Start",
+    "es-MX": "Start",
+    "mk": "Start",
+    "sk": "Start",
+    "zh": "Start"
+  },
+  "common.stop": {
+    "cs": "Stop",
+    "de": "Stop",
+    "en": "Stop",
+    "es-MX": "Stop",
+    "mk": "Stop",
+    "sk": "Stop",
+    "zh": "Stop"
+  },
+  "container_management.activate": {
+    "cs": "@Activate",
+    "de": "@Activate",
+    "en": "@Activate",
+    "es-MX": "@Activate",
+    "mk": "@Activate",
+    "sk": "@Activate",
+    "zh": "@Activate"
+  },
+  "container_management.remove_all": {
+    "cs": "Remove All",
+    "de": "Remove All",
+    "en": "Remove All",
+    "es-MX": "Remove All",
+    "mk": "Remove All",
+    "sk": "Remove All",
+    "zh": "Remove All"
+  },
+  "container_management.remove_serial": {
+    "cs": "Remove Serial",
+    "de": "Remove Serial",
+    "en": "Remove Serial",
+    "es-MX": "Remove Serial",
+    "mk": "Remove Serial",
+    "sk": "Remove Serial",
+    "zh": "Remove Serial"
+  },
+  "container_management.search_by_container": {
+    "cs": "@Search by container",
+    "de": "@Search by container",
+    "en": "@Search by container",
+    "es-MX": "@Search by container",
+    "mk": "@Search by container",
+    "sk": "@Search by container",
+    "zh": "@Search by container"
+  },
+  "container_management.search_by_serial": {
+    "cs": "@Search by Serialnumber",
+    "de": "@Search by Serialnumber",
+    "en": "@Search by Serialnumber",
+    "es-MX": "@Search by Serialnumber",
+    "mk": "@Search by Serialnumber",
+    "sk": "@Search by Serialnumber",
+    "zh": "@Search by Serialnumber"
+  },
+  "container_management.search_container": {
+    "cs": "Search Container",
+    "de": "Search Container",
+    "en": "Search Container",
+    "es-MX": "Search Container",
+    "mk": "Search Container",
+    "sk": "Search Container",
+    "zh": "Search Container"
+  },
+  "dummy.languages.config": {
+    "cs": "Config",
+    "de": "Config",
+    "en": "Config",
+    "es-MX": "Config",
+    "mk": "Config",
+    "sk": "Config",
+    "zh": "Config"
+  },
+  "dummy.languages.manual_test": {
+    "cs": "Manual Test",
+    "de": "Manual Test",
+    "en": "Manual Test",
+    "es-MX": "Manual Test",
+    "mk": "Manual Test",
+    "sk": "Manual Test",
+    "zh": "Manual Test"
+  },
+  "dummy.languages.test_result": {
+    "cs": "Test Results",
+    "de": "Test Results",
+    "en": "Test Results",
+    "es-MX": "Test Results",
+    "mk": "Test Results",
+    "sk": "Test Results",
+    "zh": "Test Results"
+  },
+  "dummy.languages.title": {
+    "cs": "Dummy",
+    "de": "Dummy",
+    "en": "Dummy",
+    "es-MX": "Dummy",
+    "mk": "Dummy",
+    "sk": "Dummy",
+    "zh": "Dummy"
+  },
+  "errors.none": {
+    "cs": "No active errors 🎉",
+    "de": "No active errors 🎉",
+    "en": "No active errors 🎉",
+    "es-MX": "No active errors 🎉",
+    "mk": "No active errors 🎉",
+    "sk": "No active errors 🎉",
+    "zh": "No active errors 🎉"
+  },
+  "errors.title": {
+    "cs": "Errors",
+    "de": "Errors",
+    "en": "Errors",
+    "es-MX": "Errors",
+    "mk": "Errors",
+    "sk": "Errors",
+    "zh": "Errors"
+  },
+  "header.language": {
+    "cs": "Language",
+    "de": "Language",
+    "en": "Language",
+    "es-MX": "Language",
+    "mk": "Language",
+    "sk": "Language",
+    "zh": "Language"
+  },
   "header.logout": {
     "cs": "Odhlásit",
     "de": "Abmelden",
@@ -1826,6 +2042,375 @@
     "sk": "Prepnúť Nav",
     "zh": "切换 Nav"
   },
+  "header.tooltip.device_panel": {
+    "cs": "Toggle device status panel",
+    "de": "Toggle device status panel",
+    "en": "Toggle device status panel",
+    "es-MX": "Toggle device status panel",
+    "mk": "Toggle device status panel",
+    "sk": "Toggle device status panel",
+    "zh": "Toggle device status panel"
+  },
+  "header.tooltip.language": {
+    "cs": "Choose UI language",
+    "de": "Choose UI language",
+    "en": "Choose UI language",
+    "es-MX": "Choose UI language",
+    "mk": "Choose UI language",
+    "sk": "Choose UI language",
+    "zh": "Choose UI language"
+  },
+  "header.tooltip.logout": {
+    "cs": "Sign out from current session",
+    "de": "Sign out from current session",
+    "en": "Sign out from current session",
+    "es-MX": "Sign out from current session",
+    "mk": "Sign out from current session",
+    "sk": "Sign out from current session",
+    "zh": "Sign out from current session"
+  },
+  "header.tooltip.theme": {
+    "cs": "Switch between light and dark mode",
+    "de": "Switch between light and dark mode",
+    "en": "Switch between light and dark mode",
+    "es-MX": "Switch between light and dark mode",
+    "mk": "Switch between light and dark mode",
+    "sk": "Switch between light and dark mode",
+    "zh": "Switch between light and dark mode"
+  },
+  "header.tooltip.toggle_menu": {
+    "cs": "Toggle navigation menu",
+    "de": "Toggle navigation menu",
+    "en": "Toggle navigation menu",
+    "es-MX": "Toggle navigation menu",
+    "mk": "Toggle navigation menu",
+    "sk": "Toggle navigation menu",
+    "zh": "Toggle navigation menu"
+  },
+  "packaging.container_number": {
+    "cs": "Container",
+    "de": "Container",
+    "en": "Container",
+    "es-MX": "Container",
+    "mk": "Container",
+    "sk": "Container",
+    "zh": "Container"
+  },
+  "packaging.current_serial_number": {
+    "cs": "Current Serial Number",
+    "de": "Current Serial Number",
+    "en": "Current Serial Number",
+    "es-MX": "Current Serial Number",
+    "mk": "Current Serial Number",
+    "sk": "Current Serial Number",
+    "zh": "Current Serial Number"
+  },
+  "packaging.current_step": {
+    "cs": "Feedback",
+    "de": "Feedback",
+    "en": "Feedback",
+    "es-MX": "Feedback",
+    "mk": "Feedback",
+    "sk": "Feedback",
+    "zh": "Feedback"
+  },
+  "packaging.description": {
+    "cs": "Description",
+    "de": "Description",
+    "en": "Description",
+    "es-MX": "Description",
+    "mk": "Description",
+    "sk": "Description",
+    "zh": "Description"
+  },
+  "packaging.instruction_for_worker": {
+    "cs": "Instruction",
+    "de": "Instruction",
+    "en": "Instruction",
+    "es-MX": "Instruction",
+    "mk": "Instruction",
+    "sk": "Instruction",
+    "zh": "Instruction"
+  },
+  "packaging.job_data": {
+    "cs": "Container Data",
+    "de": "Container Data",
+    "en": "Container Data",
+    "es-MX": "Container Data",
+    "mk": "Container Data",
+    "sk": "Container Data",
+    "zh": "Container Data"
+  },
+  "packaging.last_serial_number": {
+    "cs": "Last Serial Number",
+    "de": "Last Serial Number",
+    "en": "Last Serial Number",
+    "es-MX": "Last Serial Number",
+    "mk": "Last Serial Number",
+    "sk": "Last Serial Number",
+    "zh": "Last Serial Number"
+  },
+  "packaging.part_number": {
+    "cs": "Part Number",
+    "de": "Part Number",
+    "en": "Part Number",
+    "es-MX": "Part Number",
+    "mk": "Part Number",
+    "sk": "Part Number",
+    "zh": "Part Number"
+  },
+  "packaging.progress": {
+    "cs": "Fill Progress",
+    "de": "Fill Progress",
+    "en": "Fill Progress",
+    "es-MX": "Fill Progress",
+    "mk": "Fill Progress",
+    "sk": "Fill Progress",
+    "zh": "Fill Progress"
+  },
+  "packaging.quantity": {
+    "cs": "Quantity",
+    "de": "Quantity",
+    "en": "Quantity",
+    "es-MX": "Quantity",
+    "mk": "Quantity",
+    "sk": "Quantity",
+    "zh": "Quantity"
+  },
+  "packaging.subtitle": {
+    "cs": "Live production and operator workflow",
+    "de": "Live production and operator workflow",
+    "en": "Live production and operator workflow",
+    "es-MX": "Live production and operator workflow",
+    "mk": "Live production and operator workflow",
+    "sk": "Live production and operator workflow",
+    "zh": "Live production and operator workflow"
+  },
+  "packaging.title": {
+    "cs": "Packaging",
+    "de": "Packaging",
+    "en": "Packaging",
+    "es-MX": "Packaging",
+    "mk": "Packaging",
+    "sk": "Packaging",
+    "zh": "Packaging"
+  },
+  "packaging.total_bad": {
+    "cs": "Bad",
+    "de": "Bad",
+    "en": "Bad",
+    "es-MX": "Bad",
+    "mk": "Bad",
+    "sk": "Bad",
+    "zh": "Bad"
+  },
+  "packaging.total_good": {
+    "cs": "Good",
+    "de": "Good",
+    "en": "Good",
+    "es-MX": "Good",
+    "mk": "Good",
+    "sk": "Good",
+    "zh": "Good"
+  },
+  "packaging.wait_title": {
+    "cs": "Please wait",
+    "de": "Please wait",
+    "en": "Please wait",
+    "es-MX": "Please wait",
+    "mk": "Please wait",
+    "sk": "Please wait",
+    "zh": "Please wait"
+  },
+  "packaging.working": {
+    "cs": "Working ...",
+    "de": "Working ...",
+    "en": "Working ...",
+    "es-MX": "Working ...",
+    "mk": "Working ...",
+    "sk": "Working ...",
+    "zh": "Working ..."
+  },
+  "settings.connectivity.com": {
+    "cs": "COM Device",
+    "de": "COM Device",
+    "en": "COM Device",
+    "es-MX": "COM Device",
+    "mk": "COM Device",
+    "sk": "COM Device",
+    "zh": "COM Device"
+  },
+  "settings.connectivity.itac": {
+    "cs": "iTAC",
+    "de": "iTAC",
+    "en": "iTAC",
+    "es-MX": "iTAC",
+    "mk": "iTAC",
+    "sk": "iTAC",
+    "zh": "iTAC"
+  },
+  "settings.connectivity.opcua": {
+    "cs": "OPC UA",
+    "de": "OPC UA",
+    "en": "OPC UA",
+    "es-MX": "OPC UA",
+    "mk": "OPC UA",
+    "sk": "OPC UA",
+    "zh": "OPC UA"
+  },
+  "settings.connectivity.rest": {
+    "cs": "REST APIs",
+    "de": "REST APIs",
+    "en": "REST APIs",
+    "es-MX": "REST APIs",
+    "mk": "REST APIs",
+    "sk": "REST APIs",
+    "zh": "REST APIs"
+  },
+  "settings.connectivity.routes": {
+    "cs": "Routes",
+    "de": "Routes",
+    "en": "Routes",
+    "es-MX": "Routes",
+    "mk": "Routes",
+    "sk": "Routes",
+    "zh": "Routes"
+  },
+  "settings.connectivity.tcp": {
+    "cs": "TCP Clients",
+    "de": "TCP Clients",
+    "en": "TCP Clients",
+    "es-MX": "TCP Clients",
+    "mk": "TCP Clients",
+    "sk": "TCP Clients",
+    "zh": "TCP Clients"
+  },
+  "settings.connectivity.title": {
+    "cs": "Connectivity",
+    "de": "Connectivity",
+    "en": "Connectivity",
+    "es-MX": "Connectivity",
+    "mk": "Connectivity",
+    "sk": "Connectivity",
+    "zh": "Connectivity"
+  },
+  "settings.connectivity.twincat": {
+    "cs": "TwinCAT",
+    "de": "TwinCAT",
+    "en": "TwinCAT",
+    "es-MX": "TwinCAT",
+    "mk": "TwinCAT",
+    "sk": "TwinCAT",
+    "zh": "TwinCAT"
+  },
+  "settings.general.core": {
+    "cs": "General Settings",
+    "de": "General Settings",
+    "en": "General Settings",
+    "es-MX": "General Settings",
+    "mk": "General Settings",
+    "sk": "General Settings",
+    "zh": "General Settings"
+  },
+  "settings.general.global_vars": {
+    "cs": "Global Variables",
+    "de": "Global Variables",
+    "en": "Global Variables",
+    "es-MX": "Global Variables",
+    "mk": "Global Variables",
+    "sk": "Global Variables",
+    "zh": "Global Variables"
+  },
+  "settings.general.startup": {
+    "cs": "Startup",
+    "de": "Startup",
+    "en": "Startup",
+    "es-MX": "Startup",
+    "mk": "Startup",
+    "sk": "Startup",
+    "zh": "Startup"
+  },
+  "settings.general.themes": {
+    "cs": "Color Themes",
+    "de": "Color Themes",
+    "en": "Color Themes",
+    "es-MX": "Color Themes",
+    "mk": "Color Themes",
+    "sk": "Color Themes",
+    "zh": "Color Themes"
+  },
+  "settings.general.title": {
+    "cs": "General",
+    "de": "General",
+    "en": "General",
+    "es-MX": "General",
+    "mk": "General",
+    "sk": "General",
+    "zh": "General"
+  },
+  "settings.general.users": {
+    "cs": "User Management",
+    "de": "User Management",
+    "en": "User Management",
+    "es-MX": "User Management",
+    "mk": "User Management",
+    "sk": "User Management",
+    "zh": "User Management"
+  },
+  "settings.languages.manager": {
+    "cs": "Language Manager",
+    "de": "Language Manager",
+    "en": "Language Manager",
+    "es-MX": "Language Manager",
+    "mk": "Language Manager",
+    "sk": "Language Manager",
+    "zh": "Language Manager"
+  },
+  "settings.languages.title": {
+    "cs": "Languages",
+    "de": "Languages",
+    "en": "Languages",
+    "es-MX": "Languages",
+    "mk": "Languages",
+    "sk": "Languages",
+    "zh": "Languages"
+  },
+  "settings.runtime.app_state": {
+    "cs": "Application Variables",
+    "de": "Application Variables",
+    "en": "Application Variables",
+    "es-MX": "Application Variables",
+    "mk": "Application Variables",
+    "sk": "Application Variables",
+    "zh": "Application Variables"
+  },
+  "settings.runtime.online": {
+    "cs": "Online Status",
+    "de": "Online Status",
+    "en": "Online Status",
+    "es-MX": "Online Status",
+    "mk": "Online Status",
+    "sk": "Online Status",
+    "zh": "Online Status"
+  },
+  "settings.runtime.title": {
+    "cs": "Runtime",
+    "de": "Runtime",
+    "en": "Runtime",
+    "es-MX": "Runtime",
+    "mk": "Runtime",
+    "sk": "Runtime",
+    "zh": "Runtime"
+  },
+  "settings.sections": {
+    "cs": "Sections",
+    "de": "Sections",
+    "en": "Sections",
+    "es-MX": "Sections",
+    "mk": "Sections",
+    "sk": "Sections",
+    "zh": "Sections"
+  },
   "settings.subtitle": {
     "cs": "Spravovat nastavení aplikace a konfiguraci workerů.",
     "de": "Anwendungseinstellungen und Worker-Konfiguration verwalten.",
@@ -1843,5 +2428,50 @@
     "mk": "Поставки",
     "sk": "Nastavenia",
     "zh": "设置"
+  },
+  "settings.tooltip.collapse": {
+    "cs": "Collapse all sections",
+    "de": "Collapse all sections",
+    "en": "Collapse all sections",
+    "es-MX": "Collapse all sections",
+    "mk": "Collapse all sections",
+    "sk": "Collapse all sections",
+    "zh": "Collapse all sections"
+  },
+  "settings.tooltip.expand": {
+    "cs": "Expand all sections",
+    "de": "Expand all sections",
+    "en": "Expand all sections",
+    "es-MX": "Expand all sections",
+    "mk": "Expand all sections",
+    "sk": "Expand all sections",
+    "zh": "Expand all sections"
+  },
+  "settings.workers.enabled": {
+    "cs": "Enabled Workers",
+    "de": "Enabled Workers",
+    "en": "Enabled Workers",
+    "es-MX": "Enabled Workers",
+    "mk": "Enabled Workers",
+    "sk": "Enabled Workers",
+    "zh": "Enabled Workers"
+  },
+  "settings.workers.scripts": {
+    "cs": "Scripts",
+    "de": "Scripts",
+    "en": "Scripts",
+    "es-MX": "Scripts",
+    "mk": "Scripts",
+    "sk": "Scripts",
+    "zh": "Scripts"
+  },
+  "settings.workers.title": {
+    "cs": "Workers",
+    "de": "Workers",
+    "en": "Workers",
+    "es-MX": "Workers",
+    "mk": "Workers",
+    "sk": "Workers",
+    "zh": "Workers"
   }
 }

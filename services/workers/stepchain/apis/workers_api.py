@@ -78,6 +78,11 @@ class WorkersApi:
 	) -> dict:
 		if timeout_s <= 0:
 			timeout_s = 0.01
+		# Blocking waits are intentional in scripts; suppress one slow-tick warning.
+		try:
+			self._ctx._suppress_slow_tick_warning_once = True
+		except Exception:
+			pass
 
 		bus = getattr(self._ctx, "worker_bus", None)
 		if bus is None or not hasattr(bus, "subscribe_many"):

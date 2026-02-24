@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from services.automation_runtime.context import PublicAutomationContext
 from services.ui.view_cmd import parse_view_cmd_payload
+from services.ui.registry import UiActionName
 
 
 def _extract_cmd_and_payload(raw_payload: dict | None) -> tuple[str, dict]:
@@ -25,7 +26,7 @@ def main(ctx: PublicAutomationContext):
         return
 
     msg = ctx.view.container_management.consume_view_command()
-    if msg and msg.action.name == "remove_serial":
+    if msg and str(msg.action.name) == UiActionName.REMOVE_SERIAL.value:
         serial = msg.payload.get("serial")
     print(msg)
 

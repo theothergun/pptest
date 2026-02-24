@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from services.ui.view_cmd import publish_view_cmd
+from services.ui.registry import UiActionName, UiEvent, ViewName, to_view_action
 
 
 @dataclass(frozen=True)
@@ -11,7 +12,7 @@ class StandardViewAction:
     name: str
     description: str
     icon: str
-    event: str = "click"
+    event: str = UiEvent.CLICK.value
 
 
 STANDARD_ACTIONS: list[StandardViewAction] = [
@@ -36,21 +37,25 @@ STANDARD_ACTIONS: list[StandardViewAction] = [
 ]
 
 
-def make_action_event(view: str, name: str, event: str = "click") -> dict[str, str]:
-    return {
-        "view": str(view),
-        "name": str(name),
-        "event": str(event),
-    }
+def make_action_event(
+    view: ViewName | str,
+    name: UiActionName | str,
+    event: UiEvent | str = UiEvent.CLICK.value,
+) -> dict[str, str]:
+    return to_view_action(
+        view=ViewName(str(getattr(view, "value", view))),
+        action=UiActionName(str(getattr(name, "value", name))),
+        event=UiEvent(str(getattr(event, "value", event))),
+    )
 
 
 def publish_standard_view_action(
     *,
     worker_bus,
-    view: str,
+    view: ViewName | str,
     cmd_key: str,
-    name: str,
-    event: str = "click",
+    name: UiActionName | str,
+    event: UiEvent | str = UiEvent.CLICK.value,
     wait_key: str | None = None,
     open_wait=None,
     extra: dict[str, Any] | None = None,
@@ -62,10 +67,10 @@ def publish_standard_view_action(
 
     publish_view_cmd(
         worker_bus=worker_bus,
-        view=view,
+        view=str(getattr(view, "value", view)),
         cmd_key=cmd_key,
-        name=name,
-        event=event,
+        name=str(getattr(name, "value", name)),
+        event=str(getattr(event, "value", event)),
         wait_key=wait_key,
         open_wait=open_wait,
         extra=merged_extra,

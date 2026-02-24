@@ -8,6 +8,7 @@ from typing import Any, Optional, Union
 from services.worker_topics import WorkerTopics
 from services.worker_commands import ScriptWorkerCommands as Commands
 from services.ui.view_cmd import ViewCommand, parse_view_cmd_payload
+from services.ui.registry import ViewRegistryError
 
 from services.automation_runtime.apis.api_utils import to_int, to_str
 import uuid
@@ -192,7 +193,10 @@ class UiApi:
 		payload = self.consume_payload(key, dedupe=dedupe)
 		if payload is None:
 			return None
-		return parse_view_cmd_payload(payload)
+		try:
+			return parse_view_cmd_payload(payload, strict=True)
+		except ViewRegistryError as exc:
+			raise ValueError("invalid view command payload: %s" % str(exc))
 
 	def consume_view_cmd(
 		self,
@@ -335,7 +339,10 @@ class UiApi:
 			if isinstance(meta, dict):
 				payload = dict(payload)
 				payload["source_id"] = str(meta.get("source_id") or "")
-		return parse_view_cmd_payload(payload)
+		try:
+			return parse_view_cmd_payload(payload, strict=True)
+		except ViewRegistryError as exc:
+			raise ValueError("invalid view command payload: %s" % str(exc))
 
 	# -------- AppState bridge helpers (persisted UI variables) --------
 

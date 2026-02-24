@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import time
 from services.automation_runtime.context import PublicAutomationContext
+from services.ui.registry import UiActionName, ViewName, view_wait_key
 
 
 def main(ctx: PublicAutomationContext):
@@ -13,26 +14,26 @@ def main(ctx: PublicAutomationContext):
 
     step = ctx.step
     msg = ctx.ui.consume_view_cmd(
-        "view.cmd.packaging_nox",
-        commands=["start", "stop", "refresh", "reset"],
+        "view.cmd.%s" % ViewName.PACKAGING_NOX.value,
+        commands=[UiActionName.START.value, UiActionName.STOP.value, UiActionName.REFRESH.value, UiActionName.RESET.value],
     )
     step = ctx.worker.plc_value("packaging_station" , "MAIN.module.zenonVisu.Stop")
     action =  (msg or {}).get("action", {}) if msg else {}
     cmd = str(action.get("name") or "")
 
-    if cmd == "start":
-        ctx.ui.popup_wait_close(key="view.wait.packaging_nox")
+    if cmd == UiActionName.START.value:
+        ctx.ui.popup_wait_close(key=view_wait_key(ViewName.PACKAGING_NOX))
         ctx.view.set_button_enabled(button_key="start",enabled=False)
         ctx.view.set_button_enabled(button_key="stop", enabled=True)
         ctx.worker.plc_write("packaging_station", "MAIN.module.zenonVisu.Stop", False)
-    if cmd == "stop":
-        ctx.ui.popup_wait_close(key="view.wait.packaging_nox")
+    if cmd == UiActionName.STOP.value:
+        ctx.ui.popup_wait_close(key=view_wait_key(ViewName.PACKAGING_NOX))
         ctx.view.set_button_enabled(button_key="stop",enabled=False)
         ctx.view.set_button_enabled(button_key="start", enabled=True)
         ctx.worker.plc_write("packaging_station", "MAIN.module.zenonVisu.Stop", True)
-    if cmd == "refresh":
+    if cmd == UiActionName.REFRESH.value:
         ctx.set_state("update_container", True)
-    if cmd == "reset":
+    if cmd == UiActionName.RESET.value:
         ctx.worker.plc_write("packaging_station", "MAIN.module.zenonVisu.Reset", True)
         wait = ctx.wait(seconds=3,next_step=2)
         ctx.set_state("update_container", True)

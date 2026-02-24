@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import time
 from services.automation_runtime.context import PublicAutomationContext
+from services.ui.registry import UiActionName, ViewName
 
 
 def main(ctx: PublicAutomationContext):
@@ -10,7 +11,7 @@ def main(ctx: PublicAutomationContext):
     Uses ctx.view.packaging (alias: ctx.view.packagin).
     """
     ctx.set_cycle_time(1)
-    msg = ctx.ui.consume_view_cmd("view.cmd.packaging_nox", command="reset")
+    msg = ctx.ui.consume_view_cmd("view.cmd.%s" % ViewName.PACKAGING_NOX.value, command=UiActionName.RESET.value)
 
     return
     step = ctx.step

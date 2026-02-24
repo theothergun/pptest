@@ -8,12 +8,13 @@ from services.app_config import get_app_config
 from services.i18n import t
 from loguru import logger
 from services.ui_theme import get_theme_color
-from services.ui.view_cmd import install_wait_dialog, view_wait_key
+from services.ui.view_cmd import install_wait_dialog
+from services.ui.registry import UiActionName, UiEvent, ViewName, view_wait_key
 from services.ui.view_action import publish_standard_view_action
 
 
 PACKAGING_CMD_KEY = "packaging.cmd"
-PACKAGING_VIEW = "packaging"
+PACKAGING_VIEW = ViewName.PACKAGING
 PACKAGING_WAIT_MODAL_KEY = view_wait_key(PACKAGING_VIEW)
 
 
@@ -123,16 +124,16 @@ def build_page(ctx: PageContext) -> None:
 		add_timer=add_timer,
 	)
 
-	def _publish_cmd(cmd: str) -> None:
+	def _publish_cmd(cmd: UiActionName | str) -> None:
 		publish_standard_view_action(
 			worker_bus=worker_bus,
 			view=PACKAGING_VIEW,
 			cmd_key=PACKAGING_CMD_KEY,
 			name=cmd,
-			event="click",
+			event=UiEvent.CLICK,
 			wait_key=PACKAGING_WAIT_MODAL_KEY,
 			open_wait=wait_dialog["open"],
-			source_id=PACKAGING_VIEW,
+			source_id=PACKAGING_VIEW.value,
 		)
 
 	def _input_box_width() -> str:
@@ -271,15 +272,15 @@ def build_page(ctx: PageContext) -> None:
 			ui_refs["qty_progress"] = ui.linear_progress(value=0.0).classes("w-full mt-1")
 
 		with ui.row().classes("pack-card pack-fade w-full gap-3 justify-start p-3"):
-			ui.button(t("common.remove", "Remove"), icon="delete", on_click=lambda: _publish_cmd("remove")) \
+			ui.button(t("common.remove", "Remove"), icon="delete", on_click=lambda: _publish_cmd(UiActionName.REMOVE)) \
 				.props("outline color=negative").classes("pack-btn w-[140px] h-[48px]")
-			ui.button(t("common.print", "Print"), icon="print", on_click=lambda: _publish_cmd("print")) \
+			ui.button(t("common.print", "Print"), icon="print", on_click=lambda: _publish_cmd(UiActionName.PRINT)) \
 				.props("outline color=primary").classes("pack-btn w-[140px] h-[48px]")
-			ui.button(t("common.new", "New"), icon="add", on_click=lambda: _publish_cmd("new")) \
+			ui.button(t("common.new", "New"), icon="add", on_click=lambda: _publish_cmd(UiActionName.NEW)) \
 				.props("outline color=positive").classes("pack-btn w-[140px] h-[48px]")
-			ui.button(t("common.refresh", "Refresh"), icon="refresh", on_click=lambda: _publish_cmd("refresh")) \
+			ui.button(t("common.refresh", "Refresh"), icon="refresh", on_click=lambda: _publish_cmd(UiActionName.REFRESH)) \
 				.props("outline color=secondary").classes("pack-btn w-[140px] h-[48px]")
-			ui.button(t("common.reset", "Reset"), icon="restart_alt", on_click=lambda: _publish_cmd("reset")) \
+			ui.button(t("common.reset", "Reset"), icon="restart_alt", on_click=lambda: _publish_cmd(UiActionName.RESET)) \
 				.props("outline color=warning").classes("pack-btn w-[140px] h-[48px]")
 
 	add_timer(0.2, _apply_instruction_feedback_colors)

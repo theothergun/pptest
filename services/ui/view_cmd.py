@@ -4,28 +4,37 @@ from __future__ import annotations
 import time
 import queue
 from dataclasses import dataclass, field
-from typing import Any, Callable, Literal, Optional
+from typing import Any, Callable, Optional
 
 from nicegui import ui
 from loguru import logger
 
 from services.worker_topics import WorkerTopics
+from services.ui.registry import (
+	UiActionName,
+	UiEvent,
+	ViewName,
+	ViewRegistryError,
+	parse_view_action,
+	view_wait_key,
+)
 
-ViewName = Literal["container_management", "packaging", "packaging_nox"]
-ViewEvent = Literal["click", "load", "refresh", "submit"]
+
+def _raw_value(value: Any) -> str:
+	return str(getattr(value, "value", value))
 
 
 @dataclass(frozen=True)
 class ViewAction:
 	view: ViewName | str
-	name: str
-	event: ViewEvent | str = "click"
+	name: UiActionName | str
+	event: UiEvent | str = UiEvent.CLICK.value
 
 	def to_dict(self) -> dict[str, str]:
 		return {
-			"view": str(self.view),
-			"name": str(self.name),
-			"event": str(self.event),
+			"view": _raw_value(self.view),
+			"name": _raw_value(self.name),
+			"event": _raw_value(self.event),
 		}
 
 
@@ -43,13 +52,13 @@ class ViewCommand:
 		*,
 		view: str,
 		name: str,
-		event: str = "click",
+		event: str = UiEvent.CLICK.value,
 		wait_key: str | None = None,
 		source_id: str | None = None,
 		payload: dict[str, Any] | None = None,
 	) -> "ViewCommand":
 		return cls(
-			action=ViewAction(view=str(view), name=str(name), event=str(event)),
+			action=ViewAction(view=_raw_value(view), name=_raw_value(name), event=_raw_value(event)),
 			event_id=int(time.time_ns()),
 			wait_modal_key=str(wait_key) if wait_key else None,
 			source_id=str(source_id or "ui"),
@@ -58,12 +67,12 @@ class ViewCommand:
 
 	def to_bus_dict(self, cmd_key: str) -> dict[str, Any]:
 		return {
-			"view": self.action.view,
+			"view": _raw_value(self.action.view),
 			"cmd_key": cmd_key,
 			"action": {
-				"view": self.action.view,
-				"name": self.action.name,
-				"event": self.action.event,
+				"view": _raw_value(self.action.view),
+				"name": _raw_value(self.action.name),
+				"event": _raw_value(self.action.event),
 			},
 			"event_id": self.event_id,
 			"wait_modal_key": self.wait_modal_key,
@@ -95,7 +104,7 @@ class ViewCommand:
 			action=ViewAction(
 				view=action.get("view") or data.get("view"),
 				name=action.get("name", ""),
-				event=action.get("event", "click"),
+				event=action.get("event", UiEvent.CLICK.value),
 			),
 			event_id=int(data.get("event_id", 0)),
 			wait_modal_key=data.get("wait_modal_key"),
@@ -108,7 +117,7 @@ class ViewCommand:
 ViewCommandMessage = ViewCommand
 
 
-def parse_view_cmd_payload(payload: Any) -> ViewCommand | None:
+def parse_view_cmd_payload(payload: Any, *, strict: bool = True) -> ViewCommand | None:
 	"""Best-effort parser for incoming view command payload dictionaries."""
 	if not isinstance(payload, dict):
 		return None
@@ -117,7 +126,7 @@ def parse_view_cmd_payload(payload: Any) -> ViewCommand | None:
 		return None
 	view = str(action_raw.get("view") or payload.get("view") or "").strip()
 	name = str(action_raw.get("name") or "").strip()
-	event = str(action_raw.get("event") or "click").strip() or "click"
+	event = str(action_raw.get("event") or UiEvent.CLICK.value).strip() or UiEvent.CLICK.value
 	if not view or not name:
 		return None
 	try:
@@ -129,11 +138,17 @@ def parse_view_cmd_payload(payload: Any) -> ViewCommand | None:
 	data["source_id"] = str(payload.get("source_id", "ui"))
 	wait_modal_key = payload.get("wait_modal_key")
 	data["wait_modal_key"] = str(wait_modal_key) if wait_modal_key is not None else None
+	if strict:
+		parse_view_action(view=view, name=name, event=event)
 	return ViewCommand.from_bus_dict(data)
 
 
-def view_wait_key(view: str) -> str:
-	return "view.wait.%s" % str(view or "").strip()
+def parse_view_cmd_payload_or_error(payload: Any) -> ViewCommand:
+	cmd = parse_view_cmd_payload(payload, strict=True)
+	if cmd is None:
+		raise ViewRegistryError("invalid view command payload: missing action/view/name")
+	return cmd
+
 
 
 def install_wait_dialog(
@@ -257,7 +272,7 @@ def publish_view_cmd(
 	view: str,
 	cmd_key: str,
 	name: str,
-	event: str = "click",
+	event: str = UiEvent.CLICK.value,
 	wait_key: Optional[str] = None,
 	open_wait: Optional[Callable[[], Any]] = None,
 	extra: Optional[dict] = None,

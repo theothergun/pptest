@@ -10,11 +10,12 @@ from loguru import logger
 from services.app_config import get_app_config
 from services.ui_theme import get_theme_color
 from services.ui.view_action import publish_standard_view_action
-from services.ui.view_cmd import install_wait_dialog, view_wait_key
+from services.ui.view_cmd import install_wait_dialog
+from services.ui.registry import UiActionName, UiEvent, ViewName, view_wait_key
 
 
 PACKAGING_CMD_KEY = "packaging.cmd"
-PACKAGING_NOX_VIEW = "packaging_nox"
+PACKAGING_NOX_VIEW = ViewName.PACKAGING_NOX
 PACKAGING_NOX_WAIT_MODAL_KEY = view_wait_key(PACKAGING_NOX_VIEW)
 
 
@@ -91,16 +92,16 @@ def build_page(ctx: PageContext) -> None:
 		"btn_refresh": None,
 	}
 
-	def _publish_cmd(cmd: str) -> None:
+	def _publish_cmd(cmd: UiActionName | str) -> None:
 		publish_standard_view_action(
 			worker_bus=worker_bus,
 			view=PACKAGING_NOX_VIEW,
 			cmd_key=PACKAGING_CMD_KEY,
 			name=cmd,
-			event="click",
+			event=UiEvent.CLICK,
 			wait_key=PACKAGING_NOX_WAIT_MODAL_KEY,
 			open_wait=wait_dialog["open"],
-			source_id=PACKAGING_NOX_VIEW,
+			source_id=PACKAGING_NOX_VIEW.value,
 		)
 
 	def _do_reset_header_counters() -> None:
@@ -409,13 +410,13 @@ def build_page(ctx: PageContext) -> None:
 					lbl_step.bind_text_from(ctx.state, "work_feedback", backward=lambda n: str(n or ""))
 
 				with ui.row().classes("w-full gap-2 justify-start"):
-					ui_refs["btn_start"] = ui.button(t("common.start", "Start"), icon="play_arrow", on_click=lambda: _publish_cmd("start")) \
+					ui_refs["btn_start"] = ui.button(t("common.start", "Start"), icon="play_arrow", on_click=lambda: _publish_cmd(UiActionName.START)) \
 						.props("color=positive text-color=white").classes("pack-btn w-[132px] h-[42px] text-white")
-					ui_refs["btn_stop"] = ui.button(t("common.stop", "Stop"), icon="stop", on_click=lambda: _publish_cmd("stop")) \
+					ui_refs["btn_stop"] = ui.button(t("common.stop", "Stop"), icon="stop", on_click=lambda: _publish_cmd(UiActionName.STOP)) \
 						.props("color=negative text-color=white").classes("pack-btn w-[132px] h-[42px] text-white")
-					ui_refs["btn_reset"] = ui.button(t("common.reset", "Reset"), icon="restart_alt", on_click=lambda: _publish_cmd("reset")) \
+					ui_refs["btn_reset"] = ui.button(t("common.reset", "Reset"), icon="restart_alt", on_click=lambda: _publish_cmd(UiActionName.RESET)) \
 						.props("color=info text-color=white").classes("pack-btn w-[132px] h-[42px] text-white")
-					ui_refs["btn_refresh"] = ui.button(t("common.refresh", "Refresh"), icon="refresh", on_click=lambda: _publish_cmd("refresh")) \
+					ui_refs["btn_refresh"] = ui.button(t("common.refresh", "Refresh"), icon="refresh", on_click=lambda: _publish_cmd(UiActionName.REFRESH)) \
 						.props("color=secondary text-color=white").classes("pack-btn w-[132px] h-[42px] text-white")
 
 	# --------------------------

@@ -3,7 +3,9 @@ from __future__ import annotations
 import time
 from services.automation_runtime.context import PublicAutomationContext
 
-WAIT_MODAL_KEY = "view.wait.packaging_nox"
+from services.ui.registry import ViewName, view_wait_key
+
+WAIT_MODAL_KEY = view_wait_key(ViewName.PACKAGING_NOX)
 
 def main(ctx: PublicAutomationContext):
     """
@@ -44,7 +46,7 @@ def main(ctx: PublicAutomationContext):
             ctx.data["pack_info_result"] = pack_info_result
             ctx.goto(20)
         if pack_info_result["return_value"] == 0:
-            ctx.ui.popup_close('view.wait.packaging_nox')
+            ctx.ui.popup_close(WAIT_MODAL_KEY)
             ctx.goto(30)
 
     elif step == 20:
@@ -62,10 +64,10 @@ def main(ctx: PublicAutomationContext):
         result_popup = ctx.ui.popup_confirm(key="confirm_retry", message="Please scan a Packaging Box",
                                             ok_text="retry?")
         if result_popup:
-            ctx.ui.popup_wait_open(key="view.wait.packaging_nox")
+            ctx.ui.popup_wait_open(key=WAIT_MODAL_KEY)
             ctx.goto(10)
         else:
-            ctx.ui.popup_close('view.wait.packaging_nox')
+            ctx.ui.popup_close(WAIT_MODAL_KEY)
     elif step == 30:
         result = ctx.data.get("pack_info_result")
         result = result["result"]["outArgs"]

@@ -9,6 +9,7 @@ from layout.context import PageContext
 from layout.page_scaffold import build_page
 from pages.visual_inspection.dialog import create_failure_catalogue_dialog
 from services.ui.view_action import make_action_event
+from services.ui.registry import UiActionName, UiEvent, ViewName
 
 BG_Q_CLASSES = {"bg-positive", "bg-warning", "bg-negative", "bg-info"}
 
@@ -45,7 +46,7 @@ def render(container: ui.element, ctx: PageContext) -> None:
 
     # listeners can be anywhere, but only need to be registered once per page build/render
     def on_action_clicked(action_id, action:Action):
-        action_event = make_action_event(view="vi_home", name=str(action_id), event="click")
+        action_event = make_action_event(view=ViewName.VI_HOME, name=UiActionName(str(action_id)), event=UiEvent.CLICK)
         action_name = action_event["name"]
 
         # example behavior: toggle active state
@@ -53,26 +54,26 @@ def render(container: ui.element, ctx: PageContext) -> None:
             #ctx.action_bar.set_active(action_id, not action.is_active)
 
             # example: enable "save" after refresh is active
-            if action_name == "start_stop":
+            if action_name == UiActionName.START_STOP.value:
                 ui.notify(f"clicked: {action_id}")
                 #ctx.action_bar.set_active(action_id, not action.is_active)
                 ctx.action_bar.update(action_id,active= not action.is_active)
                 ctx.action_bar.set_enabled("unlock", not action.is_active)
 
-            if action_name == "ltc_status":
+            if action_name == UiActionName.LTC_STATUS.value:
                 ctx.set_state_and_publish("ltc_error_status", (ctx.state.ltc_error_status+1)%4)
                 ui.notify(f"new ltc status = {ctx.state.ltc_error_status}")
 
-            if action_name == "vc_status":
+            if action_name == UiActionName.VC_STATUS.value:
                 #ctx.state.vc_error_status = (ctx.state.vc_error_status+1)%4
                 ctx.set_state_and_publish("vc_error_status", (ctx.state.vc_error_status + 1) % 4)
                 ui.notify(f"new vc status = {ctx.state.vc_error_status}")
 
-            if action_name == "failure_catalogue":
+            if action_name == UiActionName.FAILURE_CATALOGUE.value:
                 ui.notify("failures")
                 open_catalogue(sn="1234567", pn="ABC-999")
 
-            if action_name == "unlock":
+            if action_name == UiActionName.UNLOCK.value:
                 #ctx.state.ltc_leak_rate +=1
                 ctx.set_state_and_publish("ltc_leak_rate", (ctx.state.vc_error_status + 1) % 4)
 

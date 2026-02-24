@@ -7,6 +7,7 @@ from typing import Any, Optional, Union
 
 from services.worker_topics import WorkerTopics
 from services.worker_commands import ScriptWorkerCommands as Commands
+from services.ui.view_cmd import ViewCommand, parse_view_cmd_payload
 
 from services.automation_runtime.apis.api_utils import to_int, to_str
 import uuid
@@ -181,6 +182,18 @@ class UiApi:
 		self._ctx._vars[last_fallback_key] = fallback
 		return payload
 
+	def consume_view_command_payload(
+		self,
+		key: str,
+		*,
+		dedupe: bool = True,
+	) -> Optional[ViewCommand]:
+		"""Consume cmd-key payload and parse it into ViewCommand."""
+		payload = self.consume_payload(key, dedupe=dedupe)
+		if payload is None:
+			return None
+		return parse_view_cmd_payload(payload)
+
 	def consume_view_cmd(
 		self,
 		pattern: str = "view.cmd.*",
@@ -293,6 +306,36 @@ class UiApi:
 			"ts": best_ts,
 		}
 		return out
+
+	def consume_view_command(
+		self,
+		pattern: str = "view.cmd.*",
+		*,
+		command: Optional[str] = None,
+		commands: Optional[list[str]] = None,
+		event: Optional[str] = None,
+		events: Optional[list[str]] = None,
+		dedupe: bool = True,
+		normalize: bool = True,
+	) -> Optional[ViewCommand]:
+		"""Consume latest view topic command as a typed ViewCommand."""
+		payload = self.consume_view_cmd(
+			pattern,
+			command=command,
+			commands=commands,
+			event=event,
+			events=events,
+			dedupe=dedupe,
+			normalize=normalize,
+		)
+		if payload is None:
+			return None
+		if isinstance(payload, dict) and "source_id" not in payload:
+			meta = payload.get("_meta")
+			if isinstance(meta, dict):
+				payload = dict(payload)
+				payload["source_id"] = str(meta.get("source_id") or "")
+		return parse_view_cmd_payload(payload)
 
 	# -------- AppState bridge helpers (persisted UI variables) --------
 

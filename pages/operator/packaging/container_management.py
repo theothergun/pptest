@@ -1,12 +1,12 @@
 ﻿from __future__ import annotations
 
-from datetime import datetime, timedelta
 from typing import Any
 
 from nicegui import ui
+
 from layout.context import PageContext
-from services.i18n import t
 from loguru import logger
+from services.i18n import t
 from services.ui.view_action import publish_standard_view_action
 from services.ui.view_cmd import install_wait_dialog, view_wait_key
 
@@ -18,7 +18,7 @@ CONTAINER_MGMT_WAIT_MODAL_KEY = view_wait_key(CONTAINER_MGMT_VIEW)
 
 def render(container: ui.element, ctx: PageContext) -> None:
     logger.debug("[render] - page_render - page=container_management")
-    container.style("overflow-y: auto !important; overflow-x: hidden !important;")
+    container.style("overflow: auto !important; min-height: 0 !important;")
     with container:
         build_page(ctx)
 
@@ -32,71 +32,85 @@ def build_page(ctx: PageContext) -> None:
 <style>
 .cm-shell {
     background: linear-gradient(135deg, var(--surface-muted) 0%, var(--app-background) 100%);
-    border-radius: 20px;
+    border-radius: 16px;
     border: 1px solid var(--input-border);
-    box-shadow: 0 12px 30px rgba(16, 24, 40, 0.06);
+    box-shadow: 0 8px 18px rgba(16, 24, 40, 0.06);
 }
 .cm-card {
     border: 1px solid var(--input-border);
-    border-radius: 16px;
-    box-shadow: 0 10px 24px rgba(16, 24, 40, 0.08);
+    border-radius: 12px;
     background: var(--surface);
     color: var(--text-primary);
     overflow: hidden;
 }
-.cm-panel {
-    background: linear-gradient(180deg, var(--surface-muted) 0%, var(--surface) 100%);
-    border: 1px solid var(--input-border);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4);
-}
 .cm-title {
-    font-size: 11px;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--primary);
+    font-size: 12px;
     font-weight: 700;
+}
+.cm-chip {
+    border-radius: 10px;
+    border: 1px solid var(--input-border);
+    background: var(--surface-muted);
+}
+.cm-actions-col {
+    width: 280px;
+    min-width: 280px;
 }
 .cm-btn {
     font-weight: 700;
-    letter-spacing: 0.25px;
-    border-radius: 12px;
-    transition: transform 120ms ease, box-shadow 120ms ease;
+    letter-spacing: 0.2px;
+    border-radius: 10px;
 }
 .cm-btn:hover {
     transform: translateY(-1px);
-    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.14);
+}
+.cm-tight .q-field__control {
+    min-height: 36px !important;
 }
 .cm-table {
-    border-radius: 14px;
+    border-radius: 10px;
     overflow: hidden;
     border: 1px solid var(--input-border);
 }
-.cm-table .q-table__top,
-.cm-table .q-table__bottom {
-    background: var(--surface-muted);
+.cm-table .q-table thead tr {
+    background: color-mix(in srgb, var(--surface-muted) 84%, var(--primary) 16%);
 }
-.cm-table thead tr {
-    background: color-mix(in srgb, var(--surface-muted) 82%, var(--primary) 18%);
+.cm-table .q-table th,
+.cm-table .q-table td {
+    padding: 4px 8px !important;
 }
-.cm-table thead th {
-    font-weight: 700;
-    color: var(--text-primary);
-    border-bottom: 1px solid var(--input-border);
-}
-.cm-table tbody tr:nth-child(even) {
-    background: color-mix(in srgb, var(--surface) 88%, var(--surface-muted) 12%);
-}
-.cm-table tbody tr:hover {
-    background: color-mix(in srgb, var(--primary) 12%, var(--surface) 88%) !important;
-}
-.cm-section-scroll {
-    max-height: 34vh;
+.cm-table .q-table__middle {
+    max-height: 100%;
     overflow: auto;
 }
-.cm-chip {
-    border-radius: 12px;
-    border: 1px solid var(--input-border);
-    background: var(--surface-muted);
+.cm-table .q-table__bottom {
+    min-height: 30px;
+    padding: 2px 8px;
+    font-size: 12px;
+}
+.cm-half-card {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+.cm-half-body {
+    flex: 1;
+    min-height: 0;
+}
+@media (max-width: 1200px) {
+    .cm-actions-col {
+        width: 240px;
+        min-width: 240px;
+    }
+}
+@media (max-width: 980px) {
+    .cm-actions-col {
+        width: 100%;
+        min-width: 0;
+    }
+    .cm-table .q-table__middle {
+        max-height: 96px;
+    }
 }
 </style>
 """
@@ -158,150 +172,211 @@ def build_page(ctx: PageContext) -> None:
         )
 
     def _label(key: str, fallback: str) -> str:
-        # Some translations currently contain a leading '@'; hide it in the UI.
         return str(t(key, fallback) or fallback).lstrip("@").strip()
 
-    def _refresh_tables() -> None:
-        container_rows = list(getattr(ctx.state, "container_mgmt_container_rows", []) or [])
-        serial_rows = list(getattr(ctx.state, "container_mgmt_serial_rows", []) or [])
+    selected_container_tpl = t("container_management.selected_container", "Selected container: {value}")
+    selected_serial_tpl = t("container_management.selected_serial", "Selected serial: {value}")
 
-        table_containers.rows = container_rows
-        table_serials.rows = serial_rows
+    def _fmt_selected_container(value: Any) -> str:
+        v = str(value or "-")
+        return (
+            selected_container_tpl.replace("{value}", v)
+            if "{value}" in selected_container_tpl else f"{selected_container_tpl} {v}"
+        )
+
+    def _fmt_selected_serial(value: Any) -> str:
+        v = str(value or "-")
+        return selected_serial_tpl.replace("{value}", v) if "{value}" in selected_serial_tpl else f"{selected_serial_tpl} {v}"
+
+    def _refresh_tables() -> None:
+        table_containers.rows = list(getattr(ctx.state, "container_mgmt_container_rows", []) or [])
+        table_serials.rows = list(getattr(ctx.state, "container_mgmt_serial_rows", []) or [])
+
+        selected_bin = str(selected_container.get("value", "") or "")
+        if selected_bin:
+            selected_rows = [row for row in table_containers.rows if str(row.get("material_bin", "")) == selected_bin]
+            table_containers.selected = selected_rows[:1]
+        else:
+            table_containers.selected = []
+
+        selected_sn = str(selected_serial.get("value", "") or "")
+        if selected_sn:
+            selected_serial_rows = [row for row in table_serials.rows if str(row.get("serial_number", "")) == selected_sn]
+            table_serials.selected = selected_serial_rows[:1]
+        else:
+            table_serials.selected = []
 
         table_containers.update()
         table_serials.update()
 
-    def _extract_clicked_row(args: Any) -> dict[str, Any] | None:
+    def _extract_clicked_row(args: Any, required_key: str) -> dict[str, Any] | None:
+        """QTable rowClick payload is typically [mouse_event, row, row_index]."""
         try:
             if isinstance(args, dict):
-                return args
+                row = args.get("row") if isinstance(args.get("row"), dict) else args
+                return row if required_key in row else None
             if isinstance(args, (list, tuple)):
+                if len(args) > 1 and isinstance(args[1], dict) and required_key in args[1]:
+                    return args[1]
                 for item in args:
-                    if isinstance(item, dict) and "serial_number" in item:
+                    if isinstance(item, dict) and required_key in item:
                         return item
             return None
         except Exception:
             return None
 
     selected_serial: dict[str, str] = {"value": ""}
+    selected_container: dict[str, str] = {
+        "value": str(getattr(ctx.state, "container_mgmt_container_selected", "") or "")
+    }
+    selected_container_labels: list[ui.label] = []
 
-    with ui.column().classes("cm-shell w-full h-full flex flex-col min-h-0 overflow-y-auto overflow-x-hidden p-3 gap-3"):
-        with ui.row().classes("w-full items-center gap-2 cm-card px-3 py-2"):
-            ui.icon("inventory_2").classes("text-xl text-amber-500")
+    def _set_selected_container(value: str) -> None:
+        v = str(value or "")
+        selected_container["value"] = v
+        setattr(ctx.state, "container_mgmt_container_selected", v)
+        text = _fmt_selected_container(v or "-")
+        for lbl in selected_container_labels:
+            lbl.set_text(text)
+
+    with ui.column().classes("cm-shell w-full h-full min-h-0 overflow-y-auto overflow-x-hidden p-2 gap-2"):
+        with ui.row().classes("w-full items-center gap-2 cm-card px-2 py-1"):
+            ui.icon("inventory_2").classes("text-lg text-amber-500")
             with ui.column().classes("gap-0"):
-                ui.label(t("container_management.title", "Container Management")).classes("text-lg font-bold")
-                ui.label(t("container_management.subtitle", "Search, activate, and maintain container serials")).classes("text-[11px] text-gray-500")
+                ui.label(t("container_management.title", "Container Management")).classes("text-base font-bold")
+                ui.label(t("container_management.subtitle", "Search, activate, and maintain container serials")).classes("text-[10px] text-gray-500")
             ui.space()
-            with ui.row().classes("items-center gap-2 cm-chip px-3 py-2"):
-                ui.icon("inventory").classes("text-primary")
-                ui.label(t("container_management.active_container", "Active Container:")).classes("text-xs text-gray-500")
-                ui.label("").classes("font-bold") \
+            with ui.row().classes("items-center gap-2 cm-chip px-2 py-1"):
+                ui.icon("inventory").classes("text-primary text-xs")
+                ui.label(t("container_management.active_container", "Active Container:")).classes("text-[11px] text-gray-500")
+                ui.label("").classes("text-sm font-bold") \
                     .bind_text_from(ctx.state, "container_mgmt_active_container", backward=lambda n: str(n or "-"))
 
-        with ui.card().classes("cm-card cm-panel p-3 w-full"):
-            ui.label(t("container_management.search_container", "Search Container")).classes("cm-title")
-            with ui.row().classes("w-full gap-2 items-end mt-1"):
-                ui.input(t("common.search", "Search")).classes("w-full app-input") \
-                    .bind_value_from(ctx.state, "container_mgmt_search_query", backward=lambda n: str(n or ""))
+        with ui.column().classes("w-full flex-1 min-h-0 gap-2"):
+            with ui.card().classes("cm-card cm-half-card p-2 w-full flex-1"):
+                with ui.row().classes("w-full items-center mb-1"):
+                    ui.label(t("container_management.container_results", "Container Results")).classes("cm-title")
+                    ui.space()
+                    ui.icon("table_view").classes("text-primary text-sm")
 
-        with ui.card().classes("cm-card p-3 w-full"):
-            with ui.row().classes("w-full items-center mb-2"):
-                ui.label(t("container_management.container_results", "Container Results")).classes("text-sm font-bold")
-                ui.space()
-                ui.icon("table_view").classes("text-primary")
+                ui.input(t("common.search", "Search Container / Serialnumber")).classes("w-full app-input cm-tight mb-2") \
+                    .bind_value(ctx.state, "container_mgmt_search_query")
 
-            with ui.row().classes("w-full gap-3 items-start"):
-                with ui.column().classes("flex-1 min-w-0"):
-                    container_columns = [
-                        {"name": "material_bin", "label": "MATERIAL_BIN", "field": "material_bin", "align": "left", "sortable": True},
-                        {"name": "part_number", "label": "Partnumber", "field": "part_number", "align": "left", "sortable": True},
-                        {"name": "current_qty", "label": "Current Qty", "field": "current_qty", "align": "center", "sortable": True},
-                    ]
-                    with ui.column().classes("cm-section-scroll w-full"):
+                with ui.row().classes("cm-half-body w-full gap-2 items-start"):
+                    with ui.column().classes("flex-1 min-w-0 h-full min-h-0"):
+                        container_columns = [
+                            {"name": "material_bin", "label": "MATERIAL_BIN", "field": "material_bin", "align": "left", "sortable": True},
+                            {"name": "part_number", "label": "Partnumber", "field": "part_number", "align": "left", "sortable": True},
+                            {"name": "current_qty", "label": "Current Qty", "field": "current_qty", "align": "center", "sortable": True},
+                        ]
                         table_containers = ui.table(
                             columns=container_columns,
                             rows=[],
                             row_key="material_bin",
-                            pagination={"rowsPerPage": 6},
-                        ).classes("cm-table w-full text-sm")
-                        table_containers.props("dense bordered flat separator=horizontal rows-per-page-options=[6,8,12,25,50]")
+                            selection="single",
+                            pagination={"rowsPerPage": 50},
+                        ).classes("cm-table w-full text-xs")
+                        table_containers.props("dense bordered flat separator=horizontal rows-per-page-options=[50,100,200] hide-selected-banner")
 
-                with ui.column().classes("w-full lg:w-[340px] lg:min-w-[340px] gap-2"):
-                    ui.button(
-                        _label("container_management.search_by_container", "Search by container"),
-                        on_click=lambda: _publish_cmd("search_container"),
-                        icon="inventory",
-                    ).props("color=primary text-color=white").classes("w-full h-[42px] cm-btn text-white")
-                    ui.button(
-                        _label("container_management.search_by_serial", "Search by Serialnumber"),
-                        on_click=lambda: _publish_cmd("search_serial"),
-                        icon="qr_code_scanner",
-                    ).props("color=secondary text-color=white").classes("w-full h-[42px] cm-btn text-white")
-                    ui.button(
-                        _label("container_management.activate", "Activate"),
-                        on_click=lambda: _publish_cmd("activate"),
-                        icon="bolt",
-                    ).props("color=positive text-color=white").classes("w-full h-[42px] cm-btn text-white")
+                    with ui.column().classes("cm-actions-col gap-2"):
+                        selected_container_label_top = ui.label(_fmt_selected_container(selected_container["value"] or "-")).classes("text-xs text-gray-600")
+                        selected_container_labels.append(selected_container_label_top)
+                        ui.button(
+                            _label("container_management.search_by_container", "Search by container"),
+                            on_click=lambda: _publish_cmd("search_container"),
+                            icon="inventory",
+                        ).props("color=primary text-color=white").classes("w-full h-[36px] cm-btn text-white")
+                        ui.button(
+                            _label("container_management.search_by_serial", "Search by Serialnumber"),
+                            on_click=lambda: _publish_cmd("search_serial"),
+                            icon="qr_code_scanner",
+                        ).props("color=secondary text-color=white").classes("w-full h-[36px] cm-btn text-white")
+                        ui.button(
+                            _label("container_management.activate", "Activate"),
+                            on_click=lambda: _publish_cmd("activate"),
+                            icon="bolt",
+                        ).props("color=positive text-color=white").classes("w-full h-[36px] cm-btn text-white")
 
-        with ui.card().classes("cm-card p-3 w-full"):
-            with ui.row().classes("w-full items-center mb-2"):
-                ui.label(t("container_management.serials", "Container Serials")).classes("text-sm font-bold")
-                ui.space()
-                ui.icon("numbers").classes("text-primary")
+            with ui.card().classes("cm-card cm-half-card p-2 w-full flex-1"):
+                with ui.row().classes("w-full items-center mb-1"):
+                    ui.label(t("container_management.serials", "Container Serials")).classes("cm-title")
+                    ui.space()
+                    ui.icon("numbers").classes("text-primary text-sm")
 
-            with ui.row().classes("w-full gap-3 items-start"):
-                with ui.column().classes("flex-1 min-w-0"):
-                    serial_columns = [
-                        {"name": "serial_number", "label": "Serialnumber", "field": "serial_number", "align": "left", "sortable": True},
-                        {"name": "created_on", "label": "Created on", "field": "created_on", "align": "left", "sortable": True},
-                    ]
-                    with ui.column().classes("cm-section-scroll w-full"):
+                with ui.row().classes("cm-half-body w-full gap-2 items-start"):
+                    with ui.column().classes("flex-1 min-w-0 h-full min-h-0"):
+                        serial_columns = [
+                            {"name": "serial_number", "label": "Serialnumber", "field": "serial_number", "align": "left", "sortable": True},
+                            {"name": "created_on", "label": "Created on", "field": "created_on", "align": "left", "sortable": True},
+                        ]
                         table_serials = ui.table(
                             columns=serial_columns,
                             rows=[],
                             row_key="serial_number",
-                            pagination={"rowsPerPage": 6},
-                        ).classes("cm-table w-full text-sm")
-                        table_serials.props("dense bordered flat separator=horizontal rows-per-page-options=[6,8,12,25,50]")
+                            selection="single",
+                            pagination={"rowsPerPage": 50},
+                        ).classes("cm-table w-full text-xs")
+                        table_serials.props("dense bordered flat separator=horizontal rows-per-page-options=[50,100,200] hide-selected-banner")
 
-                with ui.card().classes("cm-card cm-panel p-3 w-full lg:w-[340px] lg:min-w-[340px] self-start"):
-                    ui.label(t("container_management.actions", "Actions")).classes("cm-title")
-                    ui.label("").classes("text-sm font-semibold text-gray-600") \
-                        .bind_text_from(
-                            ctx.state,
-                            "container_mgmt_container_selected",
-                            backward=lambda n: t("container_management.selected", "Selected: {value}", value=str(n or "-")),
-                        )
-
-                    with ui.column().classes("w-full gap-2 mt-2"):
+                    with ui.column().classes("cm-actions-col gap-2"):
+                        selected_container_label_bottom = ui.label(_fmt_selected_container(selected_container["value"] or "-")).classes("text-xs text-gray-600")
+                        selected_container_labels.append(selected_container_label_bottom)
                         ui.button(t("common.search", "Search"), on_click=lambda: _publish_cmd("search"), icon="search") \
-                            .props("color=primary text-color=white").classes("w-full h-[42px] cm-btn text-white")
+                            .props("color=primary text-color=white").classes("w-full h-[36px] cm-btn text-white")
                         ui.button(t("common.refresh", "Refresh"), on_click=lambda: _publish_cmd("refresh"), icon="refresh") \
-                            .props("color=secondary text-color=white").classes("w-full h-[42px] cm-btn text-white")
+                            .props("color=secondary text-color=white").classes("w-full h-[36px] cm-btn text-white")
                         ui.button(
                             _label("container_management.remove_serial", "Remove Serial"),
                             on_click=lambda: _publish_cmd_payload("remove_serial", serial=selected_serial.get("value", "")),
                             icon="remove_circle",
-                        ).props("color=warning text-color=white").classes("w-full h-[42px] cm-btn text-white")
+                        ).props("color=warning text-color=white").classes("w-full h-[36px] cm-btn text-white")
                         ui.button(
                             _label("container_management.remove_all", "Remove All"),
                             on_click=lambda: _publish_cmd("remove_all"),
                             icon="delete_forever",
-                        ).props("color=negative text-color=white").classes("w-full h-[42px] cm-btn text-white")
+                        ).props("color=negative text-color=white").classes("w-full h-[36px] cm-btn text-white")
+                        selected_serial_label = ui.label(_fmt_selected_serial("-")).classes("text-xs text-gray-500")
 
-                    selected_serial_label = ui.label(
-                        t("container_management.selected_serial", "Selected serial: {value}", value="-")
-                    ).classes("text-xs text-gray-500")
+            def _on_container_row_click(e: Any) -> None:
+                row = _extract_clicked_row(getattr(e, "args", None), "material_bin")
+                if row is None:
+                    return
+                selected_bin = str(row.get("material_bin", "") or "")
+                if selected_bin:
+                    _set_selected_container(selected_bin)
+                    table_containers.selected = [row]
+                    table_containers.update()
+
+            def _on_container_select(e: Any) -> None:
+                selection = list(getattr(e, "selection", []) or [])
+                if not selection:
+                    _set_selected_container("")
+                    return
+                selected_bin = str(selection[0].get("material_bin", "") or "")
+                _set_selected_container(selected_bin)
+
+            table_containers.on("rowClick", _on_container_row_click)
+            table_containers.on_select(_on_container_select)
 
             def _on_serial_click(e: Any) -> None:
-                row = _extract_clicked_row(getattr(e, "args", None))
+                row = _extract_clicked_row(getattr(e, "args", None), "serial_number")
                 if row is None:
                     return
                 selected_serial["value"] = str(row.get("serial_number", "") or "")
-                selected_serial_label.set_text(
-                    t("container_management.selected_serial", "Selected serial: {value}", value=selected_serial["value"])
-                )
+                selected_serial_label.set_text(_fmt_selected_serial(selected_serial["value"]))
+                table_serials.selected = [row]
+                table_serials.update()
+
+            def _on_serial_select(e: Any) -> None:
+                selection = list(getattr(e, "selection", []) or [])
+                if not selection:
+                    selected_serial["value"] = ""
+                    selected_serial_label.set_text(_fmt_selected_serial("-"))
+                    return
+                selected_serial["value"] = str(selection[0].get("serial_number", "") or "")
+                selected_serial_label.set_text(_fmt_selected_serial(selected_serial["value"]))
 
             table_serials.on("rowClick", _on_serial_click)
+            table_serials.on_select(_on_serial_select)
 
     add_timer(0.2, _refresh_tables)

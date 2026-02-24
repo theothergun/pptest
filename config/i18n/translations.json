@@ -134,6 +134,15 @@
     "sk": "Priradené Poruchy",
     "zh": "已分配故障"
   },
+  "auto.automation_runtime_stopped_due_to_an_error": {
+    "cs": "⚠️ Automation Runtime se zastavil kvůli chybě",
+    "de": "⚠️ Automation Runtime wegen eines Fehlers gestoppt",
+    "en": "⚠️ Automation Runtime stopped due to an error",
+    "es-MX": "⚠️ Automation Runtime se detuvo por un error",
+    "mk": "⚠️ Automation Runtime запрен поради грешка",
+    "sk": "⚠️ Automation Runtime sa zastavil kvôli chybe",
+    "zh": "⚠️ Automation Runtime 因错误已停止"
+  },
   "auto.available_scripts": {
     "cs": "Available Skripty",
     "de": "Available Skripte",
@@ -2006,6 +2015,15 @@
     "sk": "Selected: {value}",
     "zh": "Selected: {value}"
   },
+  "container_management.selected_container": {
+    "cs": "Selected container: {value}",
+    "de": "Selected container: {value}",
+    "en": "Selected container: {value}",
+    "es-MX": "Selected container: {value}",
+    "mk": "Selected container: {value}",
+    "sk": "Selected container: {value}",
+    "zh": "Selected container: {value}"
+  },
   "container_management.selected_serial": {
     "cs": "Selected serial: {value}",
     "de": "Selected serial: {value}",
@@ -2572,14 +2590,5 @@
     "mk": "Workers",
     "sk": "Workers",
     "zh": "Workers"
-  },
-  "auto.automation_runtime_stopped_due_to_an_error": {
-    "cs": "⚠️ Automation Runtime se zastavil kvůli chybě",
-    "de": "⚠️ Automation Runtime wegen eines Fehlers gestoppt",
-    "en": "⚠️ Automation Runtime stopped due to an error",
-    "es-MX": "⚠️ Automation Runtime se detuvo por un error",
-    "mk": "⚠️ Automation Runtime запрен поради грешка",
-    "sk": "⚠️ Automation Runtime sa zastavil kvôli chybe",
-    "zh": "⚠️ Automation Runtime 因错误已停止"
   }
 }

@@ -4,6 +4,7 @@ from __future__ import annotations
 from typing import Any, Iterable, Optional
 
 from services.automation_runtime.apis.ui_api import UiApi
+from services.ui.view_cmd import ViewCommand, parse_view_cmd_payload
 
 
 def _as_list(value: Any) -> list:
@@ -53,6 +54,14 @@ class _BaseViewApi:
 		if not self._cmd_key:
 			return None
 		return self._ui.consume_payload(self._cmd_key, dedupe=dedupe)
+
+	def consume_view_command(self, *, dedupe: bool = True) -> Optional[ViewCommand]:
+		if not self._cmd_key:
+			return None
+		payload = self._ui.consume_payload(self._cmd_key, dedupe=dedupe)
+		if payload is None:
+			return None
+		return parse_view_cmd_payload(payload)
 
 	def wait_cmd(
 		self,

@@ -1,8 +1,16 @@
 from __future__ import annotations
 
-import time
-
 from services.automation_runtime.context import PublicAutomationContext
+from services.ui.view_cmd import parse_view_cmd_payload
+
+
+def _extract_cmd_and_payload(raw_payload: dict | None) -> tuple[str, dict]:
+    payload = raw_payload if isinstance(raw_payload, dict) else {}
+    parsed = parse_view_cmd_payload(payload)
+    if parsed is not None:
+        return str(parsed.action.name or "").lower(), payload
+    # Backward-compatible fallback for legacy payloads.
+    return str(payload.get("cmd", "") or "").lower(), payload
 
 
 def main(ctx: PublicAutomationContext):
@@ -16,35 +24,10 @@ def main(ctx: PublicAutomationContext):
         ctx.goto(10)
         return
 
-    payload = ctx.view.container_management.consume_payload()
-
-
-    cmd = None
-    if cmd in ("search_container", "search"):
-
-        return
-
-    if cmd == "search_serial":
-
-        return
-
-    if cmd == "activate":
-
-        return
-
-    if cmd == "refresh":
-
-        return
-
-    if cmd == "remove_serial":
-
-        return
-
-    if cmd == "remove_all":
-
-        return
-
-    ctx.set_step_desc("ignored command: %s" % cmd)
+    msg = ctx.view.container_management.consume_view_command()
+    if msg and msg.action.name == "remove_serial":
+        serial = msg.payload.get("serial")
+    print(msg)
 
 
 # Export

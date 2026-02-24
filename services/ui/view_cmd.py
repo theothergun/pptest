@@ -3,12 +3,133 @@ from __future__ import annotations
 
 import time
 import queue
-from typing import Any, Callable, Optional
+from dataclasses import dataclass, field
+from typing import Any, Callable, Literal, Optional
 
 from nicegui import ui
 from loguru import logger
 
 from services.worker_topics import WorkerTopics
+
+ViewName = Literal["container_management", "packaging", "packaging_nox"]
+ViewEvent = Literal["click", "load", "refresh", "submit"]
+
+
+@dataclass(frozen=True)
+class ViewAction:
+	view: ViewName | str
+	name: str
+	event: ViewEvent | str = "click"
+
+	def to_dict(self) -> dict[str, str]:
+		return {
+			"view": str(self.view),
+			"name": str(self.name),
+			"event": str(self.event),
+		}
+
+
+@dataclass(frozen=True)
+class ViewCommand:
+	action: ViewAction
+	event_id: int
+	wait_modal_key: str | None = None
+	source_id: str = "ui"
+	payload: dict[str, Any] = field(default_factory=dict)
+
+	@classmethod
+	def create(
+		cls,
+		*,
+		view: str,
+		name: str,
+		event: str = "click",
+		wait_key: str | None = None,
+		source_id: str | None = None,
+		payload: dict[str, Any] | None = None,
+	) -> "ViewCommand":
+		return cls(
+			action=ViewAction(view=str(view), name=str(name), event=str(event)),
+			event_id=int(time.time_ns()),
+			wait_modal_key=str(wait_key) if wait_key else None,
+			source_id=str(source_id or "ui"),
+			payload=dict(payload or {}),
+		)
+
+	def to_bus_dict(self, cmd_key: str) -> dict[str, Any]:
+		return {
+			"view": self.action.view,
+			"cmd_key": cmd_key,
+			"action": {
+				"view": self.action.view,
+				"name": self.action.name,
+				"event": self.action.event,
+			},
+			"event_id": self.event_id,
+			"wait_modal_key": self.wait_modal_key,
+			"source_id": self.source_id,
+			**self.payload,
+		}
+
+	def to_cmd_value_payload(self) -> dict[str, Any]:
+		cmd_payload: dict[str, Any] = {
+			"action": self.action.to_dict(),
+			"event_id": int(self.event_id),
+		}
+		if self.wait_modal_key:
+			cmd_payload["wait_modal_key"] = str(self.wait_modal_key)
+		if self.payload:
+			cmd_payload.update(self.payload)
+		return cmd_payload
+
+	def to_view_topic_payload(self, *, cmd_key: str) -> dict[str, Any]:
+		return self.to_bus_dict(cmd_key=str(cmd_key))
+
+	@classmethod
+	def from_bus_dict(cls, data: dict[str, Any]) -> "ViewCommand":
+		action = data.get("action", {}) or {}
+		payload = dict(data)
+		for k in ("view", "cmd_key", "action", "event_id", "wait_modal_key", "source_id"):
+			payload.pop(k, None)
+		return cls(
+			action=ViewAction(
+				view=action.get("view") or data.get("view"),
+				name=action.get("name", ""),
+				event=action.get("event", "click"),
+			),
+			event_id=int(data.get("event_id", 0)),
+			wait_modal_key=data.get("wait_modal_key"),
+			source_id=str(data.get("source_id", "ui")),
+			payload=payload,
+		)
+
+
+# Backward compatible alias used by existing callers.
+ViewCommandMessage = ViewCommand
+
+
+def parse_view_cmd_payload(payload: Any) -> ViewCommand | None:
+	"""Best-effort parser for incoming view command payload dictionaries."""
+	if not isinstance(payload, dict):
+		return None
+	action_raw = payload.get("action")
+	if not isinstance(action_raw, dict):
+		return None
+	view = str(action_raw.get("view") or payload.get("view") or "").strip()
+	name = str(action_raw.get("name") or "").strip()
+	event = str(action_raw.get("event") or "click").strip() or "click"
+	if not view or not name:
+		return None
+	try:
+		event_id = int(payload.get("event_id") or 0)
+	except Exception:
+		event_id = 0
+	data = dict(payload)
+	data["event_id"] = event_id
+	data["source_id"] = str(payload.get("source_id", "ui"))
+	wait_modal_key = payload.get("wait_modal_key")
+	data["wait_modal_key"] = str(wait_modal_key) if wait_modal_key is not None else None
+	return ViewCommand.from_bus_dict(data)
 
 
 def view_wait_key(view: str) -> str:
@@ -155,21 +276,18 @@ def publish_view_cmd(
 	if callable(open_wait):
 		open_wait()
 
-	payload = {
-		"action": {
-			"view": str(view),
-			"name": str(name),
-			"event": str(event),
-		},
-		"event_id": int(time.time_ns()),
-	}
-	wait_key_value = str(wait_key or view_wait_key(view))
-	if wait_key_value:
-		payload["wait_modal_key"] = wait_key_value
-	if isinstance(extra, dict):
-		payload.update({k: v for k, v in extra.items()})
-
 	source_id = str(source_id or view or "")
+	wait_key_value = str(wait_key or view_wait_key(view)).strip()
+	msg = ViewCommandMessage.create(
+		view=str(view),
+		name=str(name),
+		event=str(event),
+		wait_key=wait_key_value or None,
+		source_id=source_id,
+		payload=extra if isinstance(extra, dict) else None,
+	)
+	payload = msg.to_cmd_value_payload()
+
 	publish_fn(
 		topic=WorkerTopics.VALUE_CHANGED,
 		source="ui",
@@ -178,11 +296,8 @@ def publish_view_cmd(
 		value=payload,
 	)
 
-	view_payload = dict(payload)
-	view_payload.update({
-		"view": str(view),
-		"cmd_key": str(cmd_key),
-	})
+	view_payload = msg.to_view_topic_payload(cmd_key=str(cmd_key))
+	view_payload.pop("source_id", None)
 	publish_fn(
 		topic="view.cmd.%s" % str(view),
 		source="ui",

@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 import time
-from services.workers.stepchain.context import PublicStepChainContext
+from services.automation_runtime.context import PublicAutomationContext
 
 WAIT_MODAL_KEY = "view.wait.packaging_nox"
 
-def main(ctx: PublicStepChainContext):
+def main(ctx: PublicAutomationContext):
     """
     This script listens on serval events, and when they appear it updates
     the container informations on Packaging NOX view

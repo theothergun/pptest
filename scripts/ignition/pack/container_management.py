@@ -3,7 +3,7 @@ from __future__ import annotations
 from loguru import logger
 
 from services.worker_topics import WorkerTopics
-from services.workers.stepchain.context import PublicStepChainContext
+from services.automation_runtime.context import PublicAutomationContext
 
 script_name = "ignition.pack.container_management"
 CREATE_CONTAINER_ERROR_POPUP_KEY = "create_and_activate_new_container"
@@ -25,7 +25,7 @@ def _extract_contract_payload(res: dict) -> dict:
 	return {}
 
 
-def main(ctx: PublicStepChainContext):
+def main(ctx: PublicAutomationContext):
 	ctx.set_cycle_time(0.5)
 
 

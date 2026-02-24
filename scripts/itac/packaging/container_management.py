@@ -2,10 +2,10 @@ from __future__ import annotations
 
 import time
 
-from services.workers.stepchain.context import PublicStepChainContext
+from services.automation_runtime.context import PublicAutomationContext
 
 
-def main(ctx: PublicStepChainContext):
+def main(ctx: PublicAutomationContext):
     ctx.set_cycle_time(0.2)
 
     step = ctx.step

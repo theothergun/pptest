@@ -264,8 +264,8 @@ _BLOCKLY_BOOTSTRAP_JS = r'''
     const body = raw ? raw.split('\n').map((line) => `    ${line}`).join('\n') : '    pass';
 
     return `from __future__ import annotations\n\n` +
-`from services.workers.stepchain.context import PublicStepChainContext\n\n` +
-`def main(ctx: PublicStepChainContext):\n` +
+`from services.automation_runtime.context import PublicAutomationContext\n\n` +
+`def main(ctx: PublicAutomationContext):\n` +
 `    """Generated from Blockly Builder."""\n` +
 `${body}\n\n` +
 `# Export\n` +
@@ -378,12 +378,12 @@ def render(container: ui.element, ctx: PageContext) -> None:
     with container:
         ui.label('Blockly Visual Builder').classes('text-h6')
         ui.label(
-            'Build script logic with Blockly, then save directly to scripts/blockly with a runnable StepChain signature.'
+            'Build script logic with Blockly, then save directly to scripts/blockly with a runnable Automation Runtime signature.'
         ).classes('text-sm text-gray-600')
         ui.markdown(
             '''
             **Notes**
-            - Includes custom `MES` blocks mapped to `PublicStepChainContext` methods from your codebase.
+            - Includes custom `MES` blocks mapped to `PublicAutomationContext` methods from your codebase.
             - `Download Python` creates a local file in your browser.
             - `Export to scripts/blockly` writes server-side and hot-reloads that script.
             '''

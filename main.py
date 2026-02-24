@@ -18,7 +18,7 @@ from pages.dummy.dummy_service import DummyController
 from services.ui_bridge import UiBridge
 from services.worker_registry import WorkerRegistry
 from services.worker_bus import WorkerBus
-from services.script_runtime import ScriptRuntime
+from services.automation_runtime.runtime import AutomationRuntime
 from services.worker_names import WorkerName
 from services.app_config import (
 	load_app_config,
@@ -108,7 +108,7 @@ def _send_cmd_to_worker(target_worker: str, cmd: str, payload: dict) -> None:
 	GLOBAL_WORKERS.send_to(target_worker, cmd, **payload)
 
 
-GLOBAL_SCRIPT_RUNTIME = ScriptRuntime(
+GLOBAL_SCRIPT_RUNTIME = AutomationRuntime(
 	name=WorkerName.SCRIPT,
 	bridge=GLOBAL_BRIDGE,
 	worker_bus=GLOBAL_WORKER_BUS,
@@ -318,13 +318,13 @@ def index():
 	# UI flush loop
 	ui.timer(0.5, lambda: ctx.bridge.flush(ctx))
 
-	# Global StepChain crash dialog (works on every route/view)
+	# Global Automation Runtime crash dialog (works on every route/view)
 	sub_script_state = ctx.worker_bus.subscribe("VALUE_CHANGED")
 	crash_dialog_seen: dict[str, str] = {}
 	active_crash_dialogs: dict[str, ui.dialog] = {}
 
 	def _open_chain_crash_dialog(chain_key: str, message: str) -> None:
-		msg = str(message or "StepChain crashed.")
+		msg = str(message or "Automation Runtime crashed.")
 		if chain_key in active_crash_dialogs:
 			return
 		sig = "%s|%s" % (chain_key, msg)
@@ -335,7 +335,7 @@ def index():
 		dlg = ui.dialog()
 		active_crash_dialogs[chain_key] = dlg
 		with dlg, ui.card().classes("w-[540px] max-w-full"):
-			ui.label("⚠️ StepChain stopped due to an error").classes("text-lg font-bold text-red-700")
+			ui.label("⚠️ Automation Runtime stopped due to an error").classes("text-lg font-bold text-red-700")
 			ui.label("Chain: %s" % chain_key).classes("text-sm text-gray-700")
 			ui.label(msg).classes("text-sm")
 			ui.label("Choose an action:").classes("text-sm font-semibold mt-2")
@@ -391,7 +391,7 @@ def index():
 						logger.warning("Failed closing crash dialog for chain '{}'", chain_key)
 				continue
 
-			error_message = str(value.get("error_message") or "StepChain crashed.")
+			error_message = str(value.get("error_message") or "Automation Runtime crashed.")
 			_open_chain_crash_dialog(chain_key, error_message)
 
 	crash_timer = ui.timer(0.2, _drain_script_crashes)

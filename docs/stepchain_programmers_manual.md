@@ -1,15 +1,15 @@
-# StepChain Programmer's Manual (API + UI + Context Reference)
+# Automation Runtime Programmer's Manual (API + UI + Context Reference)
 
-> This document describes the StepChain runtime contract in this repository: script context, available APIs, worker I/O, view/UI command buttons, and state conventions.
+> This document describes the Automation Runtime contract in this repository: script context, available APIs, worker I/O, view/UI command buttons, and state conventions.
 
 ---
 
 ## 1) Runtime architecture in one page
 
-A StepChain script runs with a **public context object** (`ctx`) that wraps an internal runtime context:
+A Automation Runtime script runs with a **public context object** (`ctx`) that wraps an internal runtime context:
 
-- Internal runtime: `StepChainContext` (engine-owned, not for direct script use).
-- Script-facing wrapper: `PublicStepChainContext`.
+- Internal runtime: `AutomationContext` (engine-owned, not for direct script use).
+- Script-facing wrapper: `PublicAutomationContext`.
 - Namespaced APIs exposed on `ctx`:
   - `ctx.values`
   - `ctx.vars`
@@ -27,7 +27,7 @@ The runtime continuously mirrors:
 
 ---
 
-## 2) Public script context (`PublicStepChainContext`)
+## 2) Public script context (`PublicAutomationContext`)
 
 ### 2.1 Properties
 
@@ -298,7 +298,7 @@ Includes packaging setters plus:
 
 ## 10) Chain exported state shape
 
-`StepChainContext.get_state()` emits:
+`AutomationContext.get_state()` emits:
 
 ```json
 {

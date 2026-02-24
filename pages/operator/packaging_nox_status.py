@@ -60,7 +60,7 @@ def render(container: ui.element, ctx: PageContext) -> None:
                     ui.label("Quick Actions (sample)").classes("text-sm font-semibold")
                     ui.label(
                         "Use these sample actions to test bindings. "
-                        "In production, your worker/stepchain can write the same keys."
+                        "In production, your worker/automation runtime can write the same keys."
                     ).classes("text-xs text-gray-500")
                     with ui.row().classes("w-full gap-2 mt-2"):
                         ui.button(

@@ -2231,6 +2231,15 @@
     "sk": "Working ...",
     "zh": "Working ..."
   },
+  "scripts.tooltip.reload": {
+    "cs": "Hot-reload this script",
+    "de": "Hot-reload this script",
+    "en": "Hot-reload this script",
+    "es-MX": "Hot-reload this script",
+    "mk": "Hot-reload this script",
+    "sk": "Hot-reload this script",
+    "zh": "Hot-reload this script"
+  },
   "settings.connectivity.com": {
     "cs": "COM Device",
     "de": "COM Device",

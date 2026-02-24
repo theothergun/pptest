@@ -171,7 +171,7 @@ class ScriptRuntime:
     def _publish_chains_if_changed(self, force: bool = False) -> None:
         payload = self._build_chain_list_payload()
         sig = "|".join([
-            "%s:%s:%s:%s:%s:%s:%s:%s"
+            "%s:%s:%s:%s:%s:%s"
             % (
                 str(x.get("key", "")),
                 str(x.get("active", False)),
@@ -179,8 +179,6 @@ class ScriptRuntime:
                 str(x.get("error_flag", False)),
                 str(x.get("error_message", "")),
                 str(x.get("step", 0)),
-                str(x.get("cycle_count", 0)),
-                str(x.get("step_time", 0.0)),
             )
             for x in payload
         ])
@@ -329,9 +327,11 @@ class ScriptRuntime:
                         inst.next_tick_ts = time.time() + self._get_cycle_time_s(inst.context)
                         suppress_slow_warn = bool(getattr(inst.context, "_suppress_slow_tick_warning_once", False))
                         inst.context._suppress_slow_tick_warning_once = False
+                        publish_changes = bool(getattr(inst.context, "_publish_changes", True))
                     if elapsed_ms > 200 and not suppress_slow_warn:
                         self.log.warning(f"[chain] - slow_tick - chain_key={chain_key} duration_ms={elapsed_ms:.2f} cycle={cycle}")
-                    self._publish_chain_state(chain_key, inst.context)
+                    if publish_changes:
+                        self._publish_chain_state(chain_key, inst.context)
                     should_sleep = 0.001
                 except Exception:
                     err = self._format_exc()

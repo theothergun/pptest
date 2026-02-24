@@ -86,7 +86,7 @@
           "icon": "insert_drive_file",
           "key": "packaging",
           "label": "Packaging",
-          "path": "operator/packaging.py"
+          "path": "operator/packaging/packaging.py"
         },
         {
           "icon": "home",
@@ -98,7 +98,7 @@
           "icon": "insert_drive_file",
           "key": "pack_nox",
           "label": "Packaging Nox",
-          "path": "operator/packaging_nox.py"
+          "path": "operator/packaging/packaging_nox.py"
         },
         {
           "icon": "monitor_heart",
@@ -110,7 +110,7 @@
           "icon": "insert_drive_file",
           "key": "Container Managemet",
           "label": "Container Managemet",
-          "path": "operator/container_management.py"
+          "path": "operator/packaging/container_management.py"
         },
         {
           "icon": "insert_drive_file",
@@ -119,7 +119,7 @@
           "path": "operator/view_action_example.py"
         }
       ],
-      "dark_mode": true,
+      "dark_mode": false,
       "hide_nav_on_startup": false,
       "main_route": "packaging",
       "route_roles": {

@@ -65,7 +65,7 @@
           "icon": "insert_drive_file",
           "key": "packaging",
           "label": "Packaging",
-          "path": "operator/packaging.py"
+          "path": "operator/packaging/packaging.py"
         },
         {
           "icon": "home",
@@ -347,3 +347,4 @@
     ]
   }
 }
+

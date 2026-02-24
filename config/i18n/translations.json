@@ -1907,6 +1907,15 @@
     "sk": "Stop",
     "zh": "Stop"
   },
+  "container_management.actions": {
+    "cs": "Actions",
+    "de": "Actions",
+    "en": "Actions",
+    "es-MX": "Actions",
+    "mk": "Actions",
+    "sk": "Actions",
+    "zh": "Actions"
+  },
   "container_management.activate": {
     "cs": "@Activate",
     "de": "@Activate",
@@ -1915,6 +1924,33 @@
     "mk": "@Activate",
     "sk": "@Activate",
     "zh": "@Activate"
+  },
+  "container_management.active": {
+    "cs": "Active",
+    "de": "Active",
+    "en": "Active",
+    "es-MX": "Active",
+    "mk": "Active",
+    "sk": "Active",
+    "zh": "Active"
+  },
+  "container_management.active_container": {
+    "cs": "Active Container:",
+    "de": "Active Container:",
+    "en": "Active Container:",
+    "es-MX": "Active Container:",
+    "mk": "Active Container:",
+    "sk": "Active Container:",
+    "zh": "Active Container:"
+  },
+  "container_management.container_results": {
+    "cs": "Container Results",
+    "de": "Container Results",
+    "en": "Container Results",
+    "es-MX": "Container Results",
+    "mk": "Container Results",
+    "sk": "Container Results",
+    "zh": "Container Results"
   },
   "container_management.remove_all": {
     "cs": "Remove All",
@@ -1960,6 +1996,51 @@
     "mk": "Search Container",
     "sk": "Search Container",
     "zh": "Search Container"
+  },
+  "container_management.selected": {
+    "cs": "Selected: {value}",
+    "de": "Selected: {value}",
+    "en": "Selected: {value}",
+    "es-MX": "Selected: {value}",
+    "mk": "Selected: {value}",
+    "sk": "Selected: {value}",
+    "zh": "Selected: {value}"
+  },
+  "container_management.selected_serial": {
+    "cs": "Selected serial: {value}",
+    "de": "Selected serial: {value}",
+    "en": "Selected serial: {value}",
+    "es-MX": "Selected serial: {value}",
+    "mk": "Selected serial: {value}",
+    "sk": "Selected serial: {value}",
+    "zh": "Selected serial: {value}"
+  },
+  "container_management.serials": {
+    "cs": "Container Serials",
+    "de": "Container Serials",
+    "en": "Container Serials",
+    "es-MX": "Container Serials",
+    "mk": "Container Serials",
+    "sk": "Container Serials",
+    "zh": "Container Serials"
+  },
+  "container_management.subtitle": {
+    "cs": "Search, activate, and maintain container serials",
+    "de": "Search, activate, and maintain container serials",
+    "en": "Search, activate, and maintain container serials",
+    "es-MX": "Search, activate, and maintain container serials",
+    "mk": "Search, activate, and maintain container serials",
+    "sk": "Search, activate, and maintain container serials",
+    "zh": "Search, activate, and maintain container serials"
+  },
+  "container_management.title": {
+    "cs": "Container Management",
+    "de": "Container Management",
+    "en": "Container Management",
+    "es-MX": "Container Management",
+    "mk": "Container Management",
+    "sk": "Container Management",
+    "zh": "Container Management"
   },
   "dummy.languages.config": {
     "cs": "Config",
@@ -2230,6 +2311,15 @@
     "mk": "Working ...",
     "sk": "Working ...",
     "zh": "Working ..."
+  },
+  "router.file_not_found": {
+    "cs": "Route file not found: {route_path}",
+    "de": "Route file not found: {route_path}",
+    "en": "Route file not found: {route_path}",
+    "es-MX": "Route file not found: {route_path}",
+    "mk": "Route file not found: {route_path}",
+    "sk": "Route file not found: {route_path}",
+    "zh": "Route file not found: {route_path}"
   },
   "scripts.tooltip.reload": {
     "cs": "Hot-reload this script",

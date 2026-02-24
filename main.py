@@ -18,6 +18,7 @@ from pages.dummy.dummy_service import DummyController
 from services.ui_bridge import UiBridge
 from services.worker_registry import WorkerRegistry
 from services.worker_bus import WorkerBus
+from services.script_runtime import ScriptRuntime
 from services.worker_names import WorkerName
 from services.app_config import (
 	load_app_config,
@@ -58,10 +59,15 @@ from services.ui_theme import apply_ui_theme
 # GLOBAL BACKEND (PROCESS LIFETIME)
 # ------------------------------------------------------------------
 
-setup_logging(app_name="mes_app")
+bootstrap_defaults()
+APP_CONFIG = load_app_config()
+setup_logging(
+	app_name="mes_app",
+	log_level=getattr(APP_CONFIG.logging, "console_level", "INFO"),
+	file_level=getattr(APP_CONFIG.logging, "file_level", "DEBUG"),
+)
 logger = get_logger("main")
 logger.info(f"[module] - startup_begin - component=main")
-bootstrap_defaults()
 
 def _apply_proxy_env(cfg) -> None:
 	# process-local; affects only this app process
@@ -98,12 +104,24 @@ DUMMY_CONTROLLER = DummyController()
 GLOBAL_WORKERS = WorkerRegistry(GLOBAL_BRIDGE, GLOBAL_WORKER_BUS)
 
 
+def _send_cmd_to_worker(target_worker: str, cmd: str, payload: dict) -> None:
+	GLOBAL_WORKERS.send_to(target_worker, cmd, **payload)
+
+
+GLOBAL_SCRIPT_RUNTIME = ScriptRuntime(
+	name=WorkerName.SCRIPT,
+	bridge=GLOBAL_BRIDGE,
+	worker_bus=GLOBAL_WORKER_BUS,
+	send_cmd=_send_cmd_to_worker,
+)
+GLOBAL_SCRIPT_RUNTIME.start()
+
+
 # ------------------------------------------------------------------
 # Start workers ONCE
 # ------------------------------------------------------------------
 from services.workers.tcp_client_worker import TcpClientWorker
 from services.workers.twincat_worker import TwinCatWorker
-from services.workers.script_worker import ScriptWorker
 from services.workers.itac_worker import ItacWorker
 from services.workers.rest_api_worker import RestApiWorker
 from services.workers.com_device_worker import ComDeviceWorker
@@ -112,7 +130,6 @@ from services.workers.opcua_worker import OpcUaWorker
 WORKER_CATALOG = {
 	WorkerName.TCP_CLIENT: TcpClientWorker,
 	WorkerName.TWINCAT: TwinCatWorker,
-    WorkerName.SCRIPT: ScriptWorker,
 	WorkerName.ITAC : ItacWorker,
 	WorkerName.REST_API : RestApiWorker,
 	WorkerName.COM_DEVICE: ComDeviceWorker,
@@ -120,6 +137,9 @@ WORKER_CATALOG = {
 }
 
 for worker_name in APP_CONFIG.workers.enabled_workers:
+	if worker_name == WorkerName.SCRIPT:
+		logger.info("[worker_bootstrap] - script_runtime_already_started")
+		continue
 	target = WORKER_CATALOG.get(worker_name)
 	if not target:
 		logger.warning(f"[worker_bootstrap] - unknown_worker_in_config - worker_name={worker_name}")
@@ -179,14 +199,12 @@ if tcp_handle:
 			tcp_nodelay=client.tcp_nodelay,
 		)
 
-script_handle = GLOBAL_WORKERS.get(WorkerName.SCRIPT)
-if script_handle:
-	for chain in get_script_auto_start_chains(APP_CONFIG):
-		script_handle.send(
-			ScriptCommands.START_CHAIN,
-			script_name=chain.get("script_name"),
-			instance_id=chain.get("instance_id", "default"),
-		)
+for chain in get_script_auto_start_chains(APP_CONFIG):
+	GLOBAL_SCRIPT_RUNTIME.send(
+		ScriptCommands.START_CHAIN,
+		script_name=chain.get("script_name"),
+		instance_id=chain.get("instance_id", "default"),
+	)
 
 rest_handle = GLOBAL_WORKERS.get(WorkerName.REST_API)
 if rest_handle:
@@ -286,6 +304,7 @@ def index():
 	ctx.worker_bus = GLOBAL_WORKER_BUS
 	ctx.workers = GLOBAL_WORKERS
 	ctx.bridge = GLOBAL_BRIDGE
+	ctx.script_runtime = GLOBAL_SCRIPT_RUNTIME
 	ctx.dummy_controller = DUMMY_CONTROLLER
 	ctx.modal_manager = install_modal_manager(GLOBAL_WORKER_BUS)
 	refresh_errors_count(ctx)
@@ -336,18 +355,16 @@ def index():
 		dlg.open()
 
 	def _send_retry(chain_key: str) -> None:
-		h = ctx.workers.get(WorkerName.SCRIPT) if ctx.workers else None
-		if not h:
-			ui.notify("Script worker not available", type="negative")
+		if not ctx.script_runtime:
+			ui.notify("Script runtime not available", type="negative")
 			return
-		h.send(ScriptCommands.RETRY_CHAIN, chain_key=chain_key)
+		ctx.script_runtime.send(ScriptCommands.RETRY_CHAIN, chain_key=chain_key)
 
 	def _send_stop(chain_key: str) -> None:
-		h = ctx.workers.get(WorkerName.SCRIPT) if ctx.workers else None
-		if not h:
-			ui.notify("Script worker not available", type="negative")
+		if not ctx.script_runtime:
+			ui.notify("Script runtime not available", type="negative")
 			return
-		h.send(ScriptCommands.STOP_CHAIN, chain_key=chain_key)
+		ctx.script_runtime.send(ScriptCommands.STOP_CHAIN, chain_key=chain_key)
 
 	def _drain_script_crashes() -> None:
 		while True:
@@ -440,3 +457,11 @@ ui.run(
 	reload=False,
 	storage_secret=os.environ["NICEGUI_STORAGE_SECRET"],
 )
+
+
+@app.on_shutdown
+def _shutdown_runtime() -> None:
+	try:
+		GLOBAL_SCRIPT_RUNTIME.stop()
+	except Exception:
+		logger.exception("[shutdown] - script_runtime_stop_failed")

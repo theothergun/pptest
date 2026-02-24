@@ -117,6 +117,8 @@ class PageContext:
 
 	dummy_controller: Optional[DummyController] = None
 
+	# -------- Script runtime (application core service) --------
+	script_runtime: Any = None
 
 	def set_state_and_publish(self, key: str, value: Any) -> None:
 		setattr(self.state, key, value)

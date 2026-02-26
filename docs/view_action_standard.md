@@ -1,10 +1,8 @@
 # View Action Standard
 
-## Goal
-Use the same action envelope on every view so handlers can react uniformly.
+Use a consistent action payload for route/view button events.
 
-## Contract
-Every action should include:
+## Action envelope
 
 ```json
 {
@@ -14,33 +12,25 @@ Every action should include:
 }
 ```
 
-When sent through `publish_standard_view_action(...)`, this is available in the payload as:
+When published via `publish_standard_view_action(...)`, handlers receive:
 
 - `action.view`
 - `action.name`
 - `action.event`
 
-## Reusable API
-Implemented in `services/ui/view_action.py`:
+## Implementation files
 
-- `make_action_event(view, name, event="click")`
-- `publish_standard_view_action(...)`
-- `STANDARD_ACTIONS` (catalog for common operator/VI actions)
+- Action helpers: `services/ui/view_action.py`
+- Registry enums and validation: `services/ui/registry.py`
+- Example page: `pages/operator/view_action_example.py`
 
-## Example Page
-Developer example page:
-
-- `pages/operator/view_action_example.py`
-
-It renders all standard buttons with descriptions and shows the emitted payload.
-
-## Usage Pattern
+## Usage example
 
 ```python
 from services.ui.view_action import publish_standard_view_action
 
 publish_standard_view_action(
-    worker_bus=ctx.workers.worker_bus,
+    worker_bus=ctx.worker_bus,
     view="packaging",
     cmd_key="packaging.cmd",
     name="refresh",
@@ -52,7 +42,8 @@ publish_standard_view_action(
 )
 ```
 
-## Notes
-- Keep action names stable (`start`, `stop`, `reset`, `refresh`, etc.).
-- Use event to express intent (`click`, `submit`, `toggle`, ...).
-- Avoid page-specific button ids like `btn_pass`; use action names like `pass`.
+## Recommendations
+
+- Keep action names stable (`start`, `stop`, `reset`, `refresh`, ...).
+- Prefer semantic names over page-specific ids.
+- Use `event` for intent (`click`, `submit`, `change`, ...).

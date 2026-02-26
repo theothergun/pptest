@@ -1,106 +1,89 @@
 from nicegui import ui, app
+
 from layout.context import PageContext
 from layout.router import get_visible_routes, navigate, Route
 from services.app_config import get_app_config
 
 
-
 @ui.refreshable
 def _render_drawer_content(ctx: PageContext) -> None:
-	"""Rebuild the drawer buttons from current visible routes."""
-	# Clear old buttons + content
-	ctx.nav_buttons.clear()
-	ctx.drawer_content.clear()
-	active_key = app.storage.user.get("current_route", "")
-	is_dark = bool(getattr(get_app_config().ui.navigation, "dark_mode", False))
-	inactive_color = "grey-3" if is_dark else "grey-8"
-	routes = get_visible_routes()
-	if ctx.dummy_controller.is_feature_enabled():
-		routes["start_dummy_test"] = Route(icon="rocket_launch", label="Dummy Test")
-	# Build buttons
-	for key, route in routes.items():
-		if key == "errors":
-			btn = _add_error_button(ctx, route, key)
-		elif key == "start_dummy_test":
-			btn = _add_dummy_test_button(ctx, route, key)
-		else:
-			btn = _add_standard_button(ctx, route, key)
-		if key == active_key:
-			# Selected look:
-			btn.props("unelevated")
-			btn.props("color=primary")
-		else:
-			# Normal look:
-			btn.props("flat")
-			btn.props(f"color={inactive_color}")
+    """Rebuild the drawer buttons from current visible routes."""
+    ctx.nav_buttons.clear()
+    ctx.drawer_content.clear()
+    active_key = app.storage.user.get("current_route", "")
+    routes = get_visible_routes()
+    if ctx.dummy_controller.is_feature_enabled():
+        routes["start_dummy_test"] = Route(icon="rocket_launch", label="Dummy Test")
+
+    with ctx.drawer_content:
+        with ui.column().classes("w-full p-2 gap-1"):
+            for key, route in routes.items():
+                if key == "errors":
+                    btn = _add_error_button(ctx, route, key)
+                elif key == "start_dummy_test":
+                    btn = _add_dummy_test_button(ctx, route, key)
+                else:
+                    btn = _add_standard_button(ctx, route, key)
+
+                if key == active_key:
+                    btn.classes(add="app-nav-item-active")
+                    btn.props("unelevated color=primary")
+                else:
+                    btn.props("flat color=grey-7")
 
 
 def build_drawer(ctx: PageContext) -> ui.left_drawer:
-	hide_on_startup = bool(getattr(get_app_config().ui.navigation, "hide_nav_on_startup", False))
-	drawer = ui.left_drawer(value=not hide_on_startup, bordered=True).props("width=180").classes("app-drawer")
-	ctx.drawer = drawer
+    hide_on_startup = bool(getattr(get_app_config().ui.navigation, "hide_nav_on_startup", False))
+    drawer = ui.left_drawer(value=not hide_on_startup, bordered=True).props("width=220").classes(
+        "app-drawer border-r border-[var(--input-border)]"
+    )
+    ctx.drawer = drawer
 
-	with drawer:
-		# All dynamic content goes into this column (so we can clear/rebuild it)
-		ctx.drawer_content = ui.column().classes("w-full")
+    with drawer:
+        ctx.drawer_content = ui.column().classes("w-full")
+        _render_drawer_content(ctx)
 
-		# Initial render
-		_render_drawer_content(ctx)
+    def refresh_drawer() -> None:
+        _render_drawer_content.refresh(ctx)
 
-	# Convenience function for other modules
-	def refresh_drawer() -> None:
-		_render_drawer_content.refresh(ctx)
-	ctx.refresh_drawer = refresh_drawer
+    ctx.refresh_drawer = refresh_drawer
+    return drawer
 
-	return drawer
 
-def _add_standard_button(ctx: PageContext, route: Route, key:str):
-	btn = ui.button(
-		route.label,
-		icon=route.icon,
-		on_click=lambda k=key: navigate(ctx, k),
-	).props("flat no-caps stack").classes(
-		"w-full stack align-left px-4")  # w-full justify-start makes the icon/text stay left, even with full width.
-	ctx.nav_buttons[key] = btn
-	return btn
+def _add_standard_button(ctx: PageContext, route: Route, key: str):
+    btn = ui.button(route.label, icon=route.icon, on_click=lambda k=key: navigate(ctx, k)).props(
+        "flat no-caps align=left"
+    ).classes("w-full app-nav-item")
+    ctx.nav_buttons[key] = btn
+    return btn
 
-def _add_error_button(ctx: PageContext, route: Route, key:str):
-	with ui.row().classes("w-full items-center px-2"):
-		# Create a flat button with custom content
-		btn = ui.button(on_click=lambda k=key: navigate(ctx, k)) \
-			.props("flat no-caps stack") \
-			.classes("flex-1 stack align-left px-2 gap-2")
 
-		with btn:
-			with ui.row().classes("items-center gap-2 no-wrap"):
-				# Icon wrapper (relative) so badge can be absolutely positioned
-				with ui.element("div").classes("relative inline-flex") as icon_wrap:
-					ui.icon(route.icon)  # e.g. "error"
+def _add_error_button(ctx: PageContext, route: Route, key: str):
+    with ui.row().classes("w-full items-center"):
+        btn = ui.button(on_click=lambda k=key: navigate(ctx, k)).props("flat no-caps align=left").classes(
+            "w-full app-nav-item px-3"
+        )
 
-					# Badge floating on top-right of the icon
-					errors_badge = ui.badge().props("color=negative") \
-						.classes("absolute -top-3 -right-2 text-[11px] min-w-[16px] h-[16px]"
-							"flex items-center justify-center")
-					#add pulse class
-					errors_badge.classes(add="error-badge-pulse")
-					# text
-					errors_badge.bind_text_from(ctx.state, "error_count", backward= lambda n: str(n))
-					#visibility (show only if > 0)
-					errors_badge.bind_visibility_from(ctx.state, "error_count",
-													  backward= lambda n: int(n) > 0)
-				# the error label
-			ui.label(route.label)
+        with btn:
+            with ui.row().classes("items-center gap-2 no-wrap"):
+                with ui.element("div").classes("relative inline-flex") as icon_wrap:
+                    ui.icon(route.icon)
+                    errors_badge = ui.badge().props("color=negative").classes(
+                        "absolute -top-3 -right-2 text-[11px] min-w-[16px] h-[16px] flex items-center justify-center"
+                    )
+                    errors_badge.classes(add="error-badge-pulse")
+                    errors_badge.bind_text_from(ctx.state, "error_count", backward=lambda n: str(n))
+                    errors_badge.bind_visibility_from(ctx.state, "error_count", backward=lambda n: int(n) > 0)
+            ui.label(route.label)
 
-		ctx.errors_icon_wrap = icon_wrap
-		ctx.nav_buttons[key] = btn
-	return btn
+        ctx.errors_icon_wrap = icon_wrap
+        ctx.nav_buttons[key] = btn
+    return btn
 
-def _add_dummy_test_button(ctx: PageContext, route: Route, key:str):
-	btn = ui.button(
-		route.label,
-		icon=route.icon,
-		on_click= ctx.dummy_controller.start_dummy_test,
-	).props("flat no-caps stack").classes(
-		"w-full stack align-left px-4")  # w-full justify-start makes the icon/text stay left, even with full width.
-	ctx.nav_buttons[key] = btn
-	return btn
+
+def _add_dummy_test_button(ctx: PageContext, route: Route, key: str):
+    btn = ui.button(route.label, icon=route.icon, on_click=ctx.dummy_controller.start_dummy_test).props(
+        "flat no-caps align=left"
+    ).classes("w-full app-nav-item")
+    ctx.nav_buttons[key] = btn
+    return btn

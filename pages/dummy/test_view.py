@@ -8,6 +8,7 @@ from nicegui import ui
 
 from layout.context import PageContext
 from layout.page_scaffold import build_page
+from layout.app_style import button_classes, button_props
 
 def render(container: ui.element, ctx: PageContext) -> None:
 	"""Manual Dummy Test view:
@@ -98,7 +99,7 @@ def render(container: ui.element, ctx: PageContext) -> None:
 	def left_dummy_card() -> None:
 		props = dummy_props()
 
-		with ui.card().classes("w-[360px] h-full p-0 rounded-2xl overflow-hidden flex flex-col"):
+		with ui.card().classes("w-[360px] h-full p-0 app-panel overflow-hidden flex flex-col"):
 			with ui.row().classes("w-full items-center justify-between px-4 py-3").style(
 				"background:var(--surface); border-bottom:1px solid var(--input-border);"
 			):
@@ -134,7 +135,7 @@ def render(container: ui.element, ctx: PageContext) -> None:
 
 	@ui.refreshable
 	def watch_section() -> None:
-		with ui.card().classes("w-full flex-1 min-h-0 p-0 rounded-2xl overflow-hidden flex flex-col"):
+		with ui.card().classes("w-full flex-1 min-h-0 p-0 app-panel overflow-hidden flex flex-col"):
 
 			#header fix
 			with ui.row().classes("w-full items-center justify-between px-4 py-3").style(
@@ -143,7 +144,7 @@ def render(container: ui.element, ctx: PageContext) -> None:
 				ui.label("Watch").classes("text-sm font-semibold")
 				with ui.row().classes("items-center gap-2"):
 					ui.button("Clear", icon="delete_sweep", on_click=lambda: (watch.clear(), watch_section.refresh()))\
-						.props("flat dense").classes("text-xs text-red-600")
+						.props(button_props("danger") + " dense").classes(button_classes())
 
 			#body (scrollable, fills rest)
 			with ui.column().classes("w-full flex-1 min-h-0 overflow-auto p-3 gap-2").style(
@@ -221,7 +222,7 @@ def render(container: ui.element, ctx: PageContext) -> None:
 					).props("dense outlined").classes("grow")
 
 				ui.button(icon="save", on_click= lambda: write_clicked(lane)
-						  ).props("dense").classes("text-primary")
+						  ).props(button_props("secondary") + " dense").classes(button_classes())
 
 		def write_clicked(lane = None) -> None:
 			# write lane1
@@ -238,7 +239,7 @@ def render(container: ui.element, ctx: PageContext) -> None:
 
 			watch_section.refresh()
 
-		with ui.card().classes("w-full p-0 rounded-2xl overflow-hidden"):
+		with ui.card().classes("w-full p-0 app-panel overflow-hidden"):
 			with ui.row().classes("w-full items-center justify-between px-4 py-3").style(
 				"background:var(--surface); border-bottom:1px solid var(--input-border);"
 			):
@@ -250,7 +251,7 @@ def render(container: ui.element, ctx: PageContext) -> None:
 
 				with ui.row().classes("w-full justify-end pt-1"):
 					ui.button("Write", icon="save", on_click=write_clicked)\
-						.props("dense unelevated").classes("bg-primary text-white")
+						.props(button_props("primary") + " dense").classes(button_classes())
 
 	def refresh_view():
 		if watch:
@@ -270,7 +271,7 @@ def render(container: ui.element, ctx: PageContext) -> None:
 
 			# body area
 			with ui.row().classes("w-full flex-1 min-h-0 p-4 gap-4 rounded-2xl").style(
-				"background:var(--app-background);"
+				"background:var(--surface-muted);"
 			):
 				# left (no scroll)
 				left_dummy_card()

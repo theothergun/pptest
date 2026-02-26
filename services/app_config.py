@@ -55,7 +55,7 @@ def get_active_set_name() -> str:
         set_active_set_name("default")
 
     try:
-        with open(ACTIVE_SET_FILE, "r", encoding="utf-8") as f:
+        with open(ACTIVE_SET_FILE, "r", encoding="utf-8-sig") as f:
             data = json.load(f)
         name = _safe_set_name(data.get("active", "default"))
     except Exception:
@@ -94,7 +94,7 @@ def create_config_set(name: str, *, copy_from: str | None = None) -> str:
     if copy_from:
         src = _set_path(copy_from)
         if os.path.exists(src):
-            with open(src, "r", encoding="utf-8") as f:
+            with open(src, "r", encoding="utf-8-sig") as f:
                 raw = json.load(f)
             if isinstance(raw, dict):
                 data = raw
@@ -432,7 +432,7 @@ def load_app_config(path: str | None = None) -> AppConfig:
         save_app_config(cfg, config_path)
         return cfg
 
-    with open(config_path, "r", encoding="utf-8") as f:
+    with open(config_path, "r", encoding="utf-8-sig") as f:
         raw = json.load(f)
     return _from_dict(raw)
 

@@ -1,590 +1,607 @@
-{
-  "auth": {
-    "allow_legacy_fallback": true,
-    "default_roles": [
-      "user"
-    ],
-    "itac_connection_name": "itac_mk",
-    "login_required": true,
-    "rest_endpoint_name": "",
-    "rest_extra_payload": {},
-    "rest_headers": {},
-    "rest_login_path": "",
-    "rest_method": "POST",
-    "rest_password_field": "password",
-    "rest_success_field": "",
-    "rest_timeout_s": 8.0,
-    "rest_username_field": "username",
-    "users": [
-      {
-        "enabled": true,
-        "forename": "",
-        "lastname": "",
-        "password_hash": "pbkdf2_sha256$210000$RLdC_MGcR51BoDlGO1KWBA$Zb8f9JaK2AWhCEUFcsmTQkpiV7VOA8iRKT8G-QFoUb8",
-        "roles": [
-          "user"
-        ],
-        "username": "test123"
-      },
-      {
-        "enabled": true,
-        "forename": "big",
-        "lastname": "guy",
-        "password_hash": "pbkdf2_sha256$210000$4QGbRn0DBf3LXFAkBYWYZg$ijMwixo4D08W5qD-mhG3whQfbM-_MI6L9-Oqyx8QauY",
-        "roles": [
-          "admin"
-        ],
-        "username": "admin"
-      }
-    ],
-    "validation_mode": "local_or_itac"
-  },
-  "global_vars": {
-    "asset_id": "6e29b1d2-b578-11f0-88e3-005056a8f0c2",
-    "station": 6410400821
-  },
-  "logging": {
-    "console_level": "TRACE",
-    "file_level": "DEBUG"
-  },
-  "persistence": {
-    "backend": "json",
-    "external_db": {
-      "dsn": "",
-      "enabled": false
-    },
-    "json_path": "config/app_config.json"
-  },
-  "proxy": {
-    "enabled": true,
-    "http": "http://192.168.1.26:3128",
-    "https": "http://192.168.1.26:3128",
-    "no_proxy": "localhost,127.0.0.1,10.1.2.3"
-  },
-  "ui": {
-    "navigation": {
-      "custom_routes": [
-        {
-          "icon": "home",
-          "key": "home",
-          "label": "Home",
-          "path": "home.py"
-        },
-        {
-          "icon": "warning",
-          "key": "errors",
-          "label": "Errors",
-          "path": "errors.py"
-        },
-        {
-          "icon": "settings",
-          "key": "settings",
-          "label": "Settings",
-          "path": "settings/settings_page.py"
-        },
-        {
-          "icon": "insert_drive_file",
-          "key": "packaging",
-          "label": "Packaging",
-          "path": "operator/packaging/packaging.py"
-        },
-        {
-          "icon": "home",
-          "key": "vi_home",
-          "label": "Visual Inspection",
-          "path": "visual_inspection/home.py"
-        },
-        {
-          "icon": "insert_drive_file",
-          "key": "pack_nox",
-          "label": "Packaging Nox",
-          "path": "operator/packaging/packaging_nox.py"
-        },
-        {
-          "icon": "monitor_heart",
-          "key": "pack_nox_status",
-          "label": "Packaging NOX Status",
-          "path": "operator/packaging_nox_status.py"
-        },
-        {
-          "icon": "insert_drive_file",
-          "key": "Container Managemet",
-          "label": "Container Managemet",
-          "path": "operator/packaging/container_management.py"
-        },
-        {
-          "icon": "insert_drive_file",
-          "key": "dummy2",
-          "label": "button_example",
-          "path": "operator/view_action_example.py"
-        }
-      ],
-      "dark_mode": false,
-      "hide_nav_on_startup": false,
-      "main_route": "packaging",
-      "route_roles": {
-        "Container Managemet": [
-          "user",
-          "admin"
-        ],
-        "errors": [
-          "user",
-          "admin"
-        ],
-        "home": [
-          "user",
-          "admin"
-        ],
-        "pack_nox": [
-          "user",
-          "admin"
-        ],
-        "pack_nox_status": [
-          "user",
-          "admin"
-        ],
-        "packaging": [
-          "user"
-        ],
-        "reports": [
-          "user",
-          "admin"
-        ],
-        "route_settings": [
-          "user",
-          "admin"
-        ],
-        "settings": [
-          "user"
-        ],
-        "tcp_settings": [
-          "admin"
-        ],
-        "vi_home": [
-          "user",
-          "admin"
-        ]
-      },
-      "show_device_panel": false,
-      "visible_routes": [
-        "summary",
-        "packaging",
-        "settings",
-        "errors",
-        "vi_home",
-        "test5",
-        "app_state",
-        "settings_general",
-        "settings_runtime",
-        "settings_workers",
-        "settings_connectivity",
-        "settings_languages",
-        "pack_nox",
-        "pack_nox_status",
-        "Container Managemet",
-        "xdv",
-        "xdvxcv",
-        "sad",
-        "dummy",
-        "dummy2"
-      ]
-    },
-    "theme": {
-      "dark_palette": "dark-cool",
-      "light_palette": "light-cool",
-      "palettes": {
-        "dark-cool": {
-          "accent": "#4ade80",
-          "app-background": "#0b1220",
-          "drawer-bg": "#0f172a",
-          "drawer-text": "#e2e8f0",
-          "header-bg": "#020617",
-          "header-text": "#e2e8f0",
-          "info": "#38bdf8",
-          "input-bg": "#111827",
-          "input-border": "#334155",
-          "input-text": "#e5e7eb",
-          "negative": "#f87171",
-          "positive": "#22c55e",
-          "primary": "#60a5fa",
-          "secondary": "#38bdf8",
-          "status-bad": "#7f1d1d",
-          "status-good": "#14532d",
-          "status-info": "#1e3a8a",
-          "status-muted": "#374151",
-          "status-warning": "#92400e",
-          "surface": "#111827",
-          "surface-muted": "#1f2937",
-          "text-primary": "#e5e7eb",
-          "text-secondary": "#94a3b8",
-          "warning": "#fbbf24"
-        },
-        "light-cool": {
-          "accent": "#22c55e",
-          "app-background": "#f3f7fb",
-          "drawer-bg": "#e2e8f0",
-          "drawer-text": "#0f172a",
-          "header-bg": "#0f172a",
-          "header-text": "#e2e8f0",
-          "info": "#0284c7",
-          "input-bg": "#ffffff",
-          "input-border": "#94a3b8",
-          "input-text": "#0f172a",
-          "negative": "#dc2626",
-          "positive": "#16a34a",
-          "primary": "#3b82f6",
-          "secondary": "#0ea5e9",
-          "status-bad": "#fca5a5",
-          "status-good": "#86efac",
-          "status-info": "#93c5fd",
-          "status-muted": "#e5e7eb",
-          "status-warning": "#fdba74",
-          "surface": "#ffffff",
-          "surface-muted": "#e8eef5",
-          "text-primary": "#0f172a",
-          "text-secondary": "#475569",
-          "warning": "#f59e0b"
-        }
-      }
-    }
-  },
-  "workers": {
-    "configs": {
-      "com_device": {
-        "devices": []
-      },
-      "itac": {
-        "endpoints": [
-          {
-            "auto_login": true,
-            "base_url": "http://mk01smesapp02:8080/mes/imsapi/rest/actions",
-            "client": "01",
-            "force_locale": "",
-            "name": "itac_mk",
-            "password": "",
-            "registration_type": "S",
-            "station_number": "6410400821",
-            "station_password": "",
-            "system_identifier": "nicegui",
-            "timeout_s": 10.0,
-            "user": "",
-            "verify_ssl": false,
-            "visible_on_device_panel": true
-          }
-        ]
-      },
-      "opcua": {
-        "endpoints": [
-          {
-            "auto_connect": true,
-            "name": "local",
-            "nodes": [
-              {
-                "alias": "time",
-                "node_id": "ns=2;s=[System]/Gateway/CurrentDateTime",
-                "poll_ms": 500
+﻿{
+    "auth":  {
+                 "allow_legacy_fallback":  true,
+                 "default_roles":  [
+                                       "user"
+                                   ],
+                 "itac_connection_name":  "itac_mk",
+                 "login_required":  true,
+                 "rest_endpoint_name":  "",
+                 "rest_extra_payload":  {
+
+                                        },
+                 "rest_headers":  {
+
+                                  },
+                 "rest_login_path":  "",
+                 "rest_method":  "POST",
+                 "rest_password_field":  "password",
+                 "rest_success_field":  "",
+                 "rest_timeout_s":  8.0,
+                 "rest_username_field":  "username",
+                 "users":  [
+                               {
+                                   "enabled":  true,
+                                   "forename":  "",
+                                   "lastname":  "",
+                                   "password_hash":  "pbkdf2_sha256$210000$RLdC_MGcR51BoDlGO1KWBA$Zb8f9JaK2AWhCEUFcsmTQkpiV7VOA8iRKT8G-QFoUb8",
+                                   "roles":  [
+                                                 "user"
+                                             ],
+                                   "username":  "test123"
+                               },
+                               {
+                                   "enabled":  true,
+                                   "forename":  "big",
+                                   "lastname":  "guy",
+                                   "password_hash":  "pbkdf2_sha256$210000$4QGbRn0DBf3LXFAkBYWYZg$ijMwixo4D08W5qD-mhG3whQfbM-_MI6L9-Oqyx8QauY",
+                                   "roles":  [
+                                                 "admin"
+                                             ],
+                                   "username":  "admin"
+                               }
+                           ],
+                 "validation_mode":  "local_or_itac"
+             },
+    "global_vars":  {
+                        "asset_id":  "6e29b1d2-b578-11f0-88e3-005056a8f0c2",
+                        "station":  6410400821
+                    },
+    "logging":  {
+                    "console_level":  "TRACE",
+                    "file_level":  "DEBUG"
+                },
+    "persistence":  {
+                        "backend":  "json",
+                        "external_db":  {
+                                            "dsn":  "",
+                                            "enabled":  false
+                                        },
+                        "json_path":  "config/app_config.json"
+                    },
+    "proxy":  {
+                  "enabled":  true,
+                  "http":  "http://192.168.1.26:3128",
+                  "https":  "http://192.168.1.26:3128",
+                  "no_proxy":  "localhost,127.0.0.1,10.1.2.3"
               },
-              {
-                "alias": "Watchdog",
-                "node_id": "ns=2;s=[core_rscheuer]/KE-Elektronik/MK01/DataWiring/TransferLine/Fakra-KE-27/MES/SetupCheck/result_text",
-                "poll_ms": 250
-              }
-            ],
-            "password": "",
-            "security_mode": "None",
-            "security_policy": "None",
-            "server_url": "opc.tcp://127.0.0.1:62541",
-            "timeout_s": 5.0,
-            "username": ""
-          }
-        ]
-      },
-      "rest_api": {
-        "endpoints": [
-          {
-            "base_url": "http://192.168.1.26:8088/system/webdev/api-packaging/packaging/get_active_container",
-            "headers": {
-              "Content-Type": "application/json"
-            },
-            "name": "get_active_container",
-            "timeout_s": 8.0,
-            "verify_ssl": false,
-            "visible_on_device_panel": false
-          },
-          {
-            "base_url": "http://192.168.1.26:8088/system/webdev/api-packaging/packaging/create_and_activate_new_container",
-            "headers": {
-              "Content-Type": "application/json"
-            },
-            "name": "create_and_activate_new_container",
-            "timeout_s": 8.0,
-            "verify_ssl": false
-          },
-          {
-            "base_url": "http://192.168.1.26:8088/system/webdev/api-packaging/packaging/deactivate_container_on_asset",
-            "headers": {
-              "Content-Type": "application/json"
-            },
-            "name": "deactivate_container_on_asset",
-            "timeout_s": 8.0,
-            "verify_ssl": false,
-            "visible_on_device_panel": false
-          },
-          {
-            "base_url": "http://192.168.1.26:8088/system/webdev/api-packaging/packaging/activate_container",
-            "headers": {
-              "Content-Type": "application/json"
-            },
-            "name": "activate_container",
-            "timeout_s": 8.0,
-            "verify_ssl": false
-          },
-          {
-            "base_url": "http://192.168.1.26:8088/system/webdev/api-packaging/packaging/search_container",
-            "headers": {
-              "Content-Type": "application/json"
-            },
-            "name": "search_container",
-            "timeout_s": 8.0,
-            "verify_ssl": false
-          },
-          {
-            "base_url": "http://192.168.1.26:8088/system/webdev/api-packaging/packaging/search_serial_numbers_of_container",
-            "headers": {
-              "Content-Type": "application/json"
-            },
-            "name": "search_serial_numbers_of_container",
-            "timeout_s": 8.0,
-            "verify_ssl": false
-          },
-          {
-            "base_url": "http://192.168.1.26:8088/system/webdev/api-packaging/packaging/remove_single_serial_number_from_container",
-            "headers": {
-              "Content-Type": "application/json"
-            },
-            "name": "remove_single_serial_number_from_container",
-            "timeout_s": 8.0,
-            "verify_ssl": false
-          },
-          {
-            "base_url": "http://192.168.1.26:8088/system/webdev/api-packaging/packaging/remove_all_serial_numbers_from_container",
-            "headers": {
-              "Content-Type": "application/json"
-            },
-            "name": "remove_all_serial_numbers_from_container",
-            "timeout_s": 8.0,
-            "verify_ssl": false
-          },
-          {
-            "base_url": "http://192.168.1.26:8088/system/webdev/api-packaging/packaging/get_container_from_serial_number",
-            "headers": {
-              "Content-Type": "application/json"
-            },
-            "name": "get_container_from_serial_number",
-            "timeout_s": 8.0,
-            "verify_ssl": false
-          },
-          {
-            "base_url": "http://192.168.1.26:8088/system/webdev/api-packaging/packaging/load_serial_number_failures",
-            "headers": {
-              "Content-Type": "application/json"
-            },
-            "name": "load_serial_number_failures",
-            "timeout_s": 8.0,
-            "verify_ssl": false
-          },
-          {
-            "base_url": "http://192.168.1.26:8088/system/webdev/api-packaging/packaging/load_station_failures",
-            "headers": {
-              "Content-Type": "application/json"
-            },
-            "name": "load_station_failures",
-            "timeout_s": 8.0,
-            "verify_ssl": false
-          },
-          {
-            "base_url": "http://192.168.1.26:8088/system/webdev/api-packaging/packaging/BookSingleSerial",
-            "headers": {
-              "Content-Type": "application/json"
-            },
-            "name": "book_serial",
-            "timeout_s": 10.0,
-            "verify_ssl": false
-          }
-        ]
-      },
-      "script_worker": {
-        "auto_start_chains": [
-          {
-            "instance_id": "default",
-            "script_name": "itac/packaging/container_management"
-          },
-          {
-            "instance_id": "default",
-            "script_name": "itac/packaging/container_scan"
-          },
-          {
-            "instance_id": "default",
-            "script_name": "itac/packaging/container_update"
-          },
-          {
-            "instance_id": "default",
-            "script_name": "itac/packaging/pack_twincat"
-          }
-        ]
-      },
-      "tcp_client": {
-        "clients": [
-          {
-            "auto_reconnect": true,
-            "client_id": "PACK_NOX_SCANNER",
-            "connect": true,
-            "delimiter": "\\n",
-            "encoding": "utf-8",
-            "host": "127.0.0.1",
-            "keepalive": true,
-            "mode": "line",
-            "port": 4001,
-            "reconnect_max_s": 10.0,
-            "reconnect_min_s": 1.0,
-            "tcp_nodelay": true,
-            "visible_on_device_panel": true
-          }
-        ]
-      },
-      "twincat": {
-        "plc_endpoints": [
-          {
-            "ads_port": 851,
-            "client_id": "packaging_station",
-            "default_cycle_ms": 200,
-            "default_string_len": 80,
-            "default_trans_mode": "server_cycle",
-            "plc_ams_net_id": "39.84.121.39.1.1",
-            "plc_ip": "192.168.56.104",
-            "subscriptions": [
-              {
-                "alias": "stop",
-                "name": "MAIN.module.zenonVisu.Stop",
-                "plc_type": "BOOL",
-                "string_len": 1
-              },
-              {
-                "alias": "update_view",
-                "name": "MAIN.module.fbStepChainAutomatic.zenonVisu.UpdateView",
-                "plc_type": "BOOL",
-                "string_len": 1
-              },
-              {
-                "alias": "watchdog",
-                "name": "MAIN.module.fbStepChainAutomatic.zenonVisu.Watchdog",
-                "plc_type": "BOOL",
-                "string_len": 1
-              },
-              {
-                "alias": "Step",
-                "name": "MAIN.module.fbStepChainAutomatic.zenonVisu.Step",
-                "plc_type": "UINT",
-                "string_len": 80
-              },
-              {
-                "alias": "Start_mes",
-                "name": "MAIN.module.fbStepChainAutomatic.zenonVisu.ZenonMes.Start",
-                "plc_type": "BOOL",
-                "string_len": 1
-              },
-              {
-                "alias": "Ack_mes",
-                "name": "MAIN.module.fbStepChainAutomatic.zenonVisu.ZenonMes.Acknowledge",
-                "plc_type": "BOOL",
-                "string_len": 1
-              },
-              {
-                "alias": "Function_mes",
-                "name": "MAIN.module.fbStepChainAutomatic.zenonVisu.ZenonMes.FunctionName",
-                "plc_type": "STRING(80)",
-                "string_len": 80
-              },
-              {
-                "alias": "Result_code_mes",
-                "name": "MAIN.module.fbStepChainAutomatic.zenonVisu.ZenonMes.ResultCode",
-                "plc_type": "UINT",
-                "string_len": 80
-              },
-              {
-                "alias": "Result_text_mes",
-                "name": "MAIN.module.fbStepChainAutomatic.zenonVisu.ZenonMes.ResultText",
-                "plc_type": "STRING(80)",
-                "string_len": 80
-              },
-              {
-                "alias": "MES_Request_0",
-                "name": "MAIN.module.fbStepChainAutomatic.zenonVisu.ZenonMes.RequestArray[0]",
-                "plc_type": "STRING(80)",
-                "string_len": 80
-              },
-              {
-                "alias": "MES_Request_1",
-                "name": "MAIN.module.fbStepChainAutomatic.zenonVisu.ZenonMes.RequestArray[1]",
-                "plc_type": "STRING(80)",
-                "string_len": 80
-              },
-              {
-                "alias": "MES_Request_2",
-                "name": "MAIN.module.fbStepChainAutomatic.zenonVisu.ZenonMes.RequestArray[2]",
-                "plc_type": "STRING(80)",
-                "string_len": 80
-              },
-              {
-                "alias": "Dummy_enabled",
-                "name": "MAIN.module.fbStepChainAutomatic.zenonVisu.ZenonDummy.IsDummyMode",
-                "plc_type": "BOOL",
-                "string_len": 1
-              },
-              {
-                "alias": "ErrorText",
-                "name": "MAIN.module.fbStepChainAutomatic.zenonVisu.ErrorText",
-                "plc_type": "STRING(80)",
-                "string_len": 80
-              },
-              {
-                "alias": "StepText",
-                "name": "MAIN.module.fbStepChainAutomatic.zenonVisu.StepText",
-                "plc_type": "STRING(80)",
-                "string_len": 80
-              },
-              {
-                "alias": "Part_Result_DMC",
-                "name": "MAIN.module.fbStepChainAutomatic.resultArray[0]",
-                "plc_type": "STRING(80)",
-                "string_len": 80
-              },
-              {
-                "alias": "Part_Result_Camera",
-                "name": "MAIN.module.fbStepChainAutomatic.resultArray[1]",
-                "plc_type": "STRING(80)",
-                "string_len": 80
-              },
-              {
-                "alias": "Part_Result_Locking",
-                "name": "MAIN.module.fbStepChainAutomatic.resultArray[2]",
-                "plc_type": "STRING(80)",
-                "string_len": 80
-              },
-              {
-                "alias": "Part_Result_Dome",
-                "name": "MAIN.module.fbStepChainAutomatic.resultArray[3]",
-                "plc_type": "STRING(80)",
-                "string_len": 80
-              }
-            ],
-            "visible_on_device_panel": true
-          }
-        ]
-      }
-    },
-    "enabled_workers": [
-      "itac"
-    ]
-  }
+    "ui":  {
+               "navigation":  {
+                                  "custom_routes":  [
+                                                        {
+                                                            "icon":  "home",
+                                                            "key":  "home",
+                                                            "label":  "Home",
+                                                            "path":  "home.py"
+                                                        },
+                                                        {
+                                                            "icon":  "warning",
+                                                            "key":  "errors",
+                                                            "label":  "Errors",
+                                                            "path":  "errors.py"
+                                                        },
+                                                        {
+                                                            "icon":  "settings",
+                                                            "key":  "settings",
+                                                            "label":  "Settings",
+                                                            "path":  "settings/settings_page.py"
+                                                        },
+                                                        {
+                                                            "icon":  "insert_drive_file",
+                                                            "key":  "packaging",
+                                                            "label":  "Packaging",
+                                                            "path":  "operator/packaging/packaging.py"
+                                                        },
+                                                        {
+                                                            "icon":  "home",
+                                                            "key":  "vi_home",
+                                                            "label":  "Visual Inspection",
+                                                            "path":  "visual_inspection/home.py"
+                                                        },
+                                                        {
+                                                            "icon":  "insert_drive_file",
+                                                            "key":  "pack_nox",
+                                                            "label":  "Packaging Nox",
+                                                            "path":  "operator/packaging/packaging_nox.py"
+                                                        },
+                                                        {
+                                                            "icon":  "monitor_heart",
+                                                            "key":  "pack_nox_status",
+                                                            "label":  "Packaging NOX Status",
+                                                            "path":  "operator/packaging_nox_status.py"
+                                                        },
+                                                        {
+                                                            "icon":  "insert_drive_file",
+                                                            "key":  "Container Managemet",
+                                                            "label":  "Container Managemet",
+                                                            "path":  "operator/packaging/container_management.py"
+                                                        },
+                                                        {
+                                                            "icon":  "insert_drive_file",
+                                                            "key":  "dummy2",
+                                                            "label":  "button_example",
+                                                            "path":  "operator/view_action_example.py"
+                                                        },
+                                                        {
+                                                            "icon":  "menu_book",
+                                                            "key":  "docs",
+                                                            "label":  "Docs",
+                                                            "path":  "docs_viewer.py"
+                                                        }
+                                                    ],
+                                  "dark_mode":  false,
+                                  "hide_nav_on_startup":  false,
+                                  "main_route":  "packaging",
+                                  "route_roles":  {
+                                                      "Container Managemet":  [
+                                                                                  "user",
+                                                                                  "admin"
+                                                                              ],
+                                                      "errors":  [
+                                                                     "user",
+                                                                     "admin"
+                                                                 ],
+                                                      "home":  [
+                                                                   "user",
+                                                                   "admin"
+                                                               ],
+                                                      "pack_nox":  [
+                                                                       "user",
+                                                                       "admin"
+                                                                   ],
+                                                      "pack_nox_status":  [
+                                                                              "user",
+                                                                              "admin"
+                                                                          ],
+                                                      "packaging":  [
+                                                                        "user"
+                                                                    ],
+                                                      "reports":  [
+                                                                      "user",
+                                                                      "admin"
+                                                                  ],
+                                                      "route_settings":  [
+                                                                             "user",
+                                                                             "admin"
+                                                                         ],
+                                                      "settings":  [
+                                                                       "user"
+                                                                   ],
+                                                      "tcp_settings":  [
+                                                                           "admin"
+                                                                       ],
+                                                      "vi_home":  [
+                                                                      "user",
+                                                                      "admin"
+                                                                  ],
+                                                      "docs":  [
+                                                                   "user",
+                                                                   "admin"
+                                                               ]
+                                                  },
+                                  "show_device_panel":  false,
+                                  "visible_routes":  [
+                                                         "summary",
+                                                         "packaging",
+                                                         "settings",
+                                                         "errors",
+                                                         "vi_home",
+                                                         "test5",
+                                                         "app_state",
+                                                         "settings_general",
+                                                         "settings_runtime",
+                                                         "settings_workers",
+                                                         "settings_connectivity",
+                                                         "settings_languages",
+                                                         "pack_nox",
+                                                         "pack_nox_status",
+                                                         "Container Managemet",
+                                                         "xdv",
+                                                         "xdvxcv",
+                                                         "sad",
+                                                         "dummy",
+                                                         "dummy2",
+                                                         "docs"
+                                                     ]
+                              },
+               "theme":  {
+                             "dark_palette":  "dark-cool",
+                             "light_palette":  "light-cool",
+                             "palettes":  {
+                                              "dark-cool":  {
+                                                                "accent":  "#4ade80",
+                                                                "app-background":  "#0b1220",
+                                                                "drawer-bg":  "#0f172a",
+                                                                "drawer-text":  "#e2e8f0",
+                                                                "header-bg":  "#020617",
+                                                                "header-text":  "#e2e8f0",
+                                                                "info":  "#38bdf8",
+                                                                "input-bg":  "#111827",
+                                                                "input-border":  "#334155",
+                                                                "input-text":  "#e5e7eb",
+                                                                "negative":  "#f87171",
+                                                                "positive":  "#22c55e",
+                                                                "primary":  "#60a5fa",
+                                                                "secondary":  "#38bdf8",
+                                                                "status-bad":  "#7f1d1d",
+                                                                "status-good":  "#14532d",
+                                                                "status-info":  "#1e3a8a",
+                                                                "status-muted":  "#374151",
+                                                                "status-warning":  "#92400e",
+                                                                "surface":  "#111827",
+                                                                "surface-muted":  "#1f2937",
+                                                                "text-primary":  "#e5e7eb",
+                                                                "text-secondary":  "#94a3b8",
+                                                                "warning":  "#fbbf24"
+                                                            },
+                                              "light-cool":  {
+                                                                 "accent":  "#22c55e",
+                                                                 "app-background":  "#f3f7fb",
+                                                                 "drawer-bg":  "#e2e8f0",
+                                                                 "drawer-text":  "#0f172a",
+                                                                 "header-bg":  "#0f172a",
+                                                                 "header-text":  "#e2e8f0",
+                                                                 "info":  "#0284c7",
+                                                                 "input-bg":  "#ffffff",
+                                                                 "input-border":  "#94a3b8",
+                                                                 "input-text":  "#0f172a",
+                                                                 "negative":  "#dc2626",
+                                                                 "positive":  "#16a34a",
+                                                                 "primary":  "#3b82f6",
+                                                                 "secondary":  "#0ea5e9",
+                                                                 "status-bad":  "#fca5a5",
+                                                                 "status-good":  "#86efac",
+                                                                 "status-info":  "#93c5fd",
+                                                                 "status-muted":  "#e5e7eb",
+                                                                 "status-warning":  "#fdba74",
+                                                                 "surface":  "#ffffff",
+                                                                 "surface-muted":  "#e8eef5",
+                                                                 "text-primary":  "#0f172a",
+                                                                 "text-secondary":  "#475569",
+                                                                 "warning":  "#f59e0b"
+                                                             }
+                                          }
+                         }
+           },
+    "workers":  {
+                    "configs":  {
+                                    "com_device":  {
+                                                       "devices":  [
+
+                                                                   ]
+                                                   },
+                                    "itac":  {
+                                                 "endpoints":  [
+                                                                   {
+                                                                       "auto_login":  true,
+                                                                       "base_url":  "http://mk01smesapp02:8080/mes/imsapi/rest/actions",
+                                                                       "client":  "01",
+                                                                       "force_locale":  "",
+                                                                       "name":  "itac_mk",
+                                                                       "password":  "",
+                                                                       "registration_type":  "S",
+                                                                       "station_number":  "6410400821",
+                                                                       "station_password":  "",
+                                                                       "system_identifier":  "nicegui",
+                                                                       "timeout_s":  10.0,
+                                                                       "user":  "",
+                                                                       "verify_ssl":  false,
+                                                                       "visible_on_device_panel":  true
+                                                                   }
+                                                               ]
+                                             },
+                                    "opcua":  {
+                                                  "endpoints":  [
+                                                                    {
+                                                                        "auto_connect":  true,
+                                                                        "name":  "local",
+                                                                        "nodes":  [
+                                                                                      {
+                                                                                          "alias":  "time",
+                                                                                          "node_id":  "ns=2;s=[System]/Gateway/CurrentDateTime",
+                                                                                          "poll_ms":  500
+                                                                                      },
+                                                                                      {
+                                                                                          "alias":  "Watchdog",
+                                                                                          "node_id":  "ns=2;s=[core_rscheuer]/KE-Elektronik/MK01/DataWiring/TransferLine/Fakra-KE-27/MES/SetupCheck/result_text",
+                                                                                          "poll_ms":  250
+                                                                                      }
+                                                                                  ],
+                                                                        "password":  "",
+                                                                        "security_mode":  "None",
+                                                                        "security_policy":  "None",
+                                                                        "server_url":  "opc.tcp://127.0.0.1:62541",
+                                                                        "timeout_s":  5.0,
+                                                                        "username":  ""
+                                                                    }
+                                                                ]
+                                              },
+                                    "rest_api":  {
+                                                     "endpoints":  [
+                                                                       {
+                                                                           "base_url":  "http://192.168.1.26:8088/system/webdev/api-packaging/packaging/get_active_container",
+                                                                           "headers":  {
+                                                                                           "Content-Type":  "application/json"
+                                                                                       },
+                                                                           "name":  "get_active_container",
+                                                                           "timeout_s":  8.0,
+                                                                           "verify_ssl":  false,
+                                                                           "visible_on_device_panel":  false
+                                                                       },
+                                                                       {
+                                                                           "base_url":  "http://192.168.1.26:8088/system/webdev/api-packaging/packaging/create_and_activate_new_container",
+                                                                           "headers":  {
+                                                                                           "Content-Type":  "application/json"
+                                                                                       },
+                                                                           "name":  "create_and_activate_new_container",
+                                                                           "timeout_s":  8.0,
+                                                                           "verify_ssl":  false
+                                                                       },
+                                                                       {
+                                                                           "base_url":  "http://192.168.1.26:8088/system/webdev/api-packaging/packaging/deactivate_container_on_asset",
+                                                                           "headers":  {
+                                                                                           "Content-Type":  "application/json"
+                                                                                       },
+                                                                           "name":  "deactivate_container_on_asset",
+                                                                           "timeout_s":  8.0,
+                                                                           "verify_ssl":  false,
+                                                                           "visible_on_device_panel":  false
+                                                                       },
+                                                                       {
+                                                                           "base_url":  "http://192.168.1.26:8088/system/webdev/api-packaging/packaging/activate_container",
+                                                                           "headers":  {
+                                                                                           "Content-Type":  "application/json"
+                                                                                       },
+                                                                           "name":  "activate_container",
+                                                                           "timeout_s":  8.0,
+                                                                           "verify_ssl":  false
+                                                                       },
+                                                                       {
+                                                                           "base_url":  "http://192.168.1.26:8088/system/webdev/api-packaging/packaging/search_container",
+                                                                           "headers":  {
+                                                                                           "Content-Type":  "application/json"
+                                                                                       },
+                                                                           "name":  "search_container",
+                                                                           "timeout_s":  8.0,
+                                                                           "verify_ssl":  false
+                                                                       },
+                                                                       {
+                                                                           "base_url":  "http://192.168.1.26:8088/system/webdev/api-packaging/packaging/search_serial_numbers_of_container",
+                                                                           "headers":  {
+                                                                                           "Content-Type":  "application/json"
+                                                                                       },
+                                                                           "name":  "search_serial_numbers_of_container",
+                                                                           "timeout_s":  8.0,
+                                                                           "verify_ssl":  false
+                                                                       },
+                                                                       {
+                                                                           "base_url":  "http://192.168.1.26:8088/system/webdev/api-packaging/packaging/remove_single_serial_number_from_container",
+                                                                           "headers":  {
+                                                                                           "Content-Type":  "application/json"
+                                                                                       },
+                                                                           "name":  "remove_single_serial_number_from_container",
+                                                                           "timeout_s":  8.0,
+                                                                           "verify_ssl":  false
+                                                                       },
+                                                                       {
+                                                                           "base_url":  "http://192.168.1.26:8088/system/webdev/api-packaging/packaging/remove_all_serial_numbers_from_container",
+                                                                           "headers":  {
+                                                                                           "Content-Type":  "application/json"
+                                                                                       },
+                                                                           "name":  "remove_all_serial_numbers_from_container",
+                                                                           "timeout_s":  8.0,
+                                                                           "verify_ssl":  false
+                                                                       },
+                                                                       {
+                                                                           "base_url":  "http://192.168.1.26:8088/system/webdev/api-packaging/packaging/get_container_from_serial_number",
+                                                                           "headers":  {
+                                                                                           "Content-Type":  "application/json"
+                                                                                       },
+                                                                           "name":  "get_container_from_serial_number",
+                                                                           "timeout_s":  8.0,
+                                                                           "verify_ssl":  false
+                                                                       },
+                                                                       {
+                                                                           "base_url":  "http://192.168.1.26:8088/system/webdev/api-packaging/packaging/load_serial_number_failures",
+                                                                           "headers":  {
+                                                                                           "Content-Type":  "application/json"
+                                                                                       },
+                                                                           "name":  "load_serial_number_failures",
+                                                                           "timeout_s":  8.0,
+                                                                           "verify_ssl":  false
+                                                                       },
+                                                                       {
+                                                                           "base_url":  "http://192.168.1.26:8088/system/webdev/api-packaging/packaging/load_station_failures",
+                                                                           "headers":  {
+                                                                                           "Content-Type":  "application/json"
+                                                                                       },
+                                                                           "name":  "load_station_failures",
+                                                                           "timeout_s":  8.0,
+                                                                           "verify_ssl":  false
+                                                                       },
+                                                                       {
+                                                                           "base_url":  "http://192.168.1.26:8088/system/webdev/api-packaging/packaging/BookSingleSerial",
+                                                                           "headers":  {
+                                                                                           "Content-Type":  "application/json"
+                                                                                       },
+                                                                           "name":  "book_serial",
+                                                                           "timeout_s":  10.0,
+                                                                           "verify_ssl":  false
+                                                                       }
+                                                                   ]
+                                                 },
+                                    "script_worker":  {
+                                                          "auto_start_chains":  [
+                                                                                    {
+                                                                                        "instance_id":  "default",
+                                                                                        "script_name":  "itac/packaging/container_management"
+                                                                                    },
+                                                                                    {
+                                                                                        "instance_id":  "default",
+                                                                                        "script_name":  "itac/packaging/container_scan"
+                                                                                    },
+                                                                                    {
+                                                                                        "instance_id":  "default",
+                                                                                        "script_name":  "itac/packaging/container_update"
+                                                                                    },
+                                                                                    {
+                                                                                        "instance_id":  "default",
+                                                                                        "script_name":  "itac/packaging/pack_twincat"
+                                                                                    }
+                                                                                ]
+                                                      },
+                                    "tcp_client":  {
+                                                       "clients":  [
+                                                                       {
+                                                                           "auto_reconnect":  true,
+                                                                           "client_id":  "PACK_NOX_SCANNER",
+                                                                           "connect":  true,
+                                                                           "delimiter":  "\\n",
+                                                                           "encoding":  "utf-8",
+                                                                           "host":  "127.0.0.1",
+                                                                           "keepalive":  true,
+                                                                           "mode":  "line",
+                                                                           "port":  4001,
+                                                                           "reconnect_max_s":  10.0,
+                                                                           "reconnect_min_s":  1.0,
+                                                                           "tcp_nodelay":  true,
+                                                                           "visible_on_device_panel":  true
+                                                                       }
+                                                                   ]
+                                                   },
+                                    "twincat":  {
+                                                    "plc_endpoints":  [
+                                                                          {
+                                                                              "ads_port":  851,
+                                                                              "client_id":  "packaging_station",
+                                                                              "default_cycle_ms":  200,
+                                                                              "default_string_len":  80,
+                                                                              "default_trans_mode":  "server_cycle",
+                                                                              "plc_ams_net_id":  "39.84.121.39.1.1",
+                                                                              "plc_ip":  "192.168.56.104",
+                                                                              "subscriptions":  [
+                                                                                                    {
+                                                                                                        "alias":  "stop",
+                                                                                                        "name":  "MAIN.module.zenonVisu.Stop",
+                                                                                                        "plc_type":  "BOOL",
+                                                                                                        "string_len":  1
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "alias":  "update_view",
+                                                                                                        "name":  "MAIN.module.fbStepChainAutomatic.zenonVisu.UpdateView",
+                                                                                                        "plc_type":  "BOOL",
+                                                                                                        "string_len":  1
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "alias":  "watchdog",
+                                                                                                        "name":  "MAIN.module.fbStepChainAutomatic.zenonVisu.Watchdog",
+                                                                                                        "plc_type":  "BOOL",
+                                                                                                        "string_len":  1
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "alias":  "Step",
+                                                                                                        "name":  "MAIN.module.fbStepChainAutomatic.zenonVisu.Step",
+                                                                                                        "plc_type":  "UINT",
+                                                                                                        "string_len":  80
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "alias":  "Start_mes",
+                                                                                                        "name":  "MAIN.module.fbStepChainAutomatic.zenonVisu.ZenonMes.Start",
+                                                                                                        "plc_type":  "BOOL",
+                                                                                                        "string_len":  1
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "alias":  "Ack_mes",
+                                                                                                        "name":  "MAIN.module.fbStepChainAutomatic.zenonVisu.ZenonMes.Acknowledge",
+                                                                                                        "plc_type":  "BOOL",
+                                                                                                        "string_len":  1
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "alias":  "Function_mes",
+                                                                                                        "name":  "MAIN.module.fbStepChainAutomatic.zenonVisu.ZenonMes.FunctionName",
+                                                                                                        "plc_type":  "STRING(80)",
+                                                                                                        "string_len":  80
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "alias":  "Result_code_mes",
+                                                                                                        "name":  "MAIN.module.fbStepChainAutomatic.zenonVisu.ZenonMes.ResultCode",
+                                                                                                        "plc_type":  "UINT",
+                                                                                                        "string_len":  80
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "alias":  "Result_text_mes",
+                                                                                                        "name":  "MAIN.module.fbStepChainAutomatic.zenonVisu.ZenonMes.ResultText",
+                                                                                                        "plc_type":  "STRING(80)",
+                                                                                                        "string_len":  80
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "alias":  "MES_Request_0",
+                                                                                                        "name":  "MAIN.module.fbStepChainAutomatic.zenonVisu.ZenonMes.RequestArray[0]",
+                                                                                                        "plc_type":  "STRING(80)",
+                                                                                                        "string_len":  80
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "alias":  "MES_Request_1",
+                                                                                                        "name":  "MAIN.module.fbStepChainAutomatic.zenonVisu.ZenonMes.RequestArray[1]",
+                                                                                                        "plc_type":  "STRING(80)",
+                                                                                                        "string_len":  80
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "alias":  "MES_Request_2",
+                                                                                                        "name":  "MAIN.module.fbStepChainAutomatic.zenonVisu.ZenonMes.RequestArray[2]",
+                                                                                                        "plc_type":  "STRING(80)",
+                                                                                                        "string_len":  80
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "alias":  "Dummy_enabled",
+                                                                                                        "name":  "MAIN.module.fbStepChainAutomatic.zenonVisu.ZenonDummy.IsDummyMode",
+                                                                                                        "plc_type":  "BOOL",
+                                                                                                        "string_len":  1
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "alias":  "ErrorText",
+                                                                                                        "name":  "MAIN.module.fbStepChainAutomatic.zenonVisu.ErrorText",
+                                                                                                        "plc_type":  "STRING(80)",
+                                                                                                        "string_len":  80
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "alias":  "StepText",
+                                                                                                        "name":  "MAIN.module.fbStepChainAutomatic.zenonVisu.StepText",
+                                                                                                        "plc_type":  "STRING(80)",
+                                                                                                        "string_len":  80
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "alias":  "Part_Result_DMC",
+                                                                                                        "name":  "MAIN.module.fbStepChainAutomatic.resultArray[0]",
+                                                                                                        "plc_type":  "STRING(80)",
+                                                                                                        "string_len":  80
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "alias":  "Part_Result_Camera",
+                                                                                                        "name":  "MAIN.module.fbStepChainAutomatic.resultArray[1]",
+                                                                                                        "plc_type":  "STRING(80)",
+                                                                                                        "string_len":  80
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "alias":  "Part_Result_Locking",
+                                                                                                        "name":  "MAIN.module.fbStepChainAutomatic.resultArray[2]",
+                                                                                                        "plc_type":  "STRING(80)",
+                                                                                                        "string_len":  80
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "alias":  "Part_Result_Dome",
+                                                                                                        "name":  "MAIN.module.fbStepChainAutomatic.resultArray[3]",
+                                                                                                        "plc_type":  "STRING(80)",
+                                                                                                        "string_len":  80
+                                                                                                    }
+                                                                                                ],
+                                                                              "visible_on_device_panel":  true
+                                                                          }
+                                                                      ]
+                                                }
+                                },
+                    "enabled_workers":  [
+                                            "itac"
+                                        ]
+                }
 }

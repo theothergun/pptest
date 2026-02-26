@@ -63,6 +63,10 @@ class AppState:
     dummy_result_available: bool = False # True if dummy result are ready for evaluation
     dummy_program_changed: bool = False # True if program changed and dummy should be started
 
+    # ---- training view ----
+    # Map of "<view_id>.<button_key>" -> bool used by UI enabled bindings.
+    view_button_states: dict[str, bool] = field(default_factory=dict)
+
 
 # Expose key-name constants on class-level for ergonomic script usage:
 #   ctx.get_state(AppState.container_mgmt_active_container)

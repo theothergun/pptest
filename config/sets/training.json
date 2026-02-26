@@ -37,7 +37,12 @@
   "workers": {
     "configs": {
       "script_worker": {
-        "auto_start_chains": []
+        "auto_start_chains": [
+          {
+            "instance_id": "default",
+            "script_name": "training/training_example_view_1"
+          }
+        ]
       },
       "tcp_client": {
         "clients": [

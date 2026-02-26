@@ -1,360 +1,371 @@
-{
-  "auth": {
-    "login_required": true
-  },
-  "persistence": {
-    "backend": "json",
-    "external_db": {
-      "dsn": "",
-      "enabled": false
-    },
-    "json_path": "config/app_config.json"
-  },
-  "ui": {
-    "navigation": {
-      "custom_routes": [
-        {
-          "icon": "home",
-          "key": "home",
-          "label": "Home",
-          "path": "home.py"
-        },
-        {
-          "icon": "warning",
-          "key": "errors",
-          "label": "Errors",
-          "path": "errors.py"
-        },
-        {
-          "icon": "settings",
-          "key": "settings",
-          "label": "Settings",
-          "path": "settings/settings_page.py"
-        },
-        {
-          "icon": "tune",
-          "key": "settings_general",
-          "label": "Settings: General",
-          "path": "settings/settings_general_page.py"
-        },
-        {
-          "icon": "monitor_heart",
-          "key": "settings_runtime",
-          "label": "Settings: Runtime",
-          "path": "settings/settings_runtime_page.py"
-        },
-        {
-          "icon": "engineering",
-          "key": "settings_workers",
-          "label": "Settings: Workers",
-          "path": "settings/settings_workers_page.py"
-        },
-        {
-          "icon": "hub",
-          "key": "settings_connectivity",
-          "label": "Settings: Connectivity",
-          "path": "settings/settings_connectivity_page.py"
-        },
-        {
-          "icon": "language",
-          "key": "settings_languages",
-          "label": "Settings: Languages",
-          "path": "settings/settings_languages_page.py"
-        },
-        {
-          "icon": "insert_drive_file",
-          "key": "packaging",
-          "label": "Packaging",
-          "path": "operator/packaging/packaging.py"
-        },
-        {
-          "icon": "home",
-          "key": "vi_home",
-          "label": "Visual Inspection",
-          "path": "visual_inspection/home.py"
-        },
-        {
-          "icon": "science",
-          "key": "state_button_test",
-          "label": "State Button Test",
-          "path": "operator/state_button_test.py"
-        }
-      ],
-      "main_route": "home",
-      "route_roles": {
-        "errors": [
-          "user",
-          "admin"
-        ],
-        "home": [
-          "user",
-          "admin"
-        ],
-        "packaging": [
-          "user"
-        ],
-        "reports": [
-          "user",
-          "admin"
-        ],
-        "route_settings": [
-          "user",
-          "admin"
-        ],
-        "settings": [
-          "user"
-        ],
-        "settings_connectivity": [
-          "user",
-          "admin"
-        ],
-        "settings_general": [
-          "user",
-          "admin"
-        ],
-        "settings_languages": [
-          "user",
-          "admin"
-        ],
-        "settings_runtime": [
-          "user",
-          "admin"
-        ],
-        "settings_workers": [
-          "user",
-          "admin"
-        ],
-        "state_button_test": [
-          "user",
-          "admin"
-        ],
-        "tcp_settings": [
-          "admin"
-        ],
-        "vi_home": [
-          "user",
-          "admin"
-        ]
-      },
-      "visible_routes": [
-        "summary",
-        "packaging",
-        "settings",
-        "settings_general",
-        "settings_runtime",
-        "settings_workers",
-        "settings_connectivity",
-        "settings_languages",
-        "errors",
-        "vi_home",
-        "test5",
-        "state_button_test"
-      ]
-    },
-    "theme": {
-      "dark_palette": "dark-cool",
-      "light_palette": "light-cool",
-      "palettes": {
-        "dark-cool": {
-          "accent": "#4ade80",
-          "app-background": "#0b1220",
-          "drawer-bg": "#0f172a",
-          "drawer-text": "#e2e8f0",
-          "header-bg": "#020617",
-          "header-text": "#e2e8f0",
-          "info": "#38bdf8",
-          "input-bg": "#111827",
-          "input-border": "#334155",
-          "input-text": "#e5e7eb",
-          "negative": "#f87171",
-          "positive": "#22c55e",
-          "primary": "#60a5fa",
-          "secondary": "#38bdf8",
-          "status-bad": "#7f1d1d",
-          "status-good": "#14532d",
-          "status-info": "#1e3a8a",
-          "status-muted": "#374151",
-          "status-warning": "#92400e",
-          "surface": "#111827",
-          "surface-muted": "#1f2937",
-          "text-primary": "#e5e7eb",
-          "text-secondary": "#94a3b8",
-          "warning": "#fbbf24"
-        },
-        "light-cool": {
-          "accent": "#22c55e",
-          "app-background": "#f3f7fb",
-          "drawer-bg": "#e2e8f0",
-          "drawer-text": "#0f172a",
-          "header-bg": "#0f172a",
-          "header-text": "#e2e8f0",
-          "info": "#0284c7",
-          "input-bg": "#ffffff",
-          "input-border": "#94a3b8",
-          "input-text": "#0f172a",
-          "negative": "#dc2626",
-          "positive": "#16a34a",
-          "primary": "#3b82f6",
-          "secondary": "#0ea5e9",
-          "status-bad": "#fca5a5",
-          "status-good": "#86efac",
-          "status-info": "#93c5fd",
-          "status-muted": "#e5e7eb",
-          "status-warning": "#fdba74",
-          "surface": "#ffffff",
-          "surface-muted": "#e8eef5",
-          "text-primary": "#0f172a",
-          "text-secondary": "#475569",
-          "warning": "#f59e0b"
-        }
-      }
-    }
-  },
-  "workers": {
-    "configs": {
-      "rest_api": {
-        "endpoints": [
-          {
-            "base_url": "http://127.0.0.1:8088/system/webdev/Core/odc/get_active_container",
-            "headers": {
-              "Content-Type": "application/json"
-            },
-            "name": "get_active_container",
-            "timeout_s": 8.0,
-            "verify_ssl": false
-          },
-          {
-            "base_url": "http://127.0.0.1:8088/system/webdev/Core/odc/create_and_activate_new_container",
-            "headers": {
-              "Content-Type": "application/json"
-            },
-            "name": "create_and_activate_new_container",
-            "timeout_s": 8.0,
-            "verify_ssl": false
-          },
-          {
-            "base_url": "http://127.0.0.1:8088/system/webdev/Core/odc/deactivate_container_on_asset",
-            "headers": {
-              "Content-Type": "application/json"
-            },
-            "name": "deactivate_container_on_asset",
-            "timeout_s": 8.0,
-            "verify_ssl": false
-          },
-          {
-            "base_url": "http://127.0.0.1:8088/system/webdev/Core/odc/activate_container",
-            "headers": {
-              "Content-Type": "application/json"
-            },
-            "name": "activate_container",
-            "timeout_s": 8.0,
-            "verify_ssl": false
-          },
-          {
-            "base_url": "http://127.0.0.1:8088/system/webdev/Core/odc/search_container",
-            "headers": {
-              "Content-Type": "application/json"
-            },
-            "name": "search_container",
-            "timeout_s": 8.0,
-            "verify_ssl": false
-          },
-          {
-            "base_url": "http://127.0.0.1:8088/system/webdev/Core/odc/search_serial_numbers_of_container",
-            "headers": {
-              "Content-Type": "application/json"
-            },
-            "name": "search_serial_numbers_of_container",
-            "timeout_s": 8.0,
-            "verify_ssl": false
-          },
-          {
-            "base_url": "http://127.0.0.1:8088/system/webdev/Core/odc/remove_single_serial_number_from_container",
-            "headers": {
-              "Content-Type": "application/json"
-            },
-            "name": "remove_single_serial_number_from_container",
-            "timeout_s": 8.0,
-            "verify_ssl": false
-          },
-          {
-            "base_url": "http://127.0.0.1:8088/system/webdev/Core/odc/remove_all_serial_numbers_from_container",
-            "headers": {
-              "Content-Type": "application/json"
-            },
-            "name": "remove_all_serial_numbers_from_container",
-            "timeout_s": 8.0,
-            "verify_ssl": false
-          },
-          {
-            "base_url": "http://127.0.0.1:8088/system/webdev/Core/odc/get_container_from_serial_number",
-            "headers": {
-              "Content-Type": "application/json"
-            },
-            "name": "get_container_from_serial_number",
-            "timeout_s": 8.0,
-            "verify_ssl": false
-          },
-          {
-            "base_url": "http://127.0.0.1:8088/system/webdev/Core/odc/load_serial_number_failures",
-            "headers": {
-              "Content-Type": "application/json"
-            },
-            "name": "load_serial_number_failures",
-            "timeout_s": 8.0,
-            "verify_ssl": false
-          },
-          {
-            "base_url": "http://127.0.0.1:8088/system/webdev/Core/odc/load_station_failures",
-            "headers": {
-              "Content-Type": "application/json"
-            },
-            "name": "load_station_failures",
-            "timeout_s": 8.0,
-            "verify_ssl": false
-          },
-          {
-            "base_url": "http://127.0.0.1:8088/system/webdev/Core/odc/BookSingleSerial",
-            "headers": {
-              "Content-Type": "application/json"
-            },
-            "name": "book_serial",
-            "timeout_s": 10.0,
-            "verify_ssl": false
-          }
-        ]
-      },
-      "script_worker": {
-        "auto_start_chains": [
-          {
-            "instance_id": "default",
-            "script_name": "packaging/packaging_station"
-          }
-        ]
-      },
-      "tcp_client": {
-        "clients": [
-          {
-            "auto_reconnect": true,
-            "client_id": "scanner1",
-            "connect": true,
-            "delimiter": "\\n",
-            "encoding": "utf-8",
-            "host": "127.0.0.1",
-            "keepalive": true,
-            "mode": "line",
-            "port": 4001,
-            "reconnect_max_s": 1.0,
-            "reconnect_min_s": 1.0,
-            "tcp_nodelay": true
-          }
-        ]
-      }
-    },
-    "enabled_workers": [
-      "script_worker",
-      "tcp_client",
-      "rest_api"
-    ]
-  }
+﻿{
+    "auth":  {
+                 "login_required":  true
+             },
+    "persistence":  {
+                        "backend":  "json",
+                        "external_db":  {
+                                            "dsn":  "",
+                                            "enabled":  false
+                                        },
+                        "json_path":  "config/app_config.json"
+                    },
+    "ui":  {
+               "navigation":  {
+                                  "custom_routes":  [
+                                                        {
+                                                            "icon":  "home",
+                                                            "key":  "home",
+                                                            "label":  "Home",
+                                                            "path":  "home.py"
+                                                        },
+                                                        {
+                                                            "icon":  "warning",
+                                                            "key":  "errors",
+                                                            "label":  "Errors",
+                                                            "path":  "errors.py"
+                                                        },
+                                                        {
+                                                            "icon":  "settings",
+                                                            "key":  "settings",
+                                                            "label":  "Settings",
+                                                            "path":  "settings/settings_page.py"
+                                                        },
+                                                        {
+                                                            "icon":  "tune",
+                                                            "key":  "settings_general",
+                                                            "label":  "Settings: General",
+                                                            "path":  "settings/settings_general_page.py"
+                                                        },
+                                                        {
+                                                            "icon":  "monitor_heart",
+                                                            "key":  "settings_runtime",
+                                                            "label":  "Settings: Runtime",
+                                                            "path":  "settings/settings_runtime_page.py"
+                                                        },
+                                                        {
+                                                            "icon":  "engineering",
+                                                            "key":  "settings_workers",
+                                                            "label":  "Settings: Workers",
+                                                            "path":  "settings/settings_workers_page.py"
+                                                        },
+                                                        {
+                                                            "icon":  "hub",
+                                                            "key":  "settings_connectivity",
+                                                            "label":  "Settings: Connectivity",
+                                                            "path":  "settings/settings_connectivity_page.py"
+                                                        },
+                                                        {
+                                                            "icon":  "language",
+                                                            "key":  "settings_languages",
+                                                            "label":  "Settings: Languages",
+                                                            "path":  "settings/settings_languages_page.py"
+                                                        },
+                                                        {
+                                                            "icon":  "insert_drive_file",
+                                                            "key":  "packaging",
+                                                            "label":  "Packaging",
+                                                            "path":  "operator/packaging/packaging.py"
+                                                        },
+                                                        {
+                                                            "icon":  "home",
+                                                            "key":  "vi_home",
+                                                            "label":  "Visual Inspection",
+                                                            "path":  "visual_inspection/home.py"
+                                                        },
+                                                        {
+                                                            "icon":  "science",
+                                                            "key":  "state_button_test",
+                                                            "label":  "State Button Test",
+                                                            "path":  "operator/state_button_test.py"
+                                                        },
+                                                        {
+                                                            "icon":  "menu_book",
+                                                            "key":  "docs",
+                                                            "label":  "Docs",
+                                                            "path":  "docs_viewer.py"
+                                                        }
+                                                    ],
+                                  "main_route":  "home",
+                                  "route_roles":  {
+                                                      "errors":  [
+                                                                     "user",
+                                                                     "admin"
+                                                                 ],
+                                                      "home":  [
+                                                                   "user",
+                                                                   "admin"
+                                                               ],
+                                                      "packaging":  [
+                                                                        "user"
+                                                                    ],
+                                                      "reports":  [
+                                                                      "user",
+                                                                      "admin"
+                                                                  ],
+                                                      "route_settings":  [
+                                                                             "user",
+                                                                             "admin"
+                                                                         ],
+                                                      "settings":  [
+                                                                       "user"
+                                                                   ],
+                                                      "settings_connectivity":  [
+                                                                                    "user",
+                                                                                    "admin"
+                                                                                ],
+                                                      "settings_general":  [
+                                                                               "user",
+                                                                               "admin"
+                                                                           ],
+                                                      "settings_languages":  [
+                                                                                 "user",
+                                                                                 "admin"
+                                                                             ],
+                                                      "settings_runtime":  [
+                                                                               "user",
+                                                                               "admin"
+                                                                           ],
+                                                      "settings_workers":  [
+                                                                               "user",
+                                                                               "admin"
+                                                                           ],
+                                                      "state_button_test":  [
+                                                                                "user",
+                                                                                "admin"
+                                                                            ],
+                                                      "tcp_settings":  [
+                                                                           "admin"
+                                                                       ],
+                                                      "vi_home":  [
+                                                                      "user",
+                                                                      "admin"
+                                                                  ],
+                                                      "docs":  [
+                                                                   "user",
+                                                                   "admin"
+                                                               ]
+                                                  },
+                                  "visible_routes":  [
+                                                         "summary",
+                                                         "packaging",
+                                                         "settings",
+                                                         "settings_general",
+                                                         "settings_runtime",
+                                                         "settings_workers",
+                                                         "settings_connectivity",
+                                                         "settings_languages",
+                                                         "errors",
+                                                         "vi_home",
+                                                         "test5",
+                                                         "state_button_test",
+                                                         "docs"
+                                                     ]
+                              },
+               "theme":  {
+                             "dark_palette":  "dark-cool",
+                             "light_palette":  "light-cool",
+                             "palettes":  {
+                                              "dark-cool":  {
+                                                                "accent":  "#4ade80",
+                                                                "app-background":  "#0b1220",
+                                                                "drawer-bg":  "#0f172a",
+                                                                "drawer-text":  "#e2e8f0",
+                                                                "header-bg":  "#020617",
+                                                                "header-text":  "#e2e8f0",
+                                                                "info":  "#38bdf8",
+                                                                "input-bg":  "#111827",
+                                                                "input-border":  "#334155",
+                                                                "input-text":  "#e5e7eb",
+                                                                "negative":  "#f87171",
+                                                                "positive":  "#22c55e",
+                                                                "primary":  "#60a5fa",
+                                                                "secondary":  "#38bdf8",
+                                                                "status-bad":  "#7f1d1d",
+                                                                "status-good":  "#14532d",
+                                                                "status-info":  "#1e3a8a",
+                                                                "status-muted":  "#374151",
+                                                                "status-warning":  "#92400e",
+                                                                "surface":  "#111827",
+                                                                "surface-muted":  "#1f2937",
+                                                                "text-primary":  "#e5e7eb",
+                                                                "text-secondary":  "#94a3b8",
+                                                                "warning":  "#fbbf24"
+                                                            },
+                                              "light-cool":  {
+                                                                 "accent":  "#22c55e",
+                                                                 "app-background":  "#f3f7fb",
+                                                                 "drawer-bg":  "#e2e8f0",
+                                                                 "drawer-text":  "#0f172a",
+                                                                 "header-bg":  "#0f172a",
+                                                                 "header-text":  "#e2e8f0",
+                                                                 "info":  "#0284c7",
+                                                                 "input-bg":  "#ffffff",
+                                                                 "input-border":  "#94a3b8",
+                                                                 "input-text":  "#0f172a",
+                                                                 "negative":  "#dc2626",
+                                                                 "positive":  "#16a34a",
+                                                                 "primary":  "#3b82f6",
+                                                                 "secondary":  "#0ea5e9",
+                                                                 "status-bad":  "#fca5a5",
+                                                                 "status-good":  "#86efac",
+                                                                 "status-info":  "#93c5fd",
+                                                                 "status-muted":  "#e5e7eb",
+                                                                 "status-warning":  "#fdba74",
+                                                                 "surface":  "#ffffff",
+                                                                 "surface-muted":  "#e8eef5",
+                                                                 "text-primary":  "#0f172a",
+                                                                 "text-secondary":  "#475569",
+                                                                 "warning":  "#f59e0b"
+                                                             }
+                                          }
+                         }
+           },
+    "workers":  {
+                    "configs":  {
+                                    "rest_api":  {
+                                                     "endpoints":  [
+                                                                       {
+                                                                           "base_url":  "http://127.0.0.1:8088/system/webdev/Core/odc/get_active_container",
+                                                                           "headers":  {
+                                                                                           "Content-Type":  "application/json"
+                                                                                       },
+                                                                           "name":  "get_active_container",
+                                                                           "timeout_s":  8.0,
+                                                                           "verify_ssl":  false
+                                                                       },
+                                                                       {
+                                                                           "base_url":  "http://127.0.0.1:8088/system/webdev/Core/odc/create_and_activate_new_container",
+                                                                           "headers":  {
+                                                                                           "Content-Type":  "application/json"
+                                                                                       },
+                                                                           "name":  "create_and_activate_new_container",
+                                                                           "timeout_s":  8.0,
+                                                                           "verify_ssl":  false
+                                                                       },
+                                                                       {
+                                                                           "base_url":  "http://127.0.0.1:8088/system/webdev/Core/odc/deactivate_container_on_asset",
+                                                                           "headers":  {
+                                                                                           "Content-Type":  "application/json"
+                                                                                       },
+                                                                           "name":  "deactivate_container_on_asset",
+                                                                           "timeout_s":  8.0,
+                                                                           "verify_ssl":  false
+                                                                       },
+                                                                       {
+                                                                           "base_url":  "http://127.0.0.1:8088/system/webdev/Core/odc/activate_container",
+                                                                           "headers":  {
+                                                                                           "Content-Type":  "application/json"
+                                                                                       },
+                                                                           "name":  "activate_container",
+                                                                           "timeout_s":  8.0,
+                                                                           "verify_ssl":  false
+                                                                       },
+                                                                       {
+                                                                           "base_url":  "http://127.0.0.1:8088/system/webdev/Core/odc/search_container",
+                                                                           "headers":  {
+                                                                                           "Content-Type":  "application/json"
+                                                                                       },
+                                                                           "name":  "search_container",
+                                                                           "timeout_s":  8.0,
+                                                                           "verify_ssl":  false
+                                                                       },
+                                                                       {
+                                                                           "base_url":  "http://127.0.0.1:8088/system/webdev/Core/odc/search_serial_numbers_of_container",
+                                                                           "headers":  {
+                                                                                           "Content-Type":  "application/json"
+                                                                                       },
+                                                                           "name":  "search_serial_numbers_of_container",
+                                                                           "timeout_s":  8.0,
+                                                                           "verify_ssl":  false
+                                                                       },
+                                                                       {
+                                                                           "base_url":  "http://127.0.0.1:8088/system/webdev/Core/odc/remove_single_serial_number_from_container",
+                                                                           "headers":  {
+                                                                                           "Content-Type":  "application/json"
+                                                                                       },
+                                                                           "name":  "remove_single_serial_number_from_container",
+                                                                           "timeout_s":  8.0,
+                                                                           "verify_ssl":  false
+                                                                       },
+                                                                       {
+                                                                           "base_url":  "http://127.0.0.1:8088/system/webdev/Core/odc/remove_all_serial_numbers_from_container",
+                                                                           "headers":  {
+                                                                                           "Content-Type":  "application/json"
+                                                                                       },
+                                                                           "name":  "remove_all_serial_numbers_from_container",
+                                                                           "timeout_s":  8.0,
+                                                                           "verify_ssl":  false
+                                                                       },
+                                                                       {
+                                                                           "base_url":  "http://127.0.0.1:8088/system/webdev/Core/odc/get_container_from_serial_number",
+                                                                           "headers":  {
+                                                                                           "Content-Type":  "application/json"
+                                                                                       },
+                                                                           "name":  "get_container_from_serial_number",
+                                                                           "timeout_s":  8.0,
+                                                                           "verify_ssl":  false
+                                                                       },
+                                                                       {
+                                                                           "base_url":  "http://127.0.0.1:8088/system/webdev/Core/odc/load_serial_number_failures",
+                                                                           "headers":  {
+                                                                                           "Content-Type":  "application/json"
+                                                                                       },
+                                                                           "name":  "load_serial_number_failures",
+                                                                           "timeout_s":  8.0,
+                                                                           "verify_ssl":  false
+                                                                       },
+                                                                       {
+                                                                           "base_url":  "http://127.0.0.1:8088/system/webdev/Core/odc/load_station_failures",
+                                                                           "headers":  {
+                                                                                           "Content-Type":  "application/json"
+                                                                                       },
+                                                                           "name":  "load_station_failures",
+                                                                           "timeout_s":  8.0,
+                                                                           "verify_ssl":  false
+                                                                       },
+                                                                       {
+                                                                           "base_url":  "http://127.0.0.1:8088/system/webdev/Core/odc/BookSingleSerial",
+                                                                           "headers":  {
+                                                                                           "Content-Type":  "application/json"
+                                                                                       },
+                                                                           "name":  "book_serial",
+                                                                           "timeout_s":  10.0,
+                                                                           "verify_ssl":  false
+                                                                       }
+                                                                   ]
+                                                 },
+                                    "script_worker":  {
+                                                          "auto_start_chains":  [
+                                                                                    {
+                                                                                        "instance_id":  "default",
+                                                                                        "script_name":  "packaging/packaging_station"
+                                                                                    }
+                                                                                ]
+                                                      },
+                                    "tcp_client":  {
+                                                       "clients":  [
+                                                                       {
+                                                                           "auto_reconnect":  true,
+                                                                           "client_id":  "scanner1",
+                                                                           "connect":  true,
+                                                                           "delimiter":  "\\n",
+                                                                           "encoding":  "utf-8",
+                                                                           "host":  "127.0.0.1",
+                                                                           "keepalive":  true,
+                                                                           "mode":  "line",
+                                                                           "port":  4001,
+                                                                           "reconnect_max_s":  1.0,
+                                                                           "reconnect_min_s":  1.0,
+                                                                           "tcp_nodelay":  true
+                                                                       }
+                                                                   ]
+                                                   }
+                                },
+                    "enabled_workers":  [
+                                            "script_worker",
+                                            "tcp_client",
+                                            "rest_api"
+                                        ]
+                }
 }

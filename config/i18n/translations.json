@@ -1853,6 +1853,15 @@
     "sk": "Current",
     "zh": "Current"
   },
+  "common.delete": {
+    "cs": "Delete",
+    "de": "Delete",
+    "en": "Delete",
+    "es-MX": "Delete",
+    "mk": "Delete",
+    "sk": "Delete",
+    "zh": "Delete"
+  },
   "common.description": {
     "cs": "Description",
     "de": "Description",
@@ -1861,6 +1870,24 @@
     "mk": "Description",
     "sk": "Description",
     "zh": "Description"
+  },
+  "common.edit": {
+    "cs": "Edit",
+    "de": "Edit",
+    "en": "Edit",
+    "es-MX": "Edit",
+    "mk": "Edit",
+    "sk": "Edit",
+    "zh": "Edit"
+  },
+  "common.label": {
+    "cs": "Label",
+    "de": "Label",
+    "en": "Label",
+    "es-MX": "Label",
+    "mk": "Label",
+    "sk": "Label",
+    "zh": "Label"
   },
   "common.max": {
     "cs": "Max",
@@ -1942,6 +1969,15 @@
     "mk": "Stop",
     "sk": "Stop",
     "zh": "Stop"
+  },
+  "common.tooltip.cancel": {
+    "cs": "Close without saving",
+    "de": "Close without saving",
+    "en": "Close without saving",
+    "es-MX": "Close without saving",
+    "mk": "Close without saving",
+    "sk": "Close without saving",
+    "zh": "Close without saving"
   },
   "container_management.actions": {
     "cs": "Actions",
@@ -2231,6 +2267,15 @@
     "sk": "Toggle device status panel",
     "zh": "Toggle device status panel"
   },
+  "header.tooltip.docs": {
+    "cs": "Open documentation",
+    "de": "Open documentation",
+    "en": "Open documentation",
+    "es-MX": "Open documentation",
+    "mk": "Open documentation",
+    "sk": "Open documentation",
+    "zh": "Open documentation"
+  },
   "header.tooltip.language": {
     "cs": "Choose UI language",
     "de": "Choose UI language",
@@ -2428,6 +2473,123 @@
     "mk": "Working ...",
     "sk": "Working ...",
     "zh": "Working ..."
+  },
+  "route.add_route": {
+    "cs": "Add route",
+    "de": "Add route",
+    "en": "Add route",
+    "es-MX": "Add route",
+    "mk": "Add route",
+    "sk": "Add route",
+    "zh": "Add route"
+  },
+  "route.allowed_roles": {
+    "cs": "Allowed roles (comma separated)",
+    "de": "Allowed roles (comma separated)",
+    "en": "Allowed roles (comma separated)",
+    "es-MX": "Allowed roles (comma separated)",
+    "mk": "Allowed roles (comma separated)",
+    "sk": "Allowed roles (comma separated)",
+    "zh": "Allowed roles (comma separated)"
+  },
+  "route.icon_hint": {
+    "cs": "Icon (material icon name)",
+    "de": "Icon (material icon name)",
+    "en": "Icon (material icon name)",
+    "es-MX": "Icon (material icon name)",
+    "mk": "Icon (material icon name)",
+    "sk": "Icon (material icon name)",
+    "zh": "Icon (material icon name)"
+  },
+  "route.key_hint": {
+    "cs": "Route key (e.g. packaging)",
+    "de": "Route key (e.g. packaging)",
+    "en": "Route key (e.g. packaging)",
+    "es-MX": "Route key (e.g. packaging)",
+    "mk": "Route key (e.g. packaging)",
+    "sk": "Route key (e.g. packaging)",
+    "zh": "Route key (e.g. packaging)"
+  },
+  "route.path_hint": {
+    "cs": "File path (e.g. packaging/packaging.py)",
+    "de": "File path (e.g. packaging/packaging.py)",
+    "en": "File path (e.g. packaging/packaging.py)",
+    "es-MX": "File path (e.g. packaging/packaging.py)",
+    "mk": "File path (e.g. packaging/packaging.py)",
+    "sk": "File path (e.g. packaging/packaging.py)",
+    "zh": "File path (e.g. packaging/packaging.py)"
+  },
+  "route.settings_subtitle": {
+    "cs": "Add / Edit custom routes (including subfolders like packaging/packaging.py).",
+    "de": "Add / Edit custom routes (including subfolders like packaging/packaging.py).",
+    "en": "Add / Edit custom routes (including subfolders like packaging/packaging.py).",
+    "es-MX": "Add / Edit custom routes (including subfolders like packaging/packaging.py).",
+    "mk": "Add / Edit custom routes (including subfolders like packaging/packaging.py).",
+    "sk": "Add / Edit custom routes (including subfolders like packaging/packaging.py).",
+    "zh": "Add / Edit custom routes (including subfolders like packaging/packaging.py)."
+  },
+  "route.settings_title": {
+    "cs": "Route Settings",
+    "de": "Route Settings",
+    "en": "Route Settings",
+    "es-MX": "Route Settings",
+    "mk": "Route Settings",
+    "sk": "Route Settings",
+    "zh": "Route Settings"
+  },
+  "route.tooltip.add": {
+    "cs": "Add a new custom route",
+    "de": "Add a new custom route",
+    "en": "Add a new custom route",
+    "es-MX": "Add a new custom route",
+    "mk": "Add a new custom route",
+    "sk": "Add a new custom route",
+    "zh": "Add a new custom route"
+  },
+  "route.tooltip.confirm_add": {
+    "cs": "Create route with current values",
+    "de": "Create route with current values",
+    "en": "Create route with current values",
+    "es-MX": "Create route with current values",
+    "mk": "Create route with current values",
+    "sk": "Create route with current values",
+    "zh": "Create route with current values"
+  },
+  "route.tooltip.delete": {
+    "cs": "Delete this route",
+    "de": "Delete this route",
+    "en": "Delete this route",
+    "es-MX": "Delete this route",
+    "mk": "Delete this route",
+    "sk": "Delete this route",
+    "zh": "Delete this route"
+  },
+  "route.tooltip.edit": {
+    "cs": "Edit this route",
+    "de": "Edit this route",
+    "en": "Edit this route",
+    "es-MX": "Edit this route",
+    "mk": "Edit this route",
+    "sk": "Edit this route",
+    "zh": "Edit this route"
+  },
+  "route.tooltip.key": {
+    "cs": "Unique route id used in URL",
+    "de": "Unique route id used in URL",
+    "en": "Unique route id used in URL",
+    "es-MX": "Unique route id used in URL",
+    "mk": "Unique route id used in URL",
+    "sk": "Unique route id used in URL",
+    "zh": "Unique route id used in URL"
+  },
+  "route.tooltip.path": {
+    "cs": "Python page file relative to pages folder",
+    "de": "Python page file relative to pages folder",
+    "en": "Python page file relative to pages folder",
+    "es-MX": "Python page file relative to pages folder",
+    "mk": "Python page file relative to pages folder",
+    "sk": "Python page file relative to pages folder",
+    "zh": "Python page file relative to pages folder"
   },
   "router.file_not_found": {
     "cs": "Route file not found: {route_path}",

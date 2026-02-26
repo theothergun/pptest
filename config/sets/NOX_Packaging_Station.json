@@ -32,10 +32,34 @@
           "path": "settings/settings_page.py"
         },
         {
-          "icon": "dashboard",
-          "key": "summary",
-          "label": "Summary",
-          "path": "summary.py"
+          "icon": "tune",
+          "key": "settings_general",
+          "label": "Settings: General",
+          "path": "settings/settings_general_page.py"
+        },
+        {
+          "icon": "monitor_heart",
+          "key": "settings_runtime",
+          "label": "Settings: Runtime",
+          "path": "settings/settings_runtime_page.py"
+        },
+        {
+          "icon": "engineering",
+          "key": "settings_workers",
+          "label": "Settings: Workers",
+          "path": "settings/settings_workers_page.py"
+        },
+        {
+          "icon": "hub",
+          "key": "settings_connectivity",
+          "label": "Settings: Connectivity",
+          "path": "settings/settings_connectivity_page.py"
+        },
+        {
+          "icon": "language",
+          "key": "settings_languages",
+          "label": "Settings: Languages",
+          "path": "settings/settings_languages_page.py"
         },
         {
           "icon": "insert_drive_file",
@@ -54,10 +78,20 @@
           "key": "state_button_test",
           "label": "State Button Test",
           "path": "operator/state_button_test.py"
+        },
+        {
+          "icon": "menu_book",
+          "key": "docs",
+          "label": "Docs",
+          "path": "docs_viewer.py"
         }
       ],
       "main_route": "home",
       "route_roles": {
+        "docs": [
+          "user",
+          "admin"
+        ],
         "errors": [
           "user",
           "admin"
@@ -80,11 +114,27 @@
         "settings": [
           "user"
         ],
-        "state_button_test": [
+        "settings_connectivity": [
           "user",
           "admin"
         ],
-        "summary": [
+        "settings_general": [
+          "user",
+          "admin"
+        ],
+        "settings_languages": [
+          "user",
+          "admin"
+        ],
+        "settings_runtime": [
+          "user",
+          "admin"
+        ],
+        "settings_workers": [
+          "user",
+          "admin"
+        ],
+        "state_button_test": [
           "user",
           "admin"
         ],
@@ -100,10 +150,16 @@
         "summary",
         "packaging",
         "settings",
+        "settings_general",
+        "settings_runtime",
+        "settings_workers",
+        "settings_connectivity",
+        "settings_languages",
         "errors",
         "vi_home",
         "test5",
-        "state_button_test"
+        "state_button_test",
+        "docs"
       ]
     },
     "theme": {
@@ -283,7 +339,7 @@
         "auto_start_chains": [
           {
             "instance_id": "default",
-            "script_name": "examples/popup"
+            "script_name": "packaging/packaging_station"
           }
         ]
       },

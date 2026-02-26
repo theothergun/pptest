@@ -7,6 +7,7 @@ from auth.auth_service import unregister_itac_user
 from auth.session import get_user, has_role, logout
 from services.app_config import get_app_config, save_app_config
 from services.i18n import SUPPORTED_LANGUAGES, get_language, set_language, t
+from layout.router import navigate
 from loguru import logger
 
 
@@ -30,6 +31,11 @@ def build_header(ctx: PageContext) -> ui.header:
                 icon="monitor_heart",
                 on_click=lambda: ctx.right_drawer.toggle() if ctx.right_drawer else None,
             ).props("flat round dense").classes("mr-1").tooltip(t("header.tooltip.device_panel", "Toggle device status panel"))
+
+            ui.button(
+                icon="menu_book",
+                on_click=lambda: navigate(ctx, "docs"),
+            ).props("flat round dense").classes("mr-1").tooltip(t("header.tooltip.docs", "Open documentation"))
 
             language_options = {entry["code"]: entry["label"] for entry in SUPPORTED_LANGUAGES}
 

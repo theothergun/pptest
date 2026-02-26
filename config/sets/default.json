@@ -72,6 +72,12 @@
           "key": "vi_home",
           "label": "Visual Inspection",
           "path": "visual_inspection/home.py"
+        },
+        {
+          "icon": "science",
+          "key": "state_button_test",
+          "label": "State Button Test",
+          "path": "operator/state_button_test.py"
         }
       ],
       "main_route": "home",
@@ -95,6 +101,9 @@
           "user",
           "admin"
         ],
+        "settings": [
+          "user"
+        ],
         "settings_connectivity": [
           "user",
           "admin"
@@ -115,8 +124,9 @@
           "user",
           "admin"
         ],
-        "settings": [
-          "user"
+        "state_button_test": [
+          "user",
+          "admin"
         ],
         "tcp_settings": [
           "admin"
@@ -137,7 +147,8 @@
         "settings_languages",
         "errors",
         "vi_home",
-        "test5"
+        "test5",
+        "state_button_test"
       ]
     },
     "theme": {
@@ -347,4 +358,3 @@
     ]
   }
 }
-

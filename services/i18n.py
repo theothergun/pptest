@@ -130,22 +130,53 @@ def save_translations(translations: dict[str, dict[str, str]]) -> None:
 
 
 def get_language() -> str:
-    lang = app.storage.user.get("language", DEFAULT_LANGUAGE)
+    """
+    Resolve active language.
+
+    In UI context, prefer per-user language (`app.storage.user`).
+    Outside UI context (e.g. script runtime threads), fall back to
+    app-wide storage and finally DEFAULT_LANGUAGE.
+    """
+    lang = DEFAULT_LANGUAGE
+
+    # Per-user language (only valid inside NiceGUI UI context).
+    try:
+        lang = app.storage.user.get("language", DEFAULT_LANGUAGE)
+    except Exception:
+        # RuntimeError is expected outside UI context.
+        pass
+
+    # App-wide fallback, available without user context.
+    if lang not in SUPPORTED_LANGUAGE_CODES:
+        try:
+            lang = app.storage.general.get("language", DEFAULT_LANGUAGE)
+        except Exception:
+            lang = DEFAULT_LANGUAGE
+
     if lang not in SUPPORTED_LANGUAGE_CODES:
         return DEFAULT_LANGUAGE
-    return lang
+    return str(lang)
 
 
 def set_language(language: str) -> str:
     language = language if language in SUPPORTED_LANGUAGE_CODES else DEFAULT_LANGUAGE
-    app.storage.user["language"] = language
+    try:
+        app.storage.user["language"] = language
+    except Exception:
+        pass
+    try:
+        app.storage.general["language"] = language
+    except Exception:
+        pass
     logger.info(f"[set_language] - language_updated - language={language}")
     return language
 
 
-def t(key: str, default: str | None = None, **kwargs: Any) -> str:
+def t(key: str, default: str | None = None, *, language: str | None = None, **kwargs: Any) -> str:
     translations = load_translations()
-    lang = get_language()
+    lang = str(language or get_language())
+    if lang not in SUPPORTED_LANGUAGE_CODES:
+        lang = DEFAULT_LANGUAGE
     text = translations.get(key, {}).get(lang)
     if not text:
         text = translations.get(key, {}).get(DEFAULT_LANGUAGE)

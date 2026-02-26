@@ -44,11 +44,8 @@ class AppState:
     max_container_qty: str = ""
     last_serial_number: str = ""
     current_serialnumber: str = ""
-    packaging_search_query: str = ""
-    packaging_container_selected: str = ""
-    packaging_active_container: str = ""
-    packaging_container_rows: list[dict[str, Any]] = field(default_factory=list)
-    packaging_serial_rows: list[dict[str, Any]] = field(default_factory=list)
+    update_container: bool = False
+    get_container_result_text: str = ""
 
     # ---- container management ----
     container_mgmt_search_query: str = ""
@@ -56,6 +53,7 @@ class AppState:
     container_mgmt_active_container: str = ""
     container_mgmt_container_rows: list[dict[str, Any]] = field(default_factory=list)
     container_mgmt_serial_rows: list[dict[str, Any]] = field(default_factory=list)
+    container_mgmt_serial_selected: str=""
 
     test_new_kea: str= ""
 
@@ -64,4 +62,11 @@ class AppState:
     dummy_test_is_running: bool = False # True if a dummy test start
     dummy_result_available: bool = False # True if dummy result are ready for evaluation
     dummy_program_changed: bool = False # True if program changed and dummy should be started
+
+
+# Expose key-name constants on class-level for ergonomic script usage:
+#   ctx.get_state(AppState.container_mgmt_active_container)
+# while keeping instance defaults unchanged.
+for _state_key in AppState.__annotations__.keys():
+    setattr(AppState, _state_key, _state_key)
 

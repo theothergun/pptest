@@ -1,27 +1,12 @@
+from services.script_api import PublicAutomationContext, StateKeys
 from enum import StrEnum
 
-from services.automation_runtime.context import PublicAutomationContext
 from services.automation_runtime.apis.api_utils import to_int
 
 
 # ------------------------------------------------------------------ UI keys (AppState)
 
 class UI_VAR(StrEnum):
-	PART_GOOD = "part_good"
-	PART_BAD = "part_bad"
-
-	INSTRUCTION = "work_instruction"
-	FEEDBACK = "work_feedback"
-	INSTRUCTION_STATE = "work_instruction_state"
-	FEEDBACK_STATE = "work_feedback_state"
-
-	ERRORS = "error_count"
-
-	CONTAINER = "container_number"
-	PART_NUMBER = "part_number"
-	DESCRIPTION = "description"
-	CURRENT_QTY = "current_container_qty"
-	MAX_QUANTITY = "max_container_qty"
 	PACKAGING_CMD = "packaging.cmd"
 
 
@@ -74,7 +59,7 @@ def ui_error(ctx: PublicAutomationContext, instruction: str, feedback: str) -> N
 		instruction_state="error",
 		feedback_state="error",
 	)
-	ctx.ui.inc_state_int(UI_VAR.ERRORS, amount=1, default=0)
+	ctx.ui.inc_state_int(StateKeys.error_count, amount=1, default=0)
 
 
 def apply_packinfo_to_ui(ctx: PublicAutomationContext, out_args: list) -> None:
@@ -85,11 +70,11 @@ def apply_packinfo_to_ui(ctx: PublicAutomationContext, out_args: list) -> None:
 	current_qty = to_int(out_args[3] if len(out_args) > 3 else None, 0)
 	max_qty = to_int(out_args[4] if len(out_args) > 4 else None, 0)
 
-	ctx.set_state(UI_VAR.CONTAINER, container)
-	ctx.set_state(UI_VAR.PART_NUMBER, part_number)
-	ctx.set_state(UI_VAR.DESCRIPTION, description)
-	ctx.set_state(UI_VAR.CURRENT_QTY, current_qty)
-	ctx.set_state(UI_VAR.MAX_QUANTITY, max_qty)
+	ctx.set_state(StateKeys.container_number, container)
+	ctx.set_state(StateKeys.part_number, part_number)
+	ctx.set_state(StateKeys.description, description)
+	ctx.set_state(StateKeys.current_container_qty, current_qty)
+	ctx.set_state(StateKeys.max_container_qty, max_qty)
 
 
 # ------------------------------------------------------------------ Main

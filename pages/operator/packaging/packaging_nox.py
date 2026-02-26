@@ -225,6 +225,17 @@ def build_page(ctx: PageContext) -> None:
 			return bool(states.get(button_id))
 		return True
 
+	def _button_visible(button_id: str) -> bool:
+		vis = getattr(ctx.state, "view_button_visibility", {}) or {}
+		if not isinstance(vis, dict):
+			return True
+		local_key = f"{PACKAGING_NOX_VIEW.value}.{button_id}"
+		if local_key in vis:
+			return bool(vis.get(local_key))
+		if button_id in vis:
+			return bool(vis.get(button_id))
+		return True
+
 	def _apply_button_states() -> None:
 		for button_id, ref_key in (
 			("start", "btn_start"),
@@ -236,10 +247,13 @@ def build_page(ctx: PageContext) -> None:
 			if btn is None:
 				continue
 			try:
+				btn.visible = _button_visible(button_id)
 				if _button_enabled(button_id):
 					btn.enable()
+					btn.classes(remove="pack-btn-force-disabled")
 				else:
 					btn.disable()
+					btn.classes(add="pack-btn-force-disabled")
 			except Exception:
 				pass
 
@@ -310,6 +324,37 @@ def build_page(ctx: PageContext) -> None:
 .pack-btn:hover {
 	transform: translateY(-1px);
 	box-shadow: 0 10px 20px rgba(15, 23, 42, 0.12);
+}
+.pack-btn.q-btn--disabled,
+.pack-btn.q-btn--disabled:hover,
+.pack-btn.q-btn--disabled.q-btn--outline {
+	background-color: #9ca3af !important;
+	border-color: #6b7280 !important;
+	color: #374151 !important;
+	opacity: 1 !important;
+	transform: none !important;
+	box-shadow: none !important;
+	filter: grayscale(1) saturate(0.2) !important;
+}
+.pack-btn.q-btn--disabled .q-btn__content,
+.pack-btn.q-btn--disabled .q-icon,
+.pack-btn.q-btn--disabled .block {
+	color: #374151 !important;
+}
+.pack-btn.q-btn--disabled .q-focus-helper {
+	opacity: 0 !important;
+}
+.pack-btn-force-disabled {
+	background: #9ca3af !important;
+	border-color: #6b7280 !important;
+	color: #374151 !important;
+	opacity: 1 !important;
+	box-shadow: none !important;
+}
+.pack-btn-force-disabled .q-btn__content,
+.pack-btn-force-disabled .q-icon,
+.pack-btn-force-disabled .block {
+	color: #374151 !important;
 }
 .pack-header {
 	min-height: 36px;

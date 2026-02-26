@@ -1,9 +1,9 @@
 from __future__ import annotations
+from services.script_api import PublicAutomationContext, StateKeys
 
 from loguru import logger
 
 from services.worker_topics import WorkerTopics
-from services.automation_runtime.context import PublicAutomationContext
 
 script_name = "ignition.pack.container_management"
 CREATE_CONTAINER_ERROR_POPUP_KEY = "create_and_activate_new_container"
@@ -61,15 +61,15 @@ def main(ctx: PublicAutomationContext):
 		result_text = payload.get("RESULT_TEXT")
 		if result_code == 0:
 
-			ctx.ui.set_state("part_number" , payload.get("DATA").get("PARTNUMBER"))
-			ctx.ui.set_state("description", payload.get("DATA").get("DESCRIPTION"))
-			ctx.ui.set_state("container_number" , payload.get("DATA").get("MATERIAL_BIN"))
-			ctx.ui.set_state("max_container_qty", payload.get("DATA").get("QTY_TOTAL"))
-			ctx.ui.set_state("current_container_qty", payload.get("DATA").get("QTY_CURR"))
+			ctx.ui.set_state(StateKeys.part_number , payload.get("DATA").get("PARTNUMBER"))
+			ctx.ui.set_state(StateKeys.description, payload.get("DATA").get("DESCRIPTION"))
+			ctx.ui.set_state(StateKeys.container_number , payload.get("DATA").get("MATERIAL_BIN"))
+			ctx.ui.set_state(StateKeys.max_container_qty, payload.get("DATA").get("QTY_TOTAL"))
+			ctx.ui.set_state(StateKeys.current_container_qty, payload.get("DATA").get("QTY_CURR"))
 
 			ctx.goto(101) # success
 		else:
-			ctx.set_state("get_container_result_text", result_text)
+			ctx.set_state(StateKeys.get_container_result_text, result_text)
 			ctx.goto(102)
 
 	elif step == 101:

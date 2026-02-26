@@ -1,25 +1,27 @@
 from __future__ import annotations
+from services.script_api import PublicAutomationContext, StateKeys
 
 import time
-from services.automation_runtime.context import PublicAutomationContext
 
 
 def main(ctx: PublicAutomationContext):
 	"""
-	Example script for the old packaging view (packaging_nox).
-	Buttons send commands: start/stop/reset on packaging.cmd.
+	Example script for packaging_nox using generic ctx.ui/state APIs.
 	"""
 	ctx.set_cycle_time(0.2)
 
 	step = ctx.step
 	if step == 0:
-		ctx.view.packaging_nox.set_container_number("SP08000001AB")
-		ctx.view.packaging_nox.set_part_number("3617836139")
-		ctx.view.packaging_nox.set_description("Demo part")
-		ctx.view.packaging_nox.set_current_qty(0)
-		ctx.view.packaging_nox.set_max_qty(45)
-		ctx.view.packaging_nox.set_totals(good=0, bad=0)
-		ctx.view.packaging_nox.show_instruction(
+		ctx.set_state_many(
+			container_number="SP08000001AB",
+			part_number="3617836139",
+			description="Demo part",
+			current_container_qty=0,
+			max_container_qty=45,
+			part_good=0,
+			part_bad=0,
+		)
+		ctx.ui.show(
 			instruction="Press Start to begin",
 			feedback="Idle",
 			instruction_state="info",
@@ -31,10 +33,10 @@ def main(ctx: PublicAutomationContext):
 		return
 
 	if step == 10:
-		cmd = ctx.view.packaging_nox.consume_cmd()
+		cmd = ctx.ui.consume_command("packaging.cmd")
 		if cmd == "start":
 			ctx.vars.set("running", True)
-			ctx.view.packaging_nox.show_instruction(
+			ctx.ui.show(
 				instruction="Packing in progress",
 				feedback="Running",
 				instruction_state="ok",
@@ -42,7 +44,7 @@ def main(ctx: PublicAutomationContext):
 			)
 		elif cmd == "stop":
 			ctx.vars.set("running", False)
-			ctx.view.packaging_nox.show_instruction(
+			ctx.ui.show(
 				instruction="Stopped by operator",
 				feedback="Stopped",
 				instruction_state="warn",
@@ -50,9 +52,8 @@ def main(ctx: PublicAutomationContext):
 			)
 		elif cmd == "reset":
 			ctx.vars.set("running", False)
-			ctx.view.packaging_nox.set_current_qty(0)
-			ctx.view.packaging_nox.set_totals(good=0, bad=0)
-			ctx.view.packaging_nox.show_instruction(
+			ctx.set_state_many(current_container_qty=0, part_good=0, part_bad=0)
+			ctx.ui.show(
 				instruction="Reset done",
 				feedback="Idle",
 				instruction_state="info",
@@ -65,9 +66,8 @@ def main(ctx: PublicAutomationContext):
 			last = ctx.vars.get("last_tick", now)
 			if now - last >= 1.0:
 				ctx.vars.set("last_tick", now)
-				cur = int(ctx.view.packaging_nox.get_state("current_container_qty", 0) or 0) + 1
-				ctx.view.packaging_nox.set_current_qty(cur)
-				ctx.view.packaging_nox.set_totals(good=cur, bad=0)
+				cur = int(ctx.get_state(StateKeys.current_container_qty, 0) or 0) + 1
+				ctx.set_state_many(current_container_qty=cur, part_good=cur, part_bad=0)
 
 
 # Export

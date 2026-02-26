@@ -1,7 +1,7 @@
 from __future__ import annotations
+from services.script_api import PublicAutomationContext, StateKeys
 
 import time
-from services.automation_runtime.context import PublicAutomationContext
 
 
 def _demo_container_rows() -> list[dict]:
@@ -25,46 +25,46 @@ def _demo_serial_rows() -> list[dict]:
 
 def main(ctx: PublicAutomationContext):
 	"""
-	Example script for container_management view.
+	Example script for container_management using generic ctx.ui/state APIs.
 	"""
 	ctx.set_cycle_time(0.2)
 
 	step = ctx.step
 	if step == 0:
-		ctx.view.container_management.set_search_query("AB")
-		ctx.view.container_management.set_container_rows(_demo_container_rows())
-		ctx.view.container_management.set_serial_rows(_demo_serial_rows())
-		ctx.view.container_management.set_active_container("SP08000001AB")
-		ctx.view.container_management.set_container_selected("SP08000001AB")
+		ctx.set_state(StateKeys.container_mgmt_search_query, "AB")
+		ctx.set_state(StateKeys.container_mgmt_container_rows, _demo_container_rows())
+		ctx.set_state(StateKeys.container_mgmt_serial_rows, _demo_serial_rows())
+		ctx.set_state(StateKeys.container_mgmt_active_container, "SP08000001AB")
+		ctx.set_state(StateKeys.container_mgmt_container_selected, "SP08000001AB")
 		ctx.set_step_desc("container management demo ready")
 		ctx.goto(10)
 		return
 
 	if step == 10:
-		payload = ctx.view.container_management.consume_payload()
+		payload = ctx.ui.consume_payload("container_management.cmd")
 		if payload is None:
 			ctx.set_step_desc("Waiting for container management action...")
 			return
 		cmd = str(payload.get("cmd", "") or "").lower()
 
 		if cmd in ("search_container", "search"):
-			ctx.view.container_management.set_container_rows(_demo_container_rows())
+			ctx.set_state(StateKeys.container_mgmt_container_rows, _demo_container_rows())
 			ctx.set_step_desc("container search updated")
 			return
 
 		if cmd == "search_serial":
-			ctx.view.container_management.set_serial_rows(_demo_serial_rows())
+			ctx.set_state(StateKeys.container_mgmt_serial_rows, _demo_serial_rows())
 			ctx.set_step_desc("serial search updated")
 			return
 
 		if cmd == "activate":
-			value = ctx.view.container_management.get_state("container_mgmt_container_selected", "")
-			ctx.view.container_management.set_active_container(str(value or "-"))
+			value = ctx.get_state(StateKeys.container_mgmt_container_selected, "")
+			ctx.set_state(StateKeys.container_mgmt_active_container, str(value or "-"))
 			ctx.set_step_desc("activated container")
 			return
 
 		if cmd == "refresh":
-			ctx.view.container_management.set_serial_rows(_demo_serial_rows())
+			ctx.set_state(StateKeys.container_mgmt_serial_rows, _demo_serial_rows())
 			ctx.set_step_desc("refreshed list")
 			return
 
@@ -75,12 +75,12 @@ def main(ctx: PublicAutomationContext):
 				rows = [r for r in rows if str(r.get("serial_number")) != serial]
 			else:
 				rows = rows[1:]
-			ctx.view.container_management.set_serial_rows(rows)
+			ctx.set_state(StateKeys.container_mgmt_serial_rows, rows)
 			ctx.set_step_desc("removed serial=%s (demo)" % (serial or "first"))
 			return
 
 		if cmd == "remove_all":
-			ctx.view.container_management.set_serial_rows([])
+			ctx.set_state(StateKeys.container_mgmt_serial_rows, [])
 			ctx.set_step_desc("cleared all serials (demo)")
 			return
 

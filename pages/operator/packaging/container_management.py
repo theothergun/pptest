@@ -27,6 +27,15 @@ def render(container: ui.element, ctx: PageContext) -> None:
 def build_page(ctx: PageContext) -> None:
     worker_bus = ctx.workers.worker_bus
     page_timers: list = []
+    ui_refs: dict[str, Any] = {
+        "btn_search_container": None,
+        "btn_search_serial": None,
+        "btn_activate": None,
+        "btn_search": None,
+        "btn_refresh": None,
+        "btn_remove_serial": None,
+        "btn_remove_all": None,
+    }
 
     ui.add_head_html(
         """
@@ -65,6 +74,37 @@ def build_page(ctx: PageContext) -> None:
 .cm-btn:hover {
     transform: translateY(-1px);
 }
+.cm-btn.q-btn--disabled,
+.cm-btn.q-btn--disabled:hover,
+.cm-btn.q-btn--disabled.q-btn--outline {
+    background-color: #9ca3af !important;
+    border-color: #6b7280 !important;
+    color: #374151 !important;
+    opacity: 1 !important;
+    transform: none !important;
+    box-shadow: none !important;
+    filter: grayscale(1) saturate(0.2) !important;
+}
+.cm-btn.q-btn--disabled .q-btn__content,
+.cm-btn.q-btn--disabled .q-icon,
+.cm-btn.q-btn--disabled .block {
+    color: #374151 !important;
+}
+.cm-btn.q-btn--disabled .q-focus-helper {
+    opacity: 0 !important;
+}
+.cm-btn-force-disabled {
+    background: #9ca3af !important;
+    border-color: #6b7280 !important;
+    color: #374151 !important;
+    opacity: 1 !important;
+    box-shadow: none !important;
+}
+.cm-btn-force-disabled .q-btn__content,
+.cm-btn-force-disabled .q-icon,
+.cm-btn-force-disabled .block {
+    color: #374151 !important;
+}
 .cm-tight .q-field__control {
     min-height: 36px !important;
 }
@@ -79,6 +119,12 @@ def build_page(ctx: PageContext) -> None:
 .cm-table .q-table th,
 .cm-table .q-table td {
     padding: 4px 8px !important;
+}
+.cm-table .q-table__middle thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: color-mix(in srgb, var(--surface-muted) 84%, var(--primary) 16%);
 }
 .cm-table .q-table__middle {
     max-height: 100%;
@@ -172,6 +218,8 @@ def build_page(ctx: PageContext) -> None:
             source_id=CONTAINER_MGMT_VIEW.value,
         )
 
+    serial_filter: dict[str, str] = {"value": ""}
+
     def _label(key: str, fallback: str) -> str:
         return str(t(key, fallback) or fallback).lstrip("@").strip()
 
@@ -189,9 +237,90 @@ def build_page(ctx: PageContext) -> None:
         v = str(value or "-")
         return selected_serial_tpl.replace("{value}", v) if "{value}" in selected_serial_tpl else f"{selected_serial_tpl} {v}"
 
+    def _to_float(value: Any) -> float | None:
+        try:
+            if value is None:
+                return None
+            if isinstance(value, (int, float)):
+                return float(value)
+            raw = str(value).strip().replace(",", ".")
+            if not raw:
+                return None
+            return float(raw)
+        except Exception:
+            return None
+
+    def _fmt_num(value: float | None) -> str:
+        if value is None:
+            return "-"
+        if abs(value - int(value)) < 1e-9:
+            return str(int(value))
+        return f"{value:.2f}".rstrip("0").rstrip(".")
+
+    def _enrich_container_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+        out: list[dict[str, Any]] = []
+        for row in rows:
+            if not isinstance(row, dict):
+                continue
+            entry = dict(row)
+            raw_qty = entry.get("current_qty")
+            current = None
+            max_qty = None
+
+            if isinstance(raw_qty, dict):
+                current = _to_float(raw_qty.get("current"))
+                if current is None:
+                    current = _to_float(raw_qty.get("value"))
+                max_qty = _to_float(raw_qty.get("max"))
+            elif isinstance(raw_qty, (list, tuple)) and len(raw_qty) >= 2:
+                current = _to_float(raw_qty[0])
+                max_qty = _to_float(raw_qty[1])
+            else:
+                raw_txt = str(raw_qty or "").strip()
+                if "/" in raw_txt:
+                    parts = raw_txt.split("/", 1)
+                    current = _to_float(parts[0])
+                    max_qty = _to_float(parts[1])
+
+            if current is None:
+                current = _to_float(entry.get("current"))
+            if current is None:
+                current = _to_float(entry.get("current_qty_value"))
+
+            if max_qty is None:
+                max_qty = _to_float(entry.get("max"))
+            if max_qty is None:
+                max_qty = _to_float(entry.get("max_qty"))
+            if max_qty is None:
+                max_qty = _to_float(entry.get("max_container_qty"))
+
+            progress = 0.0
+            if max_qty and max_qty > 0 and current is not None:
+                progress = current / max_qty
+            progress = max(0.0, min(1.0, float(progress)))
+
+            label = str(raw_qty or "").strip() or "-"
+            if current is not None and max_qty is not None:
+                label = f"{_fmt_num(current)}/{_fmt_num(max_qty)}"
+
+            entry["current_qty_current"] = current
+            entry["current_qty_max"] = max_qty
+            entry["current_qty_progress"] = progress
+            entry["current_qty_label"] = label
+            out.append(entry)
+        return out
+
     def _refresh_tables() -> None:
-        table_containers.rows = list(getattr(ctx.state, "container_mgmt_container_rows", []) or [])
-        table_serials.rows = list(getattr(ctx.state, "container_mgmt_serial_rows", []) or [])
+        raw_container_rows = list(getattr(ctx.state, "container_mgmt_container_rows", []) or [])
+        table_containers.rows = _enrich_container_rows(raw_container_rows)
+        serial_rows = list(getattr(ctx.state, "container_mgmt_serial_rows", []) or [])
+        filter_value = str(serial_filter.get("value", "") or "").strip().lower()
+        if filter_value:
+            serial_rows = [
+                row for row in serial_rows
+                if filter_value in str(row.get("serial_number", "") or "").lower()
+            ]
+        table_serials.rows = serial_rows
 
         selected_bin = str(selected_container.get("value", "") or "")
         if selected_bin:
@@ -209,6 +338,56 @@ def build_page(ctx: PageContext) -> None:
 
         table_containers.update()
         table_serials.update()
+
+    def _button_enabled(button_id: str) -> bool:
+        states = getattr(ctx.state, "view_button_states", {}) or {}
+        if not isinstance(states, dict):
+            return True
+        local_key = f"{CONTAINER_MGMT_VIEW.value}.{button_id}"
+        if local_key in states:
+            return bool(states.get(local_key))
+        if button_id in states:
+            return bool(states.get(button_id))
+        return True
+
+    def _button_visible(button_id: str) -> bool:
+        vis = getattr(ctx.state, "view_button_visibility", {}) or {}
+        if not isinstance(vis, dict):
+            return True
+        local_key = f"{CONTAINER_MGMT_VIEW.value}.{button_id}"
+        if local_key in vis:
+            return bool(vis.get(local_key))
+        if button_id in vis:
+            return bool(vis.get(button_id))
+        return True
+
+    def _apply_button_states() -> None:
+        for button_id, ref_key in (
+            ("search_container", "btn_search_container"),
+            ("search_serial", "btn_search_serial"),
+            ("activate", "btn_activate"),
+            ("search", "btn_search"),
+            ("refresh", "btn_refresh"),
+            ("remove_serial", "btn_remove_serial"),
+            ("remove_all", "btn_remove_all"),
+        ):
+            btn = ui_refs.get(ref_key)
+            if btn is None:
+                continue
+            enabled = _button_enabled(button_id)
+            # Keep REMOVE_SERIAL tied to current container selection immediately on UI side.
+            if button_id == "remove_serial":
+                enabled = bool(str(getattr(ctx.state, "container_mgmt_container_selected", "") or "").strip())
+            try:
+                btn.visible = _button_visible(button_id)
+                if enabled:
+                    btn.enable()
+                    btn.classes(remove="cm-btn-force-disabled")
+                else:
+                    btn.disable()
+                    btn.classes(add="cm-btn-force-disabled")
+            except Exception:
+                pass
 
     def _extract_clicked_row(args: Any, required_key: str) -> dict[str, Any] | None:
         """QTable rowClick payload is typically [mouse_event, row, row_index]."""
@@ -235,10 +414,11 @@ def build_page(ctx: PageContext) -> None:
     def _set_selected_container(value: str) -> None:
         v = str(value or "")
         selected_container["value"] = v
-        setattr(ctx.state, "container_mgmt_container_selected", v)
+        ctx.set_state_and_publish("container_mgmt_container_selected", v)
         text = _fmt_selected_container(v or "-")
         for lbl in selected_container_labels:
             lbl.set_text(text)
+        _apply_button_states()
 
     with ui.column().classes("cm-shell w-full h-full min-h-0 overflow-y-auto overflow-x-hidden p-2 gap-2"):
         with ui.row().classes("w-full items-center gap-2 cm-card px-2 py-1"):
@@ -260,8 +440,14 @@ def build_page(ctx: PageContext) -> None:
                     ui.space()
                     ui.icon("table_view").classes("text-primary text-sm")
 
-                ui.input(t("common.search", "Search Container / Serialnumber")).classes("w-full app-input cm-tight mb-2") \
-                    .bind_value(ctx.state, "container_mgmt_search_query")
+                search_input = ui.input(t("common.search", "Search Container / Serialnumber")).classes("w-full app-input cm-tight mb-2")
+                search_input.bind_value(ctx.state, "container_mgmt_search_query")
+                search_input.on_value_change(
+                    lambda e: ctx.set_state_and_publish(
+                        "container_mgmt_search_query",
+                        str(getattr(e, "value", "") or ""),
+                    )
+                )
 
                 with ui.row().classes("cm-half-body w-full gap-2 items-start"):
                     with ui.column().classes("flex-1 min-w-0 h-full min-h-0"):
@@ -278,21 +464,41 @@ def build_page(ctx: PageContext) -> None:
                             pagination={"rowsPerPage": 50},
                         ).classes("cm-table w-full text-xs")
                         table_containers.props("dense bordered flat separator=horizontal rows-per-page-options=[50,100,200] hide-selected-banner")
+                        table_containers.add_slot(
+                            "body-cell-current_qty",
+                            """
+<q-td :props="props">
+  <div class="w-full" style="min-width: 120px;">
+    <div class="text-[11px] text-gray-600" style="line-height: 1.1;">
+      {{ props.row.current_qty_label || '-' }}
+    </div>
+    <q-linear-progress
+      size="8px"
+      rounded
+      :value="props.row.current_qty_progress || 0"
+      color="primary"
+      track-color="grey-3"
+      class="q-mt-xs"
+    />
+  </div>
+</q-td>
+""",
+                        )
 
                     with ui.column().classes("cm-actions-col gap-2"):
                         selected_container_label_top = ui.label(_fmt_selected_container(selected_container["value"] or "-")).classes("text-xs text-gray-600")
                         selected_container_labels.append(selected_container_label_top)
-                        ui.button(
+                        ui_refs["btn_search_container"] = ui.button(
                             _label("container_management.search_by_container", "Search by container"),
                             on_click=lambda: _publish_cmd(UiActionName.SEARCH_CONTAINER),
                             icon="inventory",
                         ).props("color=primary text-color=white").classes("w-full h-[36px] cm-btn text-white")
-                        ui.button(
+                        ui_refs["btn_search_serial"] = ui.button(
                             _label("container_management.search_by_serial", "Search by Serialnumber"),
                             on_click=lambda: _publish_cmd(UiActionName.SEARCH_SERIAL),
                             icon="qr_code_scanner",
                         ).props("color=secondary text-color=white").classes("w-full h-[36px] cm-btn text-white")
-                        ui.button(
+                        ui_refs["btn_activate"] = ui.button(
                             _label("container_management.activate", "Activate"),
                             on_click=lambda: _publish_cmd(UiActionName.ACTIVATE),
                             icon="bolt",
@@ -320,18 +526,27 @@ def build_page(ctx: PageContext) -> None:
                         table_serials.props("dense bordered flat separator=horizontal rows-per-page-options=[50,100,200] hide-selected-banner")
 
                     with ui.column().classes("cm-actions-col gap-2"):
+                        serial_filter_input = ui.input(
+                            t("container_management.filter_serials", "Filter serials")
+                        ).classes("w-full app-input cm-tight")
+                        serial_filter_input.on_value_change(
+                            lambda e: (
+                                serial_filter.__setitem__("value", str(getattr(e, "value", "") or "")),
+                                _refresh_tables(),
+                            )
+                        )
                         selected_container_label_bottom = ui.label(_fmt_selected_container(selected_container["value"] or "-")).classes("text-xs text-gray-600")
                         selected_container_labels.append(selected_container_label_bottom)
-                        ui.button(t("common.search", "Search"), on_click=lambda: _publish_cmd(UiActionName.SEARCH), icon="search") \
+                        ui_refs["btn_search"] = ui.button(t("common.search", "Search"), on_click=lambda: _publish_cmd(UiActionName.SEARCH), icon="search") \
                             .props("color=primary text-color=white").classes("w-full h-[36px] cm-btn text-white")
-                        ui.button(t("common.refresh", "Refresh"), on_click=lambda: _publish_cmd(UiActionName.REFRESH), icon="refresh") \
+                        ui_refs["btn_refresh"] = ui.button(t("common.refresh", "Refresh"), on_click=lambda: _publish_cmd(UiActionName.REFRESH), icon="refresh") \
                             .props("color=secondary text-color=white").classes("w-full h-[36px] cm-btn text-white")
-                        ui.button(
+                        ui_refs["btn_remove_serial"] = ui.button(
                             _label("container_management.remove_serial", "Remove Serial"),
                             on_click=lambda: _publish_cmd_payload(UiActionName.REMOVE_SERIAL, serial=selected_serial.get("value", "")),
                             icon="remove_circle",
                         ).props("color=warning text-color=white").classes("w-full h-[36px] cm-btn text-white")
-                        ui.button(
+                        ui_refs["btn_remove_all"] = ui.button(
                             _label("container_management.remove_all", "Remove All"),
                             on_click=lambda: _publish_cmd(UiActionName.REMOVE_ALL),
                             icon="delete_forever",
@@ -364,6 +579,7 @@ def build_page(ctx: PageContext) -> None:
                 if row is None:
                     return
                 selected_serial["value"] = str(row.get("serial_number", "") or "")
+                ctx.set_state_and_publish("container_mgmt_serial_selected", selected_serial["value"])
                 selected_serial_label.set_text(_fmt_selected_serial(selected_serial["value"]))
                 table_serials.selected = [row]
                 table_serials.update()
@@ -372,12 +588,15 @@ def build_page(ctx: PageContext) -> None:
                 selection = list(getattr(e, "selection", []) or [])
                 if not selection:
                     selected_serial["value"] = ""
+                    ctx.set_state_and_publish("container_mgmt_serial_selected", "")
                     selected_serial_label.set_text(_fmt_selected_serial("-"))
                     return
                 selected_serial["value"] = str(selection[0].get("serial_number", "") or "")
+                ctx.set_state_and_publish("container_mgmt_serial_selected", selected_serial["value"])
                 selected_serial_label.set_text(_fmt_selected_serial(selected_serial["value"]))
 
             table_serials.on("rowClick", _on_serial_click)
             table_serials.on_select(_on_serial_select)
 
     add_timer(0.2, _refresh_tables)
+    add_timer(0.2, _apply_button_states)

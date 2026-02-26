@@ -1,89 +1,135 @@
 from __future__ import annotations
 
-import time
-from services.automation_runtime.context import PublicAutomationContext
-
-from services.ui.registry import ViewName, view_wait_key
+from services.script_api import PublicAutomationContext, ViewName, view_wait_key, StateKeys, t
 
 WAIT_MODAL_KEY = view_wait_key(ViewName.PACKAGING_NOX)
+ITAC_SERVER_ID = "itac_mk"
+
+
+def _result_code(res: dict) -> int:
+    result = res.get("result", {}) if isinstance(res, dict) else {}
+    try:
+        return int(result.get("return_value", -99999))
+    except Exception:
+        return -99999
+
+
+def _show_itac_error(ctx: PublicAutomationContext, popup_key: str, result_code: int, fallback: str) -> None:
+    error = ctx.itac_get_error_text(ITAC_SERVER_ID, result_code)
+    error_text = str(error.get("errorString") or "")
+    msg_text = t(fallback, fallback)
+    if error_text:
+        msg_text = msg_text + "\r\n" + error_text
+    ctx.ui.popup_message(popup_key, message=msg_text, status="error")
+
 
 def main(ctx: PublicAutomationContext):
     """
-    This script listens on serval events, and when they appear it updates
-    the container informations on Packaging NOX view
-    expected itac output
-
-    {'result': {
-        'return_value': 0,
-        'outArgs': ['SM080000000S', '3606214205', 'Sample-KV2-EU-673mm-NOS557 P', '14.0', '80.0'],
-        'customErrorString': ''},
-        '_meta': {'connection_id': 'itac_mk',
-        'request_id': 'e0aa4f593fd04cde89f063892bc04c26',
-        'key': 'itac.itac_mk.custom_function.e0aa4f593fd04cde89f063892bc04c26'}}
-
+    This script listens on several events, and when they appear it updates
+    the container information on Packaging NOX view.
     """
     ctx.set_cycle_time(0.1)
     step = ctx.step
     if step == 0:
-        container= ctx.get_state("container_number")
+        container = ctx.get_state(StateKeys.container_number)
         if not container:
             ctx.goto(10)
             return
-        update_container = ctx.get_state("update_container")
+        update_container = ctx.get_state(StateKeys.update_container)
         if update_container:
             ctx.goto(10)
             return
         ctx.goto(0)
-    elif step == 10:
+
+
+    if step == 10:
         station = ctx.global_var("station")
-        pack_info_result = ctx.itac_custom_function(connection_id="itac_mk", method_name="NOXPackaging.getPackInfo",  in_args= [station, "true"]  )
-        if  "error" in pack_info_result: # call has timed out, possible network connection
-            ctx.goto(900)
-            return
-        ctx.data["pack_info_result"] = pack_info_result
-        pack_info_result = pack_info_result["result"]
-        if pack_info_result["return_value"] == -421:
-            ctx.data["pack_info_result"] = pack_info_result
+        pack_info_result = ctx.itac_custom_function(
+            connection_id=ITAC_SERVER_ID,
+            method_name="NOXPackaging.getPackInfo",
+            in_args=[station, "true"],
+        )
+        result_code = _result_code(pack_info_result)
+        ctx.set_data("pack_info_result", pack_info_result)
+
+        if result_code == -421:
             ctx.goto(20)
-        if pack_info_result["return_value"] == 0:
+            return
+        if result_code == 0:
             ctx.ui.popup_close(WAIT_MODAL_KEY)
             ctx.goto(30)
+            return
+        if result_code == -99999:
+            ctx.goto(900)
+            return
 
-    elif step == 20:
-        ctx.set_state("container_number", "-")
-        ctx.set_state("current_container_qty", "0")
-        ctx.set_state("max_container_qty", "0")
-        ctx.set_state("part_number", "-")
-        ctx.set_state("description", "-")
-        ctx.set_state("update_container", False)
-        ctx.ui.popup_confirm(key="confirm_retry", message="Please scan a Packaging Box",
-                                        ok_text="retry?")
+        _show_itac_error(ctx, "container_update_get_pack_info_error", result_code, "container_update.get_pack_info_failed")
+        ctx.goto(0)
+        return
+
+    if step == 20:
+        ctx.set_state(StateKeys.container_number, "-")
+        ctx.set_state(StateKeys.current_container_qty, "0")
+        ctx.set_state(StateKeys.max_container_qty, "0")
+        ctx.set_state(StateKeys.part_number, "-")
+        ctx.set_state(StateKeys.description, "-")
+        ctx.set_state(StateKeys.update_container, False)
+        ctx.ui.popup_confirm(
+            key="confirm_retry",
+            message="Please scan a Packaging Box",
+            ok_text="retry?",
+        )
         ctx.goto(21)
-    elif step == 21:
+        return
 
-        result_popup = ctx.ui.popup_confirm(key="confirm_retry", message="Please scan a Packaging Box",
-                                            ok_text="retry?")
+    if step == 21:
+        result_popup = ctx.ui.popup_confirm(
+            key="confirm_retry",
+            message="Please scan a Packaging Box",
+            ok_text="retry?",
+        )
+        if result_popup is None:
+            return
         if result_popup:
             ctx.ui.popup_wait_open(key=WAIT_MODAL_KEY)
             ctx.goto(10)
-        else:
-            ctx.ui.popup_close(WAIT_MODAL_KEY)
-    elif step == 30:
-        result = ctx.data.get("pack_info_result")
-        result = result["result"]["outArgs"]
-        ctx.set_state("container_number", result[0])
-        ctx.set_state("part_number", result[1])
-        ctx.set_state("description", result[2])
-        ctx.set_state("current_container_qty", int(result[3].replace(".0","")))
-        ctx.set_state("max_container_qty",  int(result[4].replace(".0","")))
-        ctx.set_state("update_container", False)
+            return
+        ctx.ui.popup_close(WAIT_MODAL_KEY)
+        ctx.goto(0)
+        return
+
+    if step == 30:
+        result = ctx.get_data("pack_info_result", {})
+        out_args = ((result or {}).get("result") or {}).get("outArgs") or []
+        if not isinstance(out_args, list) or len(out_args) < 5:
+            _show_itac_error(ctx, "container_update_invalid_response", -1, "container_update.invalid_response")
+            ctx.goto(0)
+            return
+
+        ctx.set_state(StateKeys.container_number, out_args[0])
+        ctx.set_state(StateKeys.part_number, out_args[1])
+        ctx.set_state(StateKeys.description, out_args[2])
+        ctx.set_state(StateKeys.current_container_qty, int(str(out_args[3]).replace(".0", "")))
+        ctx.set_state(StateKeys.max_container_qty, int(str(out_args[4]).replace(".0", "")))
+        ctx.set_state(StateKeys.update_container, False)
         ctx.ui.popup_wait_close(key="update_container")
         ctx.goto(0)
+        return
 
-    elif step == 900: #connection error
-        result_popup = ctx.ui.popup_confirm(key="confirm_retry", message="Connection to ITAC lost", ok_text="retry?")
+    if step == 900:  # connection error
+        result_popup = ctx.ui.popup_confirm(
+            key="confirm_retry",
+            message="Connection to ITAC lost",
+            ok_text="retry?",
+        )
+        if result_popup is None:
+            return
         if result_popup:
             ctx.goto(10)
+            return
+        ctx.goto(0)
+        return
+
 
 # Export
 main = main

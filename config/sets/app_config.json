@@ -418,6 +418,18 @@
           {
             "instance_id": "default",
             "script_name": "itac/packaging/container_management"
+          },
+          {
+            "instance_id": "default",
+            "script_name": "itac/packaging/container_scan"
+          },
+          {
+            "instance_id": "default",
+            "script_name": "itac/packaging/container_update"
+          },
+          {
+            "instance_id": "default",
+            "script_name": "itac/packaging/pack_twincat"
           }
         ]
       },

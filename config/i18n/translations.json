@@ -1,4 +1,13 @@
 {
+  "Serial search failed": {
+    "cs": "Serial search failed",
+    "de": "Serial search failed",
+    "en": "Serial search failed",
+    "es-MX": "Serial search failed",
+    "mk": "Serial search failed",
+    "sk": "Serial search failed",
+    "zh": "Serial search failed"
+  },
   "app.title": {
     "cs": "Shopfloor aplikace",
     "de": "Shopfloor-Anwendung",
@@ -1817,6 +1826,24 @@
     "sk": "Workeri",
     "zh": "工作器"
   },
+  "common.cancel": {
+    "cs": "Cancel",
+    "de": "Cancel",
+    "en": "Cancel",
+    "es-MX": "Cancel",
+    "mk": "Cancel",
+    "sk": "Cancel",
+    "zh": "Cancel"
+  },
+  "common.confirm": {
+    "cs": "Confirm",
+    "de": "Confirm",
+    "en": "Confirm",
+    "es-MX": "Confirm",
+    "mk": "Confirm",
+    "sk": "Confirm",
+    "zh": "Confirm"
+  },
   "common.current": {
     "cs": "Current",
     "de": "Current",
@@ -1934,6 +1961,15 @@
     "sk": "@Activate",
     "zh": "@Activate"
   },
+  "container_management.activate_success": {
+    "cs": "Container activated",
+    "de": "Container activated",
+    "en": "Container activated",
+    "es-MX": "Container activated",
+    "mk": "Container activated",
+    "sk": "Container activated",
+    "zh": "Container activated"
+  },
   "container_management.active": {
     "cs": "Active",
     "de": "Active",
@@ -1952,6 +1988,24 @@
     "sk": "Active Container:",
     "zh": "Active Container:"
   },
+  "container_management.confirm_activate": {
+    "cs": "Activate selected container?",
+    "de": "Activate selected container?",
+    "en": "Activate selected container?",
+    "es-MX": "Activate selected container?",
+    "mk": "Activate selected container?",
+    "sk": "Activate selected container?",
+    "zh": "Activate selected container?"
+  },
+  "container_management.confirm_remove_serial": {
+    "cs": "Remove selected serial number?",
+    "de": "Remove selected serial number?",
+    "en": "Remove selected serial number?",
+    "es-MX": "Remove selected serial number?",
+    "mk": "Remove selected serial number?",
+    "sk": "Remove selected serial number?",
+    "zh": "Remove selected serial number?"
+  },
   "container_management.container_results": {
     "cs": "Container Results",
     "de": "Container Results",
@@ -1961,6 +2015,15 @@
     "sk": "Container Results",
     "zh": "Container Results"
   },
+  "container_management.filter_serials": {
+    "cs": "Filter serials",
+    "de": "Filter serials",
+    "en": "Filter serials",
+    "es-MX": "Filter serials",
+    "mk": "Filter serials",
+    "sk": "Filter serials",
+    "zh": "Filter serials"
+  },
   "container_management.remove_all": {
     "cs": "Remove All",
     "de": "Remove All",
@@ -1969,6 +2032,15 @@
     "mk": "Remove All",
     "sk": "Remove All",
     "zh": "Remove All"
+  },
+  "container_management.remove_missing_selection": {
+    "cs": "Please select container and serial",
+    "de": "Please select container and serial",
+    "en": "Please select container and serial",
+    "es-MX": "Please select container and serial",
+    "mk": "Please select container and serial",
+    "sk": "Please select container and serial",
+    "zh": "Please select container and serial"
   },
   "container_management.remove_serial": {
     "cs": "Remove Serial",
@@ -2059,6 +2131,15 @@
     "mk": "Container Management",
     "sk": "Container Management",
     "zh": "Container Management"
+  },
+  "container_management.waiting_confirmation": {
+    "cs": "Waiting for confirmation...",
+    "de": "Waiting for confirmation...",
+    "en": "Waiting for confirmation...",
+    "es-MX": "Waiting for confirmation...",
+    "mk": "Waiting for confirmation...",
+    "sk": "Waiting for confirmation...",
+    "zh": "Waiting for confirmation..."
   },
   "dummy.languages.config": {
     "cs": "Config",
@@ -2275,6 +2356,24 @@
     "mk": "Quantity",
     "sk": "Quantity",
     "zh": "Quantity"
+  },
+  "packaging.serial_removed": {
+    "cs": "Serial Removed",
+    "de": "Serial Removed",
+    "en": "Serial Removed",
+    "es-MX": "Serial Removed",
+    "mk": "Serial Removed",
+    "sk": "Serial Removed",
+    "zh": "Serial Removed"
+  },
+  "packaging.serial_removed_failed": {
+    "cs": "Serial Removed Failed",
+    "de": "Serial Removed Failed",
+    "en": "Serial Removed Failed",
+    "es-MX": "Serial Removed Failed",
+    "mk": "Serial Removed Failed",
+    "sk": "Serial Removed Failed",
+    "zh": "Serial Removed Failed"
   },
   "packaging.subtitle": {
     "cs": "Live production and operator workflow",
@@ -2590,5 +2689,23 @@
     "mk": "Workers",
     "sk": "Workers",
     "zh": "Workers"
+  },
+  "view.no_data_found": {
+    "cs": "No Data found.",
+    "de": "No Data found.",
+    "en": "No Data found.",
+    "es-MX": "No Data found.",
+    "mk": "No Data found.",
+    "sk": "No Data found.",
+    "zh": "No Data found."
+  },
+  "view.search_conition_to_short": {
+    "cs": "Type in at least %s chars",
+    "de": "Type in at least %s chars",
+    "en": "Type in at least %s chars",
+    "es-MX": "Type in at least %s chars",
+    "mk": "Type in at least %s chars",
+    "sk": "Type in at least %s chars",
+    "zh": "Type in at least %s chars"
   }
 }

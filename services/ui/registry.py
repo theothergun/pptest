@@ -4,9 +4,12 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Any
 
+from services.app_state import AppState
+
 
 class StrEnum(str, Enum):
-    pass
+    def __str__(self) -> str:
+        return str(self.value)
 
 
 class ViewName(StrEnum):
@@ -51,6 +54,15 @@ class UiActionName(StrEnum):
     LTC_STATUS = "ltc_status"
     VC_STATUS = "vc_status"
     REFRESH_CATALOGUE = "refresh_catalogue"
+
+
+# Backward/ergonomic alias: allows `ViewButtons.REFRESH`.
+ViewButtons = UiActionName
+
+# Ergonomic alias for state-key constants:
+#   from services.ui.registry import StateKeys
+#   ctx.get_state(StateKeys.container_mgmt_active_container)
+StateKeys = AppState
 
 
 VIEW_ACTIONS: dict[ViewName, tuple[UiActionName, ...]] = {
@@ -109,9 +121,9 @@ class ViewRegistryError(ValueError):
 
 @dataclass(frozen=True)
 class ViewActionRef:
-    view: ViewName
-    name: UiActionName
-    event: UiEvent = UiEvent.CLICK
+    view: str
+    name: str
+    event: str = UiEvent.CLICK.value
 
     @property
     def wait_modal_key(self) -> str:
@@ -119,37 +131,82 @@ class ViewActionRef:
 
     def to_legacy_dict(self) -> dict[str, str]:
         return {
-            "view": self.view.value,
-            "name": self.name.value,
-            "event": self.event.value,
+            "view": str(self.view or ""),
+            "name": str(self.name or ""),
+            "event": str(self.event or UiEvent.CLICK.value),
         }
 
 
-def _enum_from_value(enum_cls, value: Any, field_name: str):
-    raw = str(value or "").strip()
+def _enum_from_value(
+    enum_cls,
+    value: Any,
+    field_name: str,
+    *,
+    strict: bool = True,
+    default: str | None = None,
+) -> str:
+    if isinstance(value, enum_cls):
+        return str(value.value)
+
+    raw = str(getattr(value, "value", value) or "").strip()
+    if not raw and default is not None:
+        raw = str(default or "").strip()
+    if not raw:
+        if strict:
+            raise ViewRegistryError("unknown %s '%s'" % (field_name, raw))
+        return ""
+
+    # Accept dotted enum-like inputs such as "ViewName.CONTAINER_MANAGEMENT".
+    if "." in raw:
+        candidate = raw.split(".")[-1].strip()
+        if candidate and hasattr(enum_cls, candidate):
+            return str(getattr(enum_cls, candidate).value)
+
+    # Accept member names such as "CONTAINER_MANAGEMENT" in addition to values.
+    if hasattr(enum_cls, raw):
+        return str(getattr(enum_cls, raw).value)
+
     try:
-        return enum_cls(raw)
+        return str(enum_cls(raw).value)
     except Exception:
-        raise ViewRegistryError("unknown %s '%s'" % (field_name, raw))
+        if strict:
+            raise ViewRegistryError("unknown %s '%s'" % (field_name, raw))
+        return raw
 
 
-def parse_view_action(*, view: Any, name: Any, event: Any = UiEvent.CLICK) -> ViewActionRef:
-    view_name = _enum_from_value(ViewName, view, "view")
-    action_name = _enum_from_value(UiActionName, name, "action")
-    event_name = _enum_from_value(UiEvent, event, "event")
+def parse_view_action(
+    *,
+    view: Any,
+    name: Any,
+    event: Any = UiEvent.CLICK,
+    strict: bool = False,
+) -> ViewActionRef:
+    view_name = _enum_from_value(ViewName, view, "view", strict=strict)
+    action_name = _enum_from_value(UiActionName, name, "action", strict=strict)
+    event_name = _enum_from_value(
+        UiEvent,
+        event,
+        "event",
+        strict=strict,
+        default=UiEvent.CLICK.value,
+    )
 
-    if action_name not in VIEW_ACTIONS.get(view_name, ()):  # explicit non-reflective validation
-        raise ViewRegistryError(
-            "invalid action '%s' for view '%s'" % (action_name.value, view_name.value)
-        )
-    if event_name not in VIEW_EVENTS.get(view_name, ()):  # explicit non-reflective validation
-        raise ViewRegistryError(
-            "invalid event '%s' for view '%s'" % (event_name.value, view_name.value)
-        )
+    if strict:
+        view_enum = ViewName(view_name)
+        action_enum = UiActionName(action_name)
+        event_enum = UiEvent(event_name)
+        if action_enum not in VIEW_ACTIONS.get(view_enum, ()):  # explicit non-reflective validation
+            raise ViewRegistryError(
+                "invalid action '%s' for view '%s'" % (action_name, view_name)
+            )
+        if event_enum not in VIEW_EVENTS.get(view_enum, ()):  # explicit non-reflective validation
+            raise ViewRegistryError(
+                "invalid event '%s' for view '%s'" % (event_name, view_name)
+            )
     return ViewActionRef(view=view_name, name=action_name, event=event_name)
 
 
-def from_view_command(cmd: Any) -> ViewActionRef:
+def from_view_command(cmd: Any, *, strict: bool = False) -> ViewActionRef:
     action = getattr(cmd, "action", None)
     if action is None:
         raise ViewRegistryError("command missing action")
@@ -157,11 +214,18 @@ def from_view_command(cmd: Any) -> ViewActionRef:
         view=getattr(action, "view", ""),
         name=getattr(action, "name", ""),
         event=getattr(action, "event", UiEvent.CLICK.value),
+        strict=strict,
     )
 
 
-def to_view_action(*, view: ViewName, action: UiActionName, event: UiEvent = UiEvent.CLICK) -> dict[str, str]:
-    ref = parse_view_action(view=view, name=action, event=event)
+def to_view_action(
+    *,
+    view: ViewName | str,
+    action: UiActionName | str,
+    event: UiEvent | str = UiEvent.CLICK,
+    strict: bool = False,
+) -> dict[str, str]:
+    ref = parse_view_action(view=view, name=action, event=event, strict=strict)
     return ref.to_legacy_dict()
 
 

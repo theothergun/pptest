@@ -1,10 +1,8 @@
+from services.script_api import PublicAutomationContext
 import json
 from enum import StrEnum
 
-from services.automation_runtime.context import PublicAutomationContext
 from services.automation_runtime.apis.api_utils import to_int
-
-
 
 
 # ------------------------------------------------------------------ Main
@@ -44,11 +42,6 @@ def main(ctx: PublicAutomationContext):
 				ctx.goto(99)
 			if res['clicked'] == "retry":
 				ctx.goto(0)
-
-
-
-
-
 
 
 		#res = ctx.ui.popup_message(
@@ -92,8 +85,6 @@ def main(ctx: PublicAutomationContext):
 		#	],
 		#	default="auto",
 		#)
-
-
 
 
 # Export

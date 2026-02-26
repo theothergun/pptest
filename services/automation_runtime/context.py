@@ -13,7 +13,6 @@ from services.automation_runtime.apis.ui_api import UiApi
 from services.automation_runtime.apis.flow_api import FlowApi
 from services.automation_runtime.apis.timing_api import TimingApi
 from services.automation_runtime.apis.workers_api import WorkersApi
-from services.automation_runtime.apis.views_api import ViewsApi
 
 
 class AutomationContext:
@@ -201,7 +200,6 @@ class PublicAutomationContext:
         self.timing = TimingApi(ctx)
         self.workers = WorkersApi(ctx)
         self.worker = self.workers  # alias
-        self.view = ViewsApi(ctx)
 
     @property
     def chain_id(self) -> str:
@@ -231,6 +229,35 @@ class PublicAutomationContext:
     def data(self) -> Dict[str, Any]:
         """Compatibility alias for legacy scripts (mapped to vars)."""
         return self._ctx._vars
+
+    def get_data(self, key: Any, default: Any = None) -> Any:
+        """Persistent script-local value (alias for vars.get)."""
+        return self.vars.get(str(key), default)
+
+    def set_data(self, key: Any, value: Any) -> None:
+        """Persistent script-local value (alias for vars.set)."""
+        self.vars.set(str(key), value)
+
+    def has_data(self, key: Any) -> bool:
+        """Check if persistent script-local value exists."""
+        return self.vars.has(str(key))
+
+    def pop_data(self, key: Any, default: Any = None) -> Any:
+        """Pop persistent script-local value."""
+        return self.vars.pop(str(key), default)
+
+    def set_data_if_changed(self, key: Any, value: Any, default: Any = None) -> bool:
+        """
+        Set persistent script-local value only when changed.
+
+        Returns True when value changed and was written.
+        """
+        k = str(key)
+        current = self.vars.get(k, default)
+        if current == value:
+            return False
+        self.vars.set(k, value)
+        return True
 
     @property
     def step_desc(self) -> str:
@@ -272,13 +299,13 @@ class PublicAutomationContext:
     def notify_info(self, message: str) -> None:
         self.ui.notify(message, "info")
 
-    def set_state(self, key: str, value: Any) -> None:
+    def set_state(self, key: Any, value: Any) -> None:
         self.ui.set_state(key, value)
 
     def get_state_var(self, key: str, default: Any = None) -> Any:
         return self.values.state(key, default)
 
-    def get_state(self, key: str, default: Any = None) -> Any:
+    def get_state(self, key: Any, default: Any = None) -> Any:
         return self.get_state_var(key, default)
 
     def state(self, key: str, default: Any = None) -> Any:
@@ -300,6 +327,9 @@ class PublicAutomationContext:
 
     def itac_raw_call(self, connection_id: str, function_name: str, body: Any = None, timeout_s: float = 10.0) -> Any:
         return self.workers.itac_raw_call(connection_id, function_name, body=body, timeout_s=timeout_s)
+
+    def itac_get_error_text(self, connection_id: str, error_code: Any, timeout_s: float = 5.0) -> Any:
+        return self.workers.itac_get_error_text(connection_id, error_code, timeout_s=timeout_s)
 
     def itac_login_user(
         self,

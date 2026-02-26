@@ -1,7 +1,7 @@
 from __future__ import annotations
+from services.script_api import PublicAutomationContext, StateKeys
 
 import time
-from services.automation_runtime.context import PublicAutomationContext
 
 
 def main(ctx: PublicAutomationContext):
@@ -9,7 +9,6 @@ def main(ctx: PublicAutomationContext):
     Packaging NOX container scan, this listen on tcp worker endpoint
     PACK_NOX_SCANNER
     """
-    res = ctx.ui.popup_message(key="connection_issue", message="test1223", status="error")
     step = ctx.step
     ctx.set_cycle_time(0.01)
     if step == 0:
@@ -30,7 +29,7 @@ def main(ctx: PublicAutomationContext):
             return
         ctx.ui.popup_message(key="scan_success", message="Packaging container scanned successfully", status="success")
         # Close can race with async UI-open. Keep trying briefly in step 20.
-        ctx.set_state("update_container", True)
+        ctx.set_state(StateKeys.update_container, True)
         ctx.set_cycle_time(3)
         ctx.goto(20)
     elif step == 20:

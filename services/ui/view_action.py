@@ -43,9 +43,10 @@ def make_action_event(
     event: UiEvent | str = UiEvent.CLICK.value,
 ) -> dict[str, str]:
     return to_view_action(
-        view=ViewName(str(getattr(view, "value", view))),
-        action=UiActionName(str(getattr(name, "value", name))),
-        event=UiEvent(str(getattr(event, "value", event))),
+        view=str(getattr(view, "value", view)),
+        action=str(getattr(name, "value", name)),
+        event=str(getattr(event, "value", event)),
+        strict=False,
     )
 
 

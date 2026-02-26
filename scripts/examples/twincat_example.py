@@ -1,13 +1,12 @@
 from __future__ import annotations
+from services.script_api import PublicAutomationContext
 
 import time
-from services.automation_runtime.context import PublicAutomationContext
 
 
 def main(ctx: PublicAutomationContext):
     """
-    Example script for the new packaging view (form with buttons).
-    Uses ctx.view.packaging (alias: ctx.view.packagin).
+    Example script using generic automation APIs.
     """
     ctx.set_cycle_time(1)
 

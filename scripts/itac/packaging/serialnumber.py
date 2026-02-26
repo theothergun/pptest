@@ -1,14 +1,12 @@
 from __future__ import annotations
+from services.script_api import PublicAutomationContext, UiActionName, ViewName, StateKeys
 
 import time
-from services.automation_runtime.context import PublicAutomationContext
-from services.ui.registry import UiActionName, ViewName
 
 
 def main(ctx: PublicAutomationContext):
     """
-    Example script for the new packaging view (form with buttons).
-    Uses ctx.view.packaging (alias: ctx.view.packagin).
+    Example script using generic automation APIs.
     """
     ctx.set_cycle_time(1)
     msg = ctx.ui.consume_view_cmd("view.cmd.%s" % ViewName.PACKAGING_NOX.value, command=UiActionName.RESET.value)
@@ -16,8 +14,8 @@ def main(ctx: PublicAutomationContext):
     return
     step = ctx.step
     if step == 0:
-        curr_qty =  ctx.get_state("current_container_qty" ,0)
-        max_qty =    ctx.get_state("max_container_qty" ,0)
+        curr_qty =  ctx.get_state(StateKeys.current_container_qty ,0)
+        max_qty =    ctx.get_state(StateKeys.max_container_qty ,0)
         if curr_qty >= max_qty:
             ctx.ui.show(feedback="Waiting for new Box", feedback_state="warning", instruction_state="info",
                         instruction="Please scan a new Boxlabel...")
@@ -25,7 +23,7 @@ def main(ctx: PublicAutomationContext):
 
         ctx.ui.show(feedback="waiting for rail in...",feedback_state="warning",instruction_state="info",instruction="Please scan a part...")
         from datetime import datetime
-        ctx.set_state("current_serialnumber",datetime.now())
+        ctx.set_state(StateKeys.current_serialnumber,datetime.now())
         ctx.goto(10)
     elif step == 10:
         ctx.ui.show(feedback="Checking Serialnumber", feedback_state="warning", instruction_state="info",
@@ -47,11 +45,11 @@ def main(ctx: PublicAutomationContext):
     elif step == 50:
         ctx.ui.show(feedback="Success..", feedback_state="ok", instruction_state="info",
                     instruction="Please wait")
-        current =  ctx.get_state("current_container_qty" ,0)
-        ctx.set_state("current_container_qty" , current+1 )
+        current =  ctx.get_state(StateKeys.current_container_qty ,0)
+        ctx.set_state(StateKeys.current_container_qty , current+1 )
 
-        current = ctx.get_state("part_good", 0)
-        ctx.set_state("part_good", current + 1)
+        current = ctx.get_state(StateKeys.part_good, 0)
+        ctx.set_state(StateKeys.part_good, current + 1)
         ctx.goto(0)
 # Export
 main = main

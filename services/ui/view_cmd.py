@@ -117,7 +117,7 @@ class ViewCommand:
 ViewCommandMessage = ViewCommand
 
 
-def parse_view_cmd_payload(payload: Any, *, strict: bool = True) -> ViewCommand | None:
+def parse_view_cmd_payload(payload: Any, *, strict: bool = False) -> ViewCommand | None:
 	"""Best-effort parser for incoming view command payload dictionaries."""
 	if not isinstance(payload, dict):
 		return None
@@ -139,7 +139,7 @@ def parse_view_cmd_payload(payload: Any, *, strict: bool = True) -> ViewCommand 
 	wait_modal_key = payload.get("wait_modal_key")
 	data["wait_modal_key"] = str(wait_modal_key) if wait_modal_key is not None else None
 	if strict:
-		parse_view_action(view=view, name=name, event=event)
+		parse_view_action(view=view, name=name, event=event, strict=True)
 	return ViewCommand.from_bus_dict(data)
 
 

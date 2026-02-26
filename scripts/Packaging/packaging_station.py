@@ -1,7 +1,7 @@
+from services.script_api import PublicAutomationContext, StateKeys
 import time
 from enum import StrEnum
 
-from services.automation_runtime.context import PublicAutomationContext
 
 class UI(StrEnum) :
 
@@ -31,9 +31,9 @@ def main(ctx: PublicAutomationContext):
 	elif step == 10:
 		#= 888
 		#ctx.send_tcp()
-		part_good = ctx.get_state( "part_good", 0)
-		ctx.set_state("part_good" ,  part_good +1  )
-		ctx.set_state("work_instruction",  ctx.read_tcp("scanner1"))
+		part_good = ctx.get_state( StateKeys.part_good, 0)
+		ctx.set_state(StateKeys.part_good ,  part_good +1  )
+		ctx.set_state(StateKeys.work_instruction,  ctx.read_tcp("scanner1"))
 		counter = ctx.vars.get("counter", 0) or 0
 		counter = int(counter) + 1
 		ctx.vars.set("counter", counter)

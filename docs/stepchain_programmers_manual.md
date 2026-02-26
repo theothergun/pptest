@@ -17,7 +17,6 @@ A Automation Runtime script runs with a **public context object** (`ctx`) that w
   - `ctx.flow`
   - `ctx.timing`
   - `ctx.workers` (alias: `ctx.worker`)
-  - `ctx.view`
 
 The runtime continuously mirrors:
 
@@ -253,47 +252,22 @@ Behavior pattern:
 
 ---
 
-## 9) `ctx.view` API (view-specific helpers)
+## 9) `ctx.ui` API (view-agnostic helpers)
 
-- `ctx.view.packaging`
-- `ctx.view.packaging_nox`
-- `ctx.view.container_management`
-- alias: `ctx.view.packagin`
+Use command/state keys, not view-bound objects:
 
-All view APIs inherit shared helpers:
-
-- `set_state`, `set_state_many`, `get_state`
-- `consume_cmd(...)`
-- `consume_payload(...)`
-- `wait_cmd(expected=None, step_desc="Waiting for operator...", normalize=True)`
-
-### 9.1 Packaging view helpers (`ctx.view.packaging`)
-
-- setters for:
-  - `container_number`
-  - `part_number`
-  - `description`
-  - `current_container_qty`
-  - `max_container_qty`
-  - `last_serial_number`
-- bulk: `set_form(...)`
-
-### 9.2 Packaging NOX helpers (`ctx.view.packaging_nox`)
-
-Includes packaging setters plus:
-
-- `set_totals(good=None, bad=None)` → `part_good`, `part_bad`
-- `show_instruction(...)` (delegates to `ui.show`)
-
-### 9.3 Container management helpers (`ctx.view.container_management`)
-
-- `set_search_query`
-- `set_container_selected`
-- `set_active_container`
-- `set_container_rows`
-- `set_serial_rows`
-- `set_tables(container_rows=None, serial_rows=None)`
-
+- `ctx.ui.consume_command("packaging.cmd")`
+- `ctx.ui.consume_payload("container_management.cmd")`
+- `ctx.ui.consume_view_cmd("view.cmd.*", command="refresh")`
+- `ctx.ui.consume_view_command("view.cmd.*", commands=[...])`
+- `ctx.set_state("container_number", "...")`
+- `ctx.set_state_many(current_container_qty=1, part_good=1)`
+- `ctx.ui.set_button_enabled("start", True, view_id="packaging_nox")`
+- `ctx.ui.set_buttons_enabled({...}, view_id="packaging_nox")`
+- `ctx.ui.set_operator_device_panel_visible(True)`
+- `ctx.ui.set_operator_device_states([...])`
+- `ctx.ui.upsert_operator_device_state(...)`
+- `ctx.ui.clear_operator_device_states()`
 ---
 
 ## 10) Chain exported state shape
@@ -335,7 +309,7 @@ Buttons in operator pages publish standardized payloads through `publish_view_cm
 Use in scripts:
 
 - `ctx.ui.consume_payload("packaging.cmd")` (if using cmd_key channel, then read `payload["action"]["name"]`)
-- `ctx.view.packaging.wait_cmd(...)`
+- `ctx.ui.consume_command("packaging.cmd")`
 - or wildcard read: `ctx.ui.consume_view_cmd("view.cmd.*", command="refresh")`
 
 ---
@@ -417,7 +391,7 @@ Wait dialog contract (`install_wait_dialog`):
 - Use `ctx.vars` for durable per-chain scratch values.
 - Use `ctx.ui.set_state*` for UI-bound persistent variables.
 - For synchronous worker replies, prefer dedicated wait methods (`*_wait`, `rest_request`, `opcua_read`, iTAC helpers) rather than polling `ctx.data`.
-- Dedupe UI commands with `event_id` aware APIs (`consume_command`, `wait_cmd`).
+- Dedupe UI commands with `event_id` aware APIs (`consume_command`, `consume_view_cmd`).
 - For modal workflows, call modal API every cycle in a dedicated step until non-`None` response arrives.
 
 ---
@@ -430,7 +404,10 @@ def chain(ctx):
     STEP_WORK = 10
 
     if ctx.step == STEP_IDLE:
-        cmd = ctx.view.packaging.wait_cmd(expected=["new", "refresh"], step_desc="Waiting for command...")
+        cmd = ctx.ui.consume_command("packaging.cmd")
+        if cmd is None:
+            ctx.set_step_desc("Waiting for command...")
+            return
         if cmd == "new":
             ctx.set_state("work_instruction", "Create new container")
             ctx.goto(STEP_WORK, "Processing new container")
@@ -440,4 +417,6 @@ def chain(ctx):
         if ctx.wait(1.0, STEP_IDLE, desc="Done"):
             return
 ```
+
+
 

@@ -35,6 +35,11 @@ def build_page(ctx: PageContext) -> None:
 		"feedback_badge": None,
 		"qty_progress": None,
 		"qty_ratio": None,
+		"btn_remove": None,
+		"btn_print": None,
+		"btn_new": None,
+		"btn_refresh": None,
+		"btn_reset": None,
 	}
 
 	ui.add_head_html("""
@@ -70,6 +75,37 @@ def build_page(ctx: PageContext) -> None:
 .pack-btn:hover {
 	transform: translateY(-1px);
 	box-shadow: 0 8px 18px rgba(15, 23, 42, 0.14);
+}
+.pack-btn.q-btn--disabled,
+.pack-btn.q-btn--disabled:hover,
+.pack-btn.q-btn--disabled.q-btn--outline {
+	background-color: #9ca3af !important;
+	border-color: #6b7280 !important;
+	color: #374151 !important;
+	opacity: 1 !important;
+	transform: none !important;
+	box-shadow: none !important;
+	filter: grayscale(1) saturate(0.2) !important;
+}
+.pack-btn.q-btn--disabled .q-btn__content,
+.pack-btn.q-btn--disabled .q-icon,
+.pack-btn.q-btn--disabled .block {
+	color: #374151 !important;
+}
+.pack-btn.q-btn--disabled .q-focus-helper {
+	opacity: 0 !important;
+}
+.pack-btn-force-disabled {
+	background: #9ca3af !important;
+	border-color: #6b7280 !important;
+	color: #374151 !important;
+	opacity: 1 !important;
+	box-shadow: none !important;
+}
+.pack-btn-force-disabled .q-btn__content,
+.pack-btn-force-disabled .q-icon,
+.pack-btn-force-disabled .block {
+	color: #374151 !important;
 }
 .pack-header {
 	min-height: 62px;
@@ -187,6 +223,50 @@ def build_page(ctx: PageContext) -> None:
 		if qty_ratio is not None:
 			qty_ratio.set_text(f"{int(ratio * 100)}%")
 
+	def _button_enabled(button_id: str) -> bool:
+		states = getattr(ctx.state, "view_button_states", {}) or {}
+		if not isinstance(states, dict):
+			return True
+		local_key = f"{PACKAGING_VIEW.value}.{button_id}"
+		if local_key in states:
+			return bool(states.get(local_key))
+		if button_id in states:
+			return bool(states.get(button_id))
+		return True
+
+	def _button_visible(button_id: str) -> bool:
+		vis = getattr(ctx.state, "view_button_visibility", {}) or {}
+		if not isinstance(vis, dict):
+			return True
+		local_key = f"{PACKAGING_VIEW.value}.{button_id}"
+		if local_key in vis:
+			return bool(vis.get(local_key))
+		if button_id in vis:
+			return bool(vis.get(button_id))
+		return True
+
+	def _apply_button_states() -> None:
+		for button_id, ref_key in (
+			("remove", "btn_remove"),
+			("print", "btn_print"),
+			("new", "btn_new"),
+			("refresh", "btn_refresh"),
+			("reset", "btn_reset"),
+		):
+			btn = ui_refs.get(ref_key)
+			if btn is None:
+				continue
+			try:
+				btn.visible = _button_visible(button_id)
+				if _button_enabled(button_id):
+					btn.enable()
+					btn.classes(remove="pack-btn-force-disabled")
+				else:
+					btn.disable()
+					btn.classes(add="pack-btn-force-disabled")
+			except Exception:
+				pass
+
 	with ui.column().classes("pack-shell w-full h-full flex flex-col min-h-0 p-4 gap-3"):
 		with ui.row().classes("pack-header w-full items-center gap-2 pack-card p-2 pack-fade"):
 			ui.icon("inventory_2").classes("text-xl pack-primary")
@@ -272,18 +352,20 @@ def build_page(ctx: PageContext) -> None:
 			ui_refs["qty_progress"] = ui.linear_progress(value=0.0).classes("w-full mt-1")
 
 		with ui.row().classes("pack-card pack-fade w-full gap-3 justify-start p-3"):
-			ui.button(t("common.remove", "Remove"), icon="delete", on_click=lambda: _publish_cmd(UiActionName.REMOVE)) \
+			ui_refs["btn_remove"] = ui.button(t("common.remove", "Remove"), icon="delete", on_click=lambda: _publish_cmd(UiActionName.REMOVE)) \
 				.props("outline color=negative").classes("pack-btn w-[140px] h-[48px]")
-			ui.button(t("common.print", "Print"), icon="print", on_click=lambda: _publish_cmd(UiActionName.PRINT)) \
+			ui_refs["btn_print"] = ui.button(t("common.print", "Print"), icon="print", on_click=lambda: _publish_cmd(UiActionName.PRINT)) \
 				.props("outline color=primary").classes("pack-btn w-[140px] h-[48px]")
-			ui.button(t("common.new", "New"), icon="add", on_click=lambda: _publish_cmd(UiActionName.NEW)) \
+			ui_refs["btn_new"] = ui.button(t("common.new", "New"), icon="add", on_click=lambda: _publish_cmd(UiActionName.NEW)) \
 				.props("outline color=positive").classes("pack-btn w-[140px] h-[48px]")
-			ui.button(t("common.refresh", "Refresh"), icon="refresh", on_click=lambda: _publish_cmd(UiActionName.REFRESH)) \
+			ui_refs["btn_refresh"] = ui.button(t("common.refresh", "Refresh"), icon="refresh", on_click=lambda: _publish_cmd(UiActionName.REFRESH)) \
 				.props("outline color=secondary").classes("pack-btn w-[140px] h-[48px]")
-			ui.button(t("common.reset", "Reset"), icon="restart_alt", on_click=lambda: _publish_cmd(UiActionName.RESET)) \
+			ui_refs["btn_reset"] = ui.button(t("common.reset", "Reset"), icon="restart_alt", on_click=lambda: _publish_cmd(UiActionName.RESET)) \
 				.props("outline color=warning").classes("pack-btn w-[140px] h-[48px]")
 
 	add_timer(0.2, _apply_instruction_feedback_colors)
 	add_timer(0.2, _apply_qty_progress)
+	add_timer(0.2, _apply_button_states)
 	_apply_instruction_feedback_colors()
 	_apply_qty_progress()
+	_apply_button_states()

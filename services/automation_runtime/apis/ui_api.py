@@ -194,7 +194,7 @@ class UiApi:
 		if payload is None:
 			return None
 		try:
-			return parse_view_cmd_payload(payload, strict=True)
+			return parse_view_cmd_payload(payload, strict=False)
 		except ViewRegistryError as exc:
 			raise ValueError("invalid view command payload: %s" % str(exc))
 
@@ -340,7 +340,7 @@ class UiApi:
 				payload = dict(payload)
 				payload["source_id"] = str(meta.get("source_id") or "")
 		try:
-			return parse_view_cmd_payload(payload, strict=True)
+			return parse_view_cmd_payload(payload, strict=False)
 		except ViewRegistryError as exc:
 			raise ValueError("invalid view command payload: %s" % str(exc))
 
@@ -364,6 +364,134 @@ class UiApi:
 		"""Write multiple AppState keys (patch-per-key to avoid full-state replacement)."""
 		for k, v in values.items():
 			self.set_state(str(k), v)
+
+	def _resolve_button_state_key(self, button_key: str, *, view_id: str | None = None) -> str:
+		raw = str(button_key or "").strip()
+		if not raw:
+			return ""
+		if raw.startswith("view.button."):
+			raw = raw[len("view.button."):]
+		if "." in raw:
+			return raw
+		vid = str(view_id or "").strip()
+		return f"{vid}.{raw}" if vid else raw
+
+	def _normalize_enabled(self, value: Any) -> bool:
+		if isinstance(value, bool):
+			return value
+		v = str(value or "").strip().lower()
+		if v in ("disable", "disabled", "off", "0", "false", "no"):
+			return False
+		if v in ("enable", "enabled", "on", "1", "true", "yes"):
+			return True
+		return bool(value)
+
+	def _normalize_visible(self, value: Any) -> bool:
+		if isinstance(value, bool):
+			return value
+		v = str(value or "").strip().lower()
+		if v in ("hide", "hidden", "off", "0", "false", "no"):
+			return False
+		if v in ("show", "visible", "on", "1", "true", "yes"):
+			return True
+		return bool(value)
+
+	def set_button_enabled(self, button_key: str, enabled: Any, *, view_id: str | None = None) -> None:
+		resolved = self._resolve_button_state_key(button_key, view_id=view_id)
+		if not resolved:
+			return
+		state = self._ctx._app_state.get("view_button_states", {})
+		state_dict = dict(state) if isinstance(state, dict) else {}
+		state_dict[resolved] = self._normalize_enabled(enabled)
+		self.set_state("view_button_states", state_dict)
+
+	def set_buttons_enabled(self, mapping: dict[str, Any], *, view_id: str | None = None) -> None:
+		if not isinstance(mapping, dict):
+			return
+		state = self._ctx._app_state.get("view_button_states", {})
+		state_dict = dict(state) if isinstance(state, dict) else {}
+		for key, value in mapping.items():
+			resolved = self._resolve_button_state_key(str(key), view_id=view_id)
+			if not resolved:
+				continue
+			state_dict[resolved] = self._normalize_enabled(value)
+		self.set_state("view_button_states", state_dict)
+
+	def set_button_visible(self, button_key: str, visible: Any, *, view_id: str | None = None) -> None:
+		resolved = self._resolve_button_state_key(button_key, view_id=view_id)
+		if not resolved:
+			return
+		state = self._ctx._app_state.get("view_button_visibility", {})
+		state_dict = dict(state) if isinstance(state, dict) else {}
+		state_dict[resolved] = self._normalize_visible(visible)
+		self.set_state("view_button_visibility", state_dict)
+
+	def set_buttons_visible(self, mapping: dict[str, Any], *, view_id: str | None = None) -> None:
+		if not isinstance(mapping, dict):
+			return
+		state = self._ctx._app_state.get("view_button_visibility", {})
+		state_dict = dict(state) if isinstance(state, dict) else {}
+		for key, value in mapping.items():
+			resolved = self._resolve_button_state_key(str(key), view_id=view_id)
+			if not resolved:
+				continue
+			state_dict[resolved] = self._normalize_visible(value)
+		self.set_state("view_button_visibility", state_dict)
+
+	def set_operator_device_panel_visible(self, visible: bool) -> None:
+		self.set_state("operator_show_device_panel", bool(visible))
+
+	def set_operator_device_states(self, items: list[dict[str, Any]]) -> None:
+		out: list[dict[str, Any]] = []
+		for item in items or []:
+			if not isinstance(item, dict):
+				continue
+			name = str(item.get("name") or "").strip()
+			if not name:
+				continue
+			out.append({
+				"name": name,
+				"status": str(item.get("status") or ""),
+				"state": str(item.get("state") or "info"),
+				"connected": bool(item.get("connected", True)),
+				"source": str(item.get("source") or ""),
+			})
+		self.set_state("operator_device_panel_items", out)
+
+	def upsert_operator_device_state(
+		self,
+		*,
+		name: str,
+		status: str = "",
+		state: str = "info",
+		connected: Optional[bool] = None,
+		source: str = "",
+	) -> None:
+		n = str(name or "").strip()
+		if not n:
+			return
+		raw = self._ctx._app_state.get("operator_device_panel_items", [])
+		items = list(raw) if isinstance(raw, list) else []
+		target_index = -1
+		for i, item in enumerate(items):
+			if isinstance(item, dict) and str(item.get("name") or "").strip() == n:
+				target_index = i
+				break
+		entry = {
+			"name": n,
+			"status": str(status or ""),
+			"state": str(state or "info"),
+			"connected": True if connected is None else bool(connected),
+			"source": str(source or ""),
+		}
+		if target_index >= 0:
+			items[target_index] = entry
+		else:
+			items.append(entry)
+		self.set_state("operator_device_panel_items", items)
+
+	def clear_operator_device_states(self) -> None:
+		self.set_state("operator_device_panel_items", [])
 
 	def inc_state_int(self, key: str, amount: int = 1, default: int = 0) -> int:
 		"""
@@ -542,13 +670,22 @@ class UiApi:
 		if not k:
 			raise ValueError("popup_message() requires non-empty key")
 
+		btns = buttons if isinstance(buttons, list) else []
+		waits_for_click = len(btns) > 0
+
 		# finished?
 		res = self._ctx._modal_get_result_for_key(k)
 		if res is not None:
-			# normalize: ensure dict
-			if isinstance(res, dict):
-				return res
-			return {"result": res}
+			# Fire-and-forget message popups (no custom buttons) are often called
+			# on event triggers and do not consume return values. Ignore stale
+			# result so the same popup key can be shown on every trigger.
+			if not waits_for_click:
+				res = None
+			else:
+				# normalize: ensure dict
+				if isinstance(res, dict):
+					return res
+				return {"result": res}
 
 		# pending?
 		if self._ctx._modal_is_pending(k):
@@ -562,7 +699,6 @@ class UiApi:
 		request_id = str(uuid.uuid4())
 		self._ctx._modal_mark_pending(k, request_id)
 
-		btns = buttons if isinstance(buttons, list) else []
 		status_value = str(status or "info").strip().lower()
 		if status_value not in ("error", "info", "success"):
 			status_value = "info"

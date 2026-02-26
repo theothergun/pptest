@@ -48,6 +48,12 @@
           "key": "vi_home",
           "label": "Visual Inspection",
           "path": "visual_inspection/home.py"
+        },
+        {
+          "icon": "science",
+          "key": "state_button_test",
+          "label": "State Button Test",
+          "path": "operator/state_button_test.py"
         }
       ],
       "main_route": "home",
@@ -74,6 +80,10 @@
         "settings": [
           "user"
         ],
+        "state_button_test": [
+          "user",
+          "admin"
+        ],
         "summary": [
           "user",
           "admin"
@@ -92,7 +102,8 @@
         "settings",
         "errors",
         "vi_home",
-        "test5"
+        "test5",
+        "state_button_test"
       ]
     },
     "theme": {
@@ -302,4 +313,3 @@
     ]
   }
 }
-

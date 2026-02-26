@@ -34,7 +34,7 @@ class ItacConnectionConfig:
 	user: str = ""
 	password: str = ""
 
-	timeout_s: float = 10.0
+	timeout_s: float = 9999
 	verify_ssl: bool = True
 	auto_login: bool = True
 
@@ -486,7 +486,7 @@ def _post_action(http: _ThreadLocalHttp, cfg: ItacConnectionConfig, function_nam
 		f"HTTP POST iTAC: connection_id={cfg.connection_id} function={function_name} url={url} "
 		f"timeout_s={cfg.timeout_s} verify_ssl={cfg.verify_ssl} body={_shorten_json(redacted, 2000)}"
 	)
-
+	cfg.timeout_s = 999
 	start = time.time()
 	resp = sess.post(
 		url,

@@ -33,6 +33,28 @@ class WorkersApi:
 	def __init__(self, ctx: Any) -> None:
 		self._ctx = ctx
 
+	def _itac_connection_error_result(
+		self,
+		*,
+		connection_id: str,
+		request_id: str,
+		expected_key: str,
+		error: Any,
+		error_code: int = -99999,
+	) -> dict:
+		return {
+			"result": {
+				"return_value": int(error_code),
+				"errorString": str(error or "connection_error"),
+			},
+			"_meta": {
+				"connection_id": str(connection_id or ""),
+				"request_id": str(request_id or ""),
+				"key": str(expected_key or ""),
+				"connection_error": True,
+			},
+		}
+
 	# --------------------------- generic reads ---------------------------
 
 	def get(self, worker: str, source_id: str, key: str, default: Any = None) -> Any:
@@ -503,15 +525,24 @@ class WorkersApi:
 
 	def itac_custom_function(self, connection_id: str, method_name: str, in_args: list[Any], timeout_s: float = 10.0) -> dict:
 		if not callable(getattr(self._ctx, "send_cmd", None)):
-			return {"error": "no_send_cmd"}
+			return {
+				"result": {"return_value": -99999, "errorString": "no_send_cmd"},
+				"_meta": {"connection_id": str(connection_id or ""), "connection_error": True},
+			}
 
 		cid = str(connection_id or "")
 		if not cid:
-			return {"error": "missing_connection_id"}
+			return {
+				"result": {"return_value": -99999, "errorString": "missing_connection_id"},
+				"_meta": {"connection_id": "", "connection_error": True},
+			}
 
 		request_id = uuid.uuid4().hex
 		if ItacCommands is None:
-			return {"error": "no_itac_commands"}
+			return {
+				"result": {"return_value": -99999, "errorString": "no_itac_commands"},
+				"_meta": {"connection_id": cid, "connection_error": True},
+			}
 
 		self._ctx.send_cmd("itac", ItacCommands.CALL_CUSTOM_FUNCTION, {
 			"connection_id": cid,
@@ -530,13 +561,26 @@ class WorkersApi:
 		)
 
 		if msg_payload.get("error") == "worker_error":
-			return msg_payload
+			payload = msg_payload.get("payload") if isinstance(msg_payload, dict) else None
+			err_text = ""
+			if isinstance(payload, dict):
+				err_text = str(payload.get("error") or "")
+			if not err_text:
+				err_text = str(msg_payload.get("error") or "worker_error")
+			return self._itac_connection_error_result(
+				connection_id=cid,
+				request_id=request_id,
+				expected_key=expected_key,
+				error=err_text,
+			)
 
 		if msg_payload.get("error") == "timeout":
-			msg_payload["expected_key"] = expected_key
-			msg_payload["request_id"] = request_id
-			msg_payload["connection_id"] = cid
-			return msg_payload
+			return self._itac_connection_error_result(
+				connection_id=cid,
+				request_id=request_id,
+				expected_key=expected_key,
+				error="timeout",
+			)
 
 		value = msg_payload.get("value")
 		if isinstance(value, dict):
@@ -560,15 +604,24 @@ class WorkersApi:
 
 	def itac_raw_call(self, connection_id: str, function_name: str, body: dict, timeout_s: float = 10.0) -> dict:
 		if not callable(getattr(self._ctx, "send_cmd", None)):
-			return {"error": "no_send_cmd"}
+			return {
+				"result": {"return_value": -99999, "errorString": "no_send_cmd"},
+				"_meta": {"connection_id": str(connection_id or ""), "connection_error": True},
+			}
 
 		cid = str(connection_id or "")
 		if not cid:
-			return {"error": "missing_connection_id"}
+			return {
+				"result": {"return_value": -99999, "errorString": "missing_connection_id"},
+				"_meta": {"connection_id": "", "connection_error": True},
+			}
 
 		request_id = uuid.uuid4().hex
 		if ItacCommands is None:
-			return {"error": "no_itac_commands"}
+			return {
+				"result": {"return_value": -99999, "errorString": "no_itac_commands"},
+				"_meta": {"connection_id": cid, "connection_error": True},
+			}
 
 		self._ctx.send_cmd("itac", ItacCommands.RAW_CALL, {
 			"connection_id": cid,
@@ -587,13 +640,26 @@ class WorkersApi:
 		)
 
 		if msg_payload.get("error") == "worker_error":
-			return msg_payload
+			payload = msg_payload.get("payload") if isinstance(msg_payload, dict) else None
+			err_text = ""
+			if isinstance(payload, dict):
+				err_text = str(payload.get("error") or "")
+			if not err_text:
+				err_text = str(msg_payload.get("error") or "worker_error")
+			return self._itac_connection_error_result(
+				connection_id=cid,
+				request_id=request_id,
+				expected_key=expected_key,
+				error=err_text,
+			)
 
 		if msg_payload.get("error") == "timeout":
-			msg_payload["expected_key"] = expected_key
-			msg_payload["request_id"] = request_id
-			msg_payload["connection_id"] = cid
-			return msg_payload
+			return self._itac_connection_error_result(
+				connection_id=cid,
+				request_id=request_id,
+				expected_key=expected_key,
+				error="timeout",
+			)
 
 		value = msg_payload.get("value")
 		if isinstance(value, dict):
@@ -970,6 +1036,77 @@ class WorkersApi:
 			out["error"] = "itac_return_value_%s" % str(rv)
 
 		return out
+
+	def itac_get_error_text(
+		self,
+		connection_id: str,
+		error_code: Any,
+		*,
+		timeout_s: float = 5.0,
+	) -> dict:
+		"""
+		Call iTAC raw function:
+			functionName = "imsapiGetErrorText"
+			body = {"errorCode": <error_code>}
+
+		Returns normalized dict:
+		{
+			"ok": bool,
+			"error_code": Any,
+			"errorString": str,
+			"return_value": int,
+			"out_args": list,
+			"error": str|None,
+			"raw": dict
+		}
+		"""
+		raw = self.itac_raw_call(
+			connection_id=connection_id,
+			function_name="imsapiGetErrorText",
+			body={"errorCode": error_code},
+			timeout_s=timeout_s,
+		)
+		norm = self.itac_expect_ok(raw)
+		out_args = list(norm.get("out_args") or [])
+
+		def _extract_text_from_item(item: Any) -> str:
+			if isinstance(item, dict):
+				for key in ("errorString", "error_string", "message", "text", "value"):
+					if key in item and item.get(key) is not None:
+						return str(item.get(key))
+				return ""
+			text = str(item or "")
+			if not text:
+				return ""
+			# common shape: ".errorString=IMSAPI key not found"
+			for marker in ("errorString=", ".errorString="):
+				if marker in text:
+					return text.split(marker, 1)[1].strip()
+			return text.strip()
+
+		error_text = ""
+		result = raw.get("result") if isinstance(raw, dict) else None
+		if isinstance(result, dict):
+			for key in ("errorString", "error_string", "message", "text"):
+				if result.get(key):
+					error_text = str(result.get(key))
+					break
+
+		if not error_text:
+			for item in out_args:
+				error_text = _extract_text_from_item(item)
+				if error_text:
+					break
+
+		return {
+			"ok": bool(norm.get("ok", False)),
+			"error_code": error_code,
+			"errorString": str(error_text or ""),
+			"return_value": int(norm.get("return_value", -1) if norm.get("return_value") is not None else -1),
+			"out_args": out_args,
+			"error": norm.get("error"),
+			"raw": raw,
+		}
 
 
 

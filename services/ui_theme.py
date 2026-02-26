@@ -106,6 +106,62 @@ def apply_ui_theme(cfg: AppConfig) -> None:
             .bg-gray-200 {
                 background-color: var(--surface-muted) !important;
             }
+
+            .app-shell {
+                background: linear-gradient(135deg, var(--surface-muted) 0%, var(--app-background) 100%);
+                border-radius: 20px;
+                border: 1px solid var(--input-border);
+                box-shadow: 0 12px 30px rgba(16, 24, 40, 0.06);
+            }
+
+            .app-panel {
+                background: var(--surface);
+                border: 1px solid var(--input-border);
+                border-radius: 16px;
+                box-shadow: 0 10px 24px rgba(16, 24, 40, 0.08);
+                color: var(--text-primary);
+            }
+
+            .app-btn {
+                font-weight: 700;
+                letter-spacing: .2px;
+                border-radius: 12px;
+                transition: transform 120ms ease, box-shadow 120ms ease;
+            }
+
+            .app-btn:hover { transform: translateY(-1px); box-shadow: 0 10px 20px rgba(15, 23, 42, 0.12); }
+
+            .app-btn.q-btn--disabled,
+            .app-btn.q-btn--disabled:hover {
+                background-color: #9ca3af !important;
+                border-color: #6b7280 !important;
+                color: #374151 !important;
+                opacity: 1 !important;
+                box-shadow: none !important;
+                transform: none !important;
+            }
+
+            .app-nav-item {
+                border-radius: 12px;
+                justify-content: flex-start;
+                min-height: 42px;
+                font-weight: 600;
+            }
+
+            .app-nav-item.q-btn--active,
+            .app-nav-item.app-nav-item-active {
+                background: var(--primary) !important;
+                color: #ffffff !important;
+            }
+
+            .app-header-title { font-size: 1.05rem; font-weight: 700; letter-spacing: .2px; }
+            .app-muted { color: var(--text-secondary); }
+
+            .q-notification {
+                border: 1px solid var(--input-border);
+                border-radius: 12px;
+                box-shadow: 0 10px 20px rgba(16, 24, 40, 0.18);
+            }
         </style>
         """
         % css_vars

@@ -51,40 +51,41 @@ def render(container: ui.element, ctx: PageContext) -> None:
                     left_col.style("overscroll-behavior: contain;")
 
                     nodes = [
-                        {"id": "general", "label": f"⚙️ {t('settings.general.title', 'General')}", "children": [
-                            {"id": "general.core", "label": f"🛠️ {t('settings.general.core', 'General Settings')}"},
-                            {"id": "general.themes", "label": f"🎨 {t('settings.general.themes', 'Color Themes')}"},
-                            {"id": "general.system", "label": "🖥️ Station & System"},
-                            {"id": "general.startup", "label": f"🚀 {t('settings.general.startup', 'Startup')}"},
-                            {"id": "general.users", "label": f"👤 {t('settings.general.users', 'User Management')}"},
-                            {"id": "general.global_vars", "label": f"🌐 {t('settings.general.global_vars', 'Global Variables')}"},
+                        {"id": "general", "label": t('settings.general.title', 'General'), "children": [
+                            {"id": "general.core", "label": t('settings.general.core', 'General Settings')},
+                            {"id": "general.themes", "label": t('settings.general.themes', 'Color Themes')},
+                            {"id": "general.system", "label": "Station & System"},
+                            {"id": "general.startup", "label": t('settings.general.startup', 'Startup')},
+                            {"id": "general.users", "label": t('settings.general.users', 'User Management')},
+                            {"id": "general.global_vars", "label": t('settings.general.global_vars', 'Global Variables')},
                         ]},
-                        {"id": "runtime", "label": f"🧠 {t('settings.runtime.title', 'Runtime')}", "children": [
-                            {"id": "runtime.app_state", "label": f"📦 {t('settings.runtime.app_state', 'Application Variables')}"},
-                            {"id": "runtime.online", "label": f"☁️ {t('settings.runtime.online', 'Online Status')}"},
+                        {"id": "runtime", "label": t('settings.runtime.title', 'Runtime'), "children": [
+                            {"id": "runtime.app_state", "label": t('settings.runtime.app_state', 'Application Variables')},
+                            {"id": "runtime.online", "label": t('settings.runtime.online', 'Online Status')},
                         ]},
-                        {"id": "workers", "label": f"👷 {t('settings.workers.title', 'Workers')}", "children": [
-                            {"id": "workers.enabled", "label": f"✅ {t('settings.workers.enabled', 'Enabled Workers')}"},
-                            {"id": "workers.scripts", "label": f"💻 {t('settings.workers.scripts', 'Scripts')}"},
+                        {"id": "workers", "label": t('settings.workers.title', 'Workers'), "children": [
+                            {"id": "workers.enabled", "label": t('settings.workers.enabled', 'Enabled Workers')},
+                            {"id": "workers.scripts", "label": t('settings.workers.scripts', 'Scripts')},
                         ]},
-                        {"id": "connectivity", "label": f"🔌 {t('settings.connectivity.title', 'Connectivity')}", "children": [
-                            {"id": "connectivity.routes", "label": f"🧭 {t('settings.connectivity.routes', 'Routes')}"},
-                            {"id": "connectivity.tcp", "label": f"🛰️ {t('settings.connectivity.tcp', 'TCP Clients')}"},
-                            {"id": "connectivity.twincat", "label": f"🧩 {t('settings.connectivity.twincat', 'TwinCAT')}"},
-                            {"id": "connectivity.itac", "label": f"🏭 {t('settings.connectivity.itac', 'iTAC')}"},
-                            {"id": "connectivity.com", "label": f"🔗 {t('settings.connectivity.com', 'COM Device')}"},
-                            {"id": "connectivity.opcua", "label": f"📡 {t('settings.connectivity.opcua', 'OPC UA')}"},
-                            {"id": "connectivity.rest", "label": f"🌐 {t('settings.connectivity.rest', 'REST APIs')}"},
+                        {"id": "connectivity", "label": t('settings.connectivity.title', 'Connectivity'), "children": [
+                            {"id": "connectivity.routes", "label": t('settings.connectivity.routes', 'Routes')},
+                            {"id": "connectivity.tcp", "label": t('settings.connectivity.tcp', 'TCP Clients')},
+                            {"id": "connectivity.twincat", "label": t('settings.connectivity.twincat', 'TwinCAT')},
+                            {"id": "connectivity.itac", "label": t('settings.connectivity.itac', 'iTAC')},
+                            {"id": "connectivity.com", "label": t('settings.connectivity.com', 'COM Device')},
+                            {"id": "connectivity.opcua", "label": t('settings.connectivity.opcua', 'OPC UA')},
+                            {"id": "connectivity.rest", "label": t('settings.connectivity.rest', 'REST APIs')},
                         ]},
-                        {"id": "languages", "label": f"🌍 {t('settings.languages.title', 'Languages')}", "children": [
-                            {"id": "languages.manager", "label": f"🗣️ {t('settings.languages.manager', 'Language Manager')}"},
+                        {"id": "languages", "label": t('settings.languages.title', 'Languages'), "children": [
+                            {"id": "languages.manager", "label": t('settings.languages.manager', 'Language Manager')},
                         ]},
-                        {"id": "dummy", "label": f"🧩 {t('dummy.languages.title', 'Dummy')}", "children": [
-                            {"id": "dummy.config", "label": f"🛠️ {t('dummy.languages.config', 'Config')}"},
-                            {"id": "dummy.test_result", "label": f"📈 {t('dummy.languages.test_result', 'Test Results')}"},
-                            {"id": "dummy.manual_test", "label": f"🔬 {t('dummy.languages.manual_test', 'Manual Test')}"},
+                        {"id": "dummy", "label": t('dummy.languages.title', 'Dummy'), "children": [
+                            {"id": "dummy.config", "label": t('dummy.languages.config', 'Config')},
+                            {"id": "dummy.test_result", "label": t('dummy.languages.test_result', 'Test Results')},
+                            {"id": "dummy.manual_test", "label": t('dummy.languages.manual_test', 'Manual Test')},
                         ]},
                     ]
+
 
                     leaf_ids: set[str] = set()
 

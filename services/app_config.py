@@ -193,6 +193,7 @@ class NavigationConfig:
     dark_mode: bool = False
     custom_routes: list[dict[str, Any]] = field(default_factory=list)
     route_roles: dict[str, list[str]] = field(default_factory=dict)
+    route_settings: dict[str, dict[str, Any]] = field(default_factory=dict)
 
 
 def _default_light_cool_palette() -> dict[str, str]:
@@ -528,6 +529,7 @@ def _from_dict(data: dict[str, Any]) -> AppConfig:
         dark_mode=bool(nav_data.get("dark_mode", False)),
         custom_routes=nav_data.get("custom_routes", []),
         route_roles=nav_data.get("route_roles", {}),
+        route_settings=nav_data.get("route_settings", {}),
     )
     raw_theme = ui_data.get("theme", {}) if isinstance(ui_data, dict) else {}
     default_theme = ThemeConfig()

@@ -11,6 +11,7 @@ from pages.utils.scroll_fx import generate_wrapper_id
 from pages.builtin_pages import register_builtin_pages
 from services.app_config import get_app_config, save_app_config
 from services.i18n import t
+from services.route_settings import get_route_settings, set_route_settings
 from loguru import logger
 
 ROUTE_LIST = ExpandableList(scroller_id="routes-scroll", id_prefix ="route-card",
@@ -245,6 +246,7 @@ def _render_routes(scroll_to: str | None = None, highlight: str | None = None) -
 				ui.button(icon="keyboard_arrow_down", on_click=lambda i=idx: _move_route(i, 1)).props(
 					"flat dense"
 				).tooltip(t("route.tooltip.move_down", "Move down"))
+				ui.button("Settings", on_click=lambda k=key: _open_route_settings_dialog(k)).props("flat color=secondary").tooltip("Route runtime settings")
 				ui.button(t("common.edit", "Edit"), on_click=toggle).props("flat color=primary").tooltip(t("route.tooltip.edit", "Edit this route"))
 				ui.button(t("common.delete", "Delete"), on_click=delete).props("flat color=negative").tooltip(t("route.tooltip.delete", "Delete this route"))
 		summary_row.props("draggable=true")
@@ -287,6 +289,35 @@ def _render_routes(scroll_to: str | None = None, highlight: str | None = None) -
 
 	ROUTE_LIST.render(routes_view, render_summary=render_summary, render_editor=render_editor,
 					  on_delete=_delete_route, refresh=refresh, scroll_to=scroll_to, highlight=highlight, )
+
+
+def _open_route_settings_dialog(route_key: str) -> None:
+	current = get_route_settings(route_key)
+	with ui.dialog() as dialog, ui.card().classes("w-[680px] max-w-[95vw] p-4"):
+		ui.label(f"Route settings: {route_key}").classes("text-lg font-semibold")
+		scanner = ui.input("Scanner Worker", value=str(current.get("scanner_worker", ""))).props("outlined dense").classes("w-full")
+		plc = ui.input("PLC Worker", value=str(current.get("plc_worker", ""))).props("outlined dense").classes("w-full")
+		tcp = ui.input("TCP Worker", value=str(current.get("tcp_worker", ""))).props("outlined dense").classes("w-full")
+		printer = ui.input("Printer Worker", value=str(current.get("printer_worker", ""))).props("outlined dense").classes("w-full")
+		rest = ui.input("REST Endpoint", value=str(current.get("rest_endpoint", ""))).props("outlined dense").classes("w-full")
+		script = ui.input("Script Worker", value=str(current.get("script_worker", ""))).props("outlined dense").classes("w-full")
+		plc_endpoint = ui.input("PLC Endpoint", value=str(current.get("plc_endpoint", ""))).props("outlined dense").classes("w-full")
+		with ui.row().classes("w-full justify-end gap-2"):
+			ui.button("Cancel", on_click=dialog.close).props("flat")
+			def _save_settings() -> None:
+				set_route_settings(route_key, {
+					"scanner_worker": str(scanner.value or ""),
+					"plc_worker": str(plc.value or ""),
+					"tcp_worker": str(tcp.value or ""),
+					"printer_worker": str(printer.value or ""),
+					"rest_endpoint": str(rest.value or ""),
+					"script_worker": str(script.value or ""),
+					"plc_endpoint": str(plc_endpoint.value or ""),
+				})
+				ui.notify("Route settings saved.", type="positive")
+				dialog.close()
+			ui.button("Save", on_click=_save_settings).props("color=primary")
+	dialog.open()
 
 
 _drag_state: dict[str, int | None] = {"source_index": None}

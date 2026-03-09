@@ -153,6 +153,8 @@ def navigate(ctx: PageContext, route_key: str) -> None:
     ui.run_javascript(f"history.replaceState(null, '', '?page={route_key}')")
 
     _apply_drawer_highlight(ctx, route_key)
+    ctx.current_route_key = route_key
+    ctx.current_route = route
 
     # IMPORTANT: new bus per navigation avoids "duplicate handlers" when you revisit a page
     ctx.bus = EventBus()

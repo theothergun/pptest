@@ -4,6 +4,10 @@ from services.script_api import PublicAutomationContext, StateKeys
 import time
 
 
+from services.script_metadata import default_script_meta
+
+SCRIPT_META = default_script_meta(__file__)
+
 def main(ctx: PublicAutomationContext):
 	"""
 	Example script for packaging using generic ctx.ui/state APIs.
@@ -70,4 +74,3 @@ def main(ctx: PublicAutomationContext):
 
 
 # Export
-main = main

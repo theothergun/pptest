@@ -4,6 +4,10 @@ from services.script_api import PublicAutomationContext, UiActionName, ViewName,
 import time
 
 
+from services.script_metadata import default_script_meta
+
+SCRIPT_META = default_script_meta(__file__)
+
 def main(ctx: PublicAutomationContext):
     """
     Example script using generic automation APIs.
@@ -52,4 +56,3 @@ def main(ctx: PublicAutomationContext):
         ctx.set_state(StateKeys.part_good, current + 1)
         ctx.goto(0)
 # Export
-main = main

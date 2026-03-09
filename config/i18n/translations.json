@@ -1,4 +1,22 @@
 {
+  "MES request failed": {
+    "cs": "MES request failed",
+    "de": "MES request failed",
+    "en": "MES request failed",
+    "es-MX": "MES request failed",
+    "mk": "MES request failed",
+    "sk": "MES request failed",
+    "zh": "MES request failed"
+  },
+  "Search failed": {
+    "cs": "Search failed",
+    "de": "Search failed",
+    "en": "Search failed",
+    "es-MX": "Search failed",
+    "mk": "Search failed",
+    "sk": "Search failed",
+    "zh": "Search failed"
+  },
   "Serial search failed": {
     "cs": "Serial search failed",
     "de": "Serial search failed",
@@ -1880,6 +1898,15 @@
     "sk": "Edit",
     "zh": "Edit"
   },
+  "common.icon": {
+    "cs": "Icon",
+    "de": "Icon",
+    "en": "Icon",
+    "es-MX": "Icon",
+    "mk": "Icon",
+    "sk": "Icon",
+    "zh": "Icon"
+  },
   "common.label": {
     "cs": "Label",
     "de": "Label",
@@ -1906,6 +1933,15 @@
     "mk": "New",
     "sk": "New",
     "zh": "New"
+  },
+  "common.press_start": {
+    "cs": "Press Start to continue",
+    "de": "Press Start to continue",
+    "en": "Press Start to continue",
+    "es-MX": "Press Start to continue",
+    "mk": "Press Start to continue",
+    "sk": "Press Start to continue",
+    "zh": "Press Start to continue"
   },
   "common.print": {
     "cs": "Print",
@@ -1942,6 +1978,15 @@
     "mk": "Reset",
     "sk": "Reset",
     "zh": "Reset"
+  },
+  "common.save": {
+    "cs": "Save",
+    "de": "Save",
+    "en": "Save",
+    "es-MX": "Save",
+    "mk": "Save",
+    "sk": "Save",
+    "zh": "Save"
   },
   "common.search": {
     "cs": "Search",
@@ -2060,6 +2105,15 @@
     "sk": "Filter serials",
     "zh": "Filter serials"
   },
+  "container_management.no_container_selected": {
+    "cs": "No container selected",
+    "de": "No container selected",
+    "en": "No container selected",
+    "es-MX": "No container selected",
+    "mk": "No container selected",
+    "sk": "No container selected",
+    "zh": "No container selected"
+  },
   "container_management.remove_all": {
     "cs": "Remove All",
     "de": "Remove All",
@@ -2176,6 +2230,60 @@
     "mk": "Waiting for confirmation...",
     "sk": "Waiting for confirmation...",
     "zh": "Waiting for confirmation..."
+  },
+  "device.packaging.package_scanner_connected": {
+    "cs": "Packaging Scanner is connected",
+    "de": "Packaging Scanner is connected",
+    "en": "Packaging Scanner is connected",
+    "es-MX": "Packaging Scanner is connected",
+    "mk": "Packaging Scanner is connected",
+    "sk": "Packaging Scanner is connected",
+    "zh": "Packaging Scanner is connected"
+  },
+  "device.packaging.package_scanner_connectivity": {
+    "cs": "Check Scanner connectivity",
+    "de": "Check Scanner connectivity",
+    "en": "Check Scanner connectivity",
+    "es-MX": "Check Scanner connectivity",
+    "mk": "Check Scanner connectivity",
+    "sk": "Check Scanner connectivity",
+    "zh": "Check Scanner connectivity"
+  },
+  "device.packaging.package_scanner_disconnected": {
+    "cs": "Packaging Scanner is not connected",
+    "de": "Packaging Scanner is not connected",
+    "en": "Packaging Scanner is not connected",
+    "es-MX": "Packaging Scanner is not connected",
+    "mk": "Packaging Scanner is not connected",
+    "sk": "Packaging Scanner is not connected",
+    "zh": "Packaging Scanner is not connected"
+  },
+  "device.plc.connectivity": {
+    "cs": "Check Beckhoff connectivity",
+    "de": "Check Beckhoff connectivity",
+    "en": "Check Beckhoff connectivity",
+    "es-MX": "Check Beckhoff connectivity",
+    "mk": "Check Beckhoff connectivity",
+    "sk": "Check Beckhoff connectivity",
+    "zh": "Check Beckhoff connectivity"
+  },
+  "device.plc_beckhoff_connected": {
+    "cs": "Beckhoff is connected",
+    "de": "Beckhoff is connected",
+    "en": "Beckhoff is connected",
+    "es-MX": "Beckhoff is connected",
+    "mk": "Beckhoff is connected",
+    "sk": "Beckhoff is connected",
+    "zh": "Beckhoff is connected"
+  },
+  "device.plc_beckhoff_disconnected": {
+    "cs": "Beckhoff is not connected",
+    "de": "Beckhoff is not connected",
+    "en": "Beckhoff is not connected",
+    "es-MX": "Beckhoff is not connected",
+    "mk": "Beckhoff is not connected",
+    "sk": "Beckhoff is not connected",
+    "zh": "Beckhoff is not connected"
   },
   "dummy.languages.config": {
     "cs": "Config",
@@ -2303,6 +2411,24 @@
     "sk": "Switch between light and dark mode",
     "zh": "Switch between light and dark mode"
   },
+  "header.tooltip.theme_to_dark": {
+    "cs": "Switch to dark mode",
+    "de": "Switch to dark mode",
+    "en": "Switch to dark mode",
+    "es-MX": "Switch to dark mode",
+    "mk": "Switch to dark mode",
+    "sk": "Switch to dark mode",
+    "zh": "Switch to dark mode"
+  },
+  "header.tooltip.theme_to_light": {
+    "cs": "Switch to light mode",
+    "de": "Switch to light mode",
+    "en": "Switch to light mode",
+    "es-MX": "Switch to light mode",
+    "mk": "Switch to light mode",
+    "sk": "Switch to light mode",
+    "zh": "Switch to light mode"
+  },
   "header.tooltip.toggle_menu": {
     "cs": "Toggle navigation menu",
     "de": "Toggle navigation menu",
@@ -2375,6 +2501,15 @@
     "sk": "Last Serial Number",
     "zh": "Last Serial Number"
   },
+  "packaging.mes_error_code_text": {
+    "cs": "{code}: {text}",
+    "de": "{code}: {text}",
+    "en": "{code}: {text}",
+    "es-MX": "{code}: {text}",
+    "mk": "{code}: {text}",
+    "sk": "{code}: {text}",
+    "zh": "{code}: {text}"
+  },
   "packaging.part_number": {
     "cs": "Part Number",
     "de": "Part Number",
@@ -2419,6 +2554,15 @@
     "mk": "Serial Removed Failed",
     "sk": "Serial Removed Failed",
     "zh": "Serial Removed Failed"
+  },
+  "packaging.stopped_press_start": {
+    "cs": "System stopped. Press Start to continue.",
+    "de": "System stopped. Press Start to continue.",
+    "en": "System stopped. Press Start to continue.",
+    "es-MX": "System stopped. Press Start to continue.",
+    "mk": "System stopped. Press Start to continue.",
+    "sk": "System stopped. Press Start to continue.",
+    "zh": "System stopped. Press Start to continue."
   },
   "packaging.subtitle": {
     "cs": "Live production and operator workflow",
@@ -2492,6 +2636,15 @@
     "sk": "Allowed roles (comma separated)",
     "zh": "Allowed roles (comma separated)"
   },
+  "route.file_path": {
+    "cs": "File path",
+    "de": "File path",
+    "en": "File path",
+    "es-MX": "File path",
+    "mk": "File path",
+    "sk": "File path",
+    "zh": "File path"
+  },
   "route.icon_hint": {
     "cs": "Icon (material icon name)",
     "de": "Icon (material icon name)",
@@ -2501,6 +2654,15 @@
     "sk": "Icon (material icon name)",
     "zh": "Icon (material icon name)"
   },
+  "route.id": {
+    "cs": "Route id",
+    "de": "Route id",
+    "en": "Route id",
+    "es-MX": "Route id",
+    "mk": "Route id",
+    "sk": "Route id",
+    "zh": "Route id"
+  },
   "route.key_hint": {
     "cs": "Route key (e.g. packaging)",
     "de": "Route key (e.g. packaging)",
@@ -2509,6 +2671,33 @@
     "mk": "Route key (e.g. packaging)",
     "sk": "Route key (e.g. packaging)",
     "zh": "Route key (e.g. packaging)"
+  },
+  "route.notify.added": {
+    "cs": "Route added.",
+    "de": "Route added.",
+    "en": "Route added.",
+    "es-MX": "Route added.",
+    "mk": "Route added.",
+    "sk": "Route added.",
+    "zh": "Route added."
+  },
+  "route.notify.removed": {
+    "cs": "Route removed.",
+    "de": "Route removed.",
+    "en": "Route removed.",
+    "es-MX": "Route removed.",
+    "mk": "Route removed.",
+    "sk": "Route removed.",
+    "zh": "Route removed."
+  },
+  "route.notify.updated": {
+    "cs": "Route updated.",
+    "de": "Route updated.",
+    "en": "Route updated.",
+    "es-MX": "Route updated.",
+    "mk": "Route updated.",
+    "sk": "Route updated.",
+    "zh": "Route updated."
   },
   "route.path_hint": {
     "cs": "File path (e.g. packaging/packaging.py)",
@@ -2581,6 +2770,24 @@
     "mk": "Unique route id used in URL",
     "sk": "Unique route id used in URL",
     "zh": "Unique route id used in URL"
+  },
+  "route.tooltip.move_down": {
+    "cs": "Move down",
+    "de": "Move down",
+    "en": "Move down",
+    "es-MX": "Move down",
+    "mk": "Move down",
+    "sk": "Move down",
+    "zh": "Move down"
+  },
+  "route.tooltip.move_up": {
+    "cs": "Move up",
+    "de": "Move up",
+    "en": "Move up",
+    "es-MX": "Move up",
+    "mk": "Move up",
+    "sk": "Move up",
+    "zh": "Move up"
   },
   "route.tooltip.path": {
     "cs": "Python page file relative to pages folder",
@@ -2844,6 +3051,78 @@
     "zh": "Scripts"
   },
   "settings.workers.title": {
+    "cs": "Workers",
+    "de": "Workers",
+    "en": "Workers",
+    "es-MX": "Workers",
+    "mk": "Workers",
+    "sk": "Workers",
+    "zh": "Workers"
+  },
+  "summary.connected": {
+    "cs": "Connected",
+    "de": "Connected",
+    "en": "Connected",
+    "es-MX": "Connected",
+    "mk": "Connected",
+    "sk": "Connected",
+    "zh": "Connected"
+  },
+  "summary.cycles": {
+    "cs": "Cycles: {count}",
+    "de": "Cycles: {count}",
+    "en": "Cycles: {count}",
+    "es-MX": "Cycles: {count}",
+    "mk": "Cycles: {count}",
+    "sk": "Cycles: {count}",
+    "zh": "Cycles: {count}"
+  },
+  "summary.no_running_scripts": {
+    "cs": "No running scripts.",
+    "de": "No running scripts.",
+    "en": "No running scripts.",
+    "es-MX": "No running scripts.",
+    "mk": "No running scripts.",
+    "sk": "No running scripts.",
+    "zh": "No running scripts."
+  },
+  "summary.script_chains": {
+    "cs": "Script Chains",
+    "de": "Script Chains",
+    "en": "Script Chains",
+    "es-MX": "Script Chains",
+    "mk": "Script Chains",
+    "sk": "Script Chains",
+    "zh": "Script Chains"
+  },
+  "summary.state_running": {
+    "cs": "Running",
+    "de": "Running",
+    "en": "Running",
+    "es-MX": "Running",
+    "mk": "Running",
+    "sk": "Running",
+    "zh": "Running"
+  },
+  "summary.step": {
+    "cs": "Step: {step}",
+    "de": "Step: {step}",
+    "en": "Step: {step}",
+    "es-MX": "Step: {step}",
+    "mk": "Step: {step}",
+    "sk": "Step: {step}",
+    "zh": "Step: {step}"
+  },
+  "summary.title": {
+    "cs": "Summary",
+    "de": "Summary",
+    "en": "Summary",
+    "es-MX": "Summary",
+    "mk": "Summary",
+    "sk": "Summary",
+    "zh": "Summary"
+  },
+  "summary.workers": {
     "cs": "Workers",
     "de": "Workers",
     "en": "Workers",

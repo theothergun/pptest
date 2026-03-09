@@ -1,11 +1,17 @@
 from __future__ import annotations
+
+from collections.abc import Callable
+from typing import Any
+
 from nicegui import ui
 
 from layout.context import PageContext
 from pages.dummy.dummy_service import DummyUIHandles
+from services.app_config import get_app_config
 
 
-def _make_draggable_clamp_to_view_port(handle_id: str, dialog_id: str, *, storage_key: str = "dummy_exec_window_pos") -> None:
+def _make_draggable_clamp_to_view_port(handle_id: str, dialog_id: str, *,
+									   storage_key: str = "dummy_exec_window_pos") -> None:
 	ui.run_javascript(f"""
 	(function() {{
 	  const dlg = document.getElementById('{dialog_id}');
@@ -70,6 +76,8 @@ def _make_draggable_clamp_to_view_port(handle_id: str, dialog_id: str, *, storag
 
 	  handle.style.cursor = 'move';
 	  handle.addEventListener('pointerdown', (e) => {{
+		// 🚫 Do NOT start dragging if clicking a button inside the header
+  		if (e.target.closest('button, .q-btn, .q-icon')) return;
 		dragging = true;
 		handle.setPointerCapture(e.pointerId);
 		startX = e.clientX; startY = e.clientY;
@@ -105,6 +113,7 @@ def _make_draggable_clamp_to_view_port(handle_id: str, dialog_id: str, *, storag
 	  }});
 	}})();
 	""")
+
 
 def _make_draggable(handle_id: str, dialog_id: str, *, storage_key: str = "dummy_exec_window_pos") -> None:
 	ui.run_javascript(f"""
@@ -179,6 +188,8 @@ def _make_draggable(handle_id: str, dialog_id: str, *, storage_key: str = "dummy
 
 	  handle.style.cursor = 'move';
 	  handle.addEventListener('pointerdown', (e) => {{
+	  // 🚫 Do NOT start dragging if clicking a button inside the header
+  		if (e.target.closest('button, .q-btn, .q-icon')) return;
 		dragging = true;
 		handle.setPointerCapture(e.pointerId);
 		startX = e.clientX; startY = e.clientY;
@@ -214,8 +225,7 @@ def _make_draggable(handle_id: str, dialog_id: str, *, storage_key: str = "dummy
 	""")
 
 
-
-def create_dummy_execution_tool_window(execution_state, ctx:PageContext, *, is_predetermined = False):
+def create_dummy_execution_tool_window(execution_state, ctx: PageContext, *, reload_view: Callable, is_predetermined=False):
 	"""
 	Build ONCE inside the page layout (guaranteed visible slot).
 	Returns (show, hide) callables.
@@ -224,6 +234,21 @@ def create_dummy_execution_tool_window(execution_state, ctx:PageContext, *, is_p
 	dialog_id = f"exec_dlg_{id(execution_state)}"
 	header_id = f"exec_header_{id(execution_state)}"
 	pos_storage_key = "dummy_exec_window_pos"  # you can namespace this if you want
+	current_is_dark = bool(getattr(get_app_config().ui.navigation, "dark_mode", False))
+	mode = "dark" if current_is_dark else "light"
+	colors = {"dark":{"container_bg": "bg-[#1E293B]", "tbl_header_bg":"bg-[#1A2236]", "border_color": "border-gray-800",
+					   "h_border_color": "border-gray-700","hover_color":"hover:bg-gray-800", "selected_color":"bg-[#2A3A5F]", "set_color": "color=grey-5"},
+			  "light":{"container_bg": "bg-[#F3F6FF]" ,"tbl_header_bg":"bg-gray-50", "border_color": "border-gray-100",
+					   "h_border_color": "border-gray-200","hover_color":"hover:bg-gray-50", "selected_color":"bg-[#E9F0FF]", "set_color": "color=grey-4"}}
+
+	def get_color(name:str):
+		return colors[mode].get(name, "")
+
+	def refresh_state_binding(new_execution_state, new_is_predetermined:bool) -> None:
+		nonlocal execution_state, is_predetermined
+		is_predetermined = new_is_predetermined
+		execution_state = new_execution_state
+		refresh_all()
 
 	def get_selected_set():
 		if execution_state.selected_set_id is None:
@@ -252,8 +277,8 @@ def create_dummy_execution_tool_window(execution_state, ctx:PageContext, *, is_p
 	def show() -> None:
 		# Fix 2: refresh reference, DO NOT init_defaults (keeps progress/results)
 		dummies = execution_state.dummies()
-		#execution_state.set_dummy_state(dummies[0].id, True, inspection_values={})
-		#execution_state.set_dummy_state(dummies[1].id, False, inspection_values={})
+		# execution_state.set_dummy_state(dummies[0].id, True, inspection_values={})
+		# execution_state.set_dummy_state(dummies[1].id, False, inspection_values={})
 
 		wrapper.classes(remove='hidden')
 		wrapper.update()
@@ -267,6 +292,18 @@ def create_dummy_execution_tool_window(execution_state, ctx:PageContext, *, is_p
 			once=True,
 		)
 
+	@ui.refreshable
+	def view_header():
+		# IMPORTANT: do NOT set left/top here; JS restores position.
+		with ui.row().props(f"id={header_id}").classes(
+				"w-full items-center justify-between px-4 py-2 bg-primary text-white select-none"
+		):
+			ui.label("Dummy Execution").classes("text-base font-semibold")
+			with ui.row().classes("gap-4 items-center"):
+				ui.button(icon="restart_alt", on_click=lambda se: reload_view()).props(
+					"unelevated").classes("bg-primary text-white")
+				if is_predetermined:
+					ui.label("(Predetermined Mode)")
 
 	@ui.refreshable
 	def spinner_overlay() -> None:
@@ -293,12 +330,13 @@ def create_dummy_execution_tool_window(execution_state, ctx:PageContext, *, is_p
 
 	@ui.refreshable
 	def header_sets() -> None:
+		#with ui.row().classes(f"w-full px-3 py-2 {get_color("container_bg")} gap-2 border-b {get_color("h_border_color")}"):
 		with ui.row().classes("w-full px-3 py-2 gap-2").style(
-			"background:var(--surface-muted); border-bottom:1px solid var(--input-border);"
+			"background:var(--surface-muted); border-bottom:1px solid var(--tbl-row-separator);"
 		):
 			for s in execution_state.sets:
 				selected = (s.id == execution_state.selected_set_id)
-				props = "unelevated color=positive text-color=white" if selected else "unelevated color=grey-4 text-color=grey-9"
+				props = "unelevated color=positive text-color=white" if selected else f"unelevated {get_color("set_color")} text-color=grey-9"
 				ui.button(
 					s.name.upper(),
 					on_click=lambda sid=s.id: select_set(sid),
@@ -307,6 +345,7 @@ def create_dummy_execution_tool_window(execution_state, ctx:PageContext, *, is_p
 	@ui.refreshable
 	def left_panel() -> None:
 		s = get_selected_set()
+		#with ui.column().classes("w-full flex-1 min-h-0 overflow-auto"):
 		with ui.column().classes("w-full flex-1 min-h-0 overflow-auto").style(
 			"background:var(--surface); color:var(--text-primary);"
 		):
@@ -316,8 +355,10 @@ def create_dummy_execution_tool_window(execution_state, ctx:PageContext, *, is_p
 
 			for d in s.dummies:
 				selected = (d.id == execution_state.selected_dummy_id)
+				#row = f"w-full px-3 py-2 items-center border-b {get_color("border_color")} cursor-pointer"
+				#row += f" {get_color("selected_color")}" if selected else f" {get_color("hover_color")}"
 				row = "w-full px-3 py-2 items-center border-b cursor-pointer"
-				row_style = "border-color:var(--input-border);"
+				row_style = "border-color:var(--tbl-row-separator);"
 				if selected:
 					row_style += " background:var(--surface-muted);"
 				icon_name, icon_color = execution_state.get_dummy_state_icon(d.id)
@@ -335,21 +376,27 @@ def create_dummy_execution_tool_window(execution_state, ctx:PageContext, *, is_p
 
 		inspections = list(getattr(selected_dummy, "inspections", []) or []) if selected_dummy else []
 
+		#with ui.card().classes("w-full h-full p-0 rounded-xl overflow-hidden flex flex-col"):
+			#with ui.row().classes(f"w-full items-center justify-between px-3 py-2 border-b {get_color("border_color")}"):
 		with ui.card().classes("w-full h-full p-0 rounded-xl overflow-hidden flex flex-col").style(
 			"background:var(--surface); border:1px solid var(--input-border);"
 		):
 			with ui.row().classes("w-full items-center justify-between px-3 py-2 border-b").style(
-				"background:var(--surface); border-color:var(--input-border);"
+				"background:var(--surface); border-color:var(--tbl-row-separator);"
 			):
 				ui.label("Inspection Monitoring").classes("text-sm font-semibold")
 
+			#with ui.element("div").classes(
+			#		f"w-full px-3 py-2 {get_color("tbl_header_bg")} border-b {get_color("border_color")} "
+			#		"grid grid-cols-[44%_28%_28%] items-center text-xs font-semibold"
 			with ui.element("div").classes("w-full px-3 py-2 border-b grid grid-cols-[44%_28%_28%] items-center text-xs font-semibold").style(
-				"background:var(--surface-muted); border-color:var(--input-border);"
+				"background:var(--surface-muted); border-color:var(--tbl-row-separator);"
 			):
 				ui.label("Inspection Name")
 				ui.label("Expected Value").classes("text-right")
 				ui.label("Current Value").classes("text-right")
 
+			#with ui.column().classes("w-full flex-1 min-h-0 overflow-auto"):
 			with ui.column().classes("w-full flex-1 min-h-0 overflow-auto").style(
 				"background:var(--surface); color:var(--text-primary);"
 			):
@@ -361,21 +408,23 @@ def create_dummy_execution_tool_window(execution_state, ctx:PageContext, *, is_p
 					return
 
 				for ins in inspections:
+					#with ui.element("div").classes(
+					#		f"w-full px-3 py-2 border-b {get_color("border_color")} {get_color("hover_color")} "
+					#		"grid grid-cols-[44%_28%_28%] items-center"
 					with ui.element("div").classes("w-full px-3 py-2 border-b grid grid-cols-[44%_28%_28%] items-center").style(
-						"border-color:var(--input-border);"
+						"border-color:var(--tbl-row-separator);"
 					):
 						ui.label(ins.name).classes("text-sm font-medium")
 						ui.label(str(ins.expected_value)).classes("text-right text-sm font-semibold text-gray-700")
-						current_label = ui.label("0").classes("text-right text-sm font-semibold text-blue-600")
-						current_label.bind_text_from(ctx.state, ins.state_field_name,backward=lambda x:str(x) )
-
+						current_label = ui.label("0").classes("text-right text-sm font-semibold text-info")
+						current_label.bind_text_from(ctx.state, ins.state_field_name, backward=lambda x: str(x))
 
 	def refresh_all():
+		view_header.refresh()
 		header_sets.refresh()
 		left_panel.refresh()
 		right_panel.refresh()
 		spinner_overlay.refresh()
-
 
 	# ===================== BUILD WINDOW ONCE =====================
 	wrapper = ui.element('div') \
@@ -386,24 +435,21 @@ def create_dummy_execution_tool_window(execution_state, ctx:PageContext, *, is_p
 		with ui.card().props(f"id={dialog_id}").classes(
 			"pointer-events-auto relative w-[1200px] max-w-[95vw] h-[550px] p-0 rounded-2xl "
 			"overflow-hidden shadow-2xl flex flex-col"
-		).style("background:var(--surface); color:var(--text-primary); border:1px solid var(--input-border);"):
+		).style("background:var(--surface-muted); color:var(--text-primary); border:1px solid var(--input-border);"):
 			# IMPORTANT: do NOT set left/top here; JS restores position.
-			with ui.row().props(f"id={header_id}").classes(
-				"w-full items-center justify-between px-4 py-2 bg-primary text-white select-none"
-			):
-				ui.label("Dummy Execution").classes("text-base font-semibold")
-				if is_predetermined:
-					ui.label("(Predetermined Mode)")
-				#ui.button(icon="close", on_click=close_window).props("flat round dense").classes("text-white")
+			view_header()
 
 			header_sets()
 			spinner_overlay()
-			with ui.row().classes("w-full flex-1 min-h-0 p-3 gap-3").style("background:var(--app-background);"):
+			#with ui.row().classes(f"w-full flex-1 min-h-0 {get_color("container_bg")} p-3 gap-3"):
+			#	with ui.card().classes("w-[260px] h-full p-0 rounded-xl overflow-hidden flex flex-col"):
+			#		with ui.row().classes(f"w-full px-3 py-2 border-b {get_color("border_color")}"):
+			with ui.row().classes("w-full flex-1 min-h-0 p-3 gap-3").style("background:var(--surface-muted);"):
 				with ui.card().classes("w-[260px] h-full p-0 rounded-xl overflow-hidden flex flex-col").style(
 					"background:var(--surface); border:1px solid var(--input-border);"
 				):
 					with ui.row().classes("w-full px-3 py-2 border-b").style(
-						"background:var(--surface); border-color:var(--input-border);"
+						"background:var(--surface); border-color:var(--tbl-row-separator);"
 					):
 						ui.label("Dummy Result").classes("text-sm font-semibold")
 					left_panel()
@@ -411,14 +457,18 @@ def create_dummy_execution_tool_window(execution_state, ctx:PageContext, *, is_p
 				with ui.column().classes("grow h-full min-h-0"):
 					right_panel()
 
-			#with ui.row().classes("w-full justify-end px-3 py-2 bg-[#F3F6FF] border-t border-gray-200"):
-			#	ui.button("Close", on_click=close_window).props("unelevated").classes("bg-primary text-white")
+	# with ui.row().classes("w-full justify-end px-3 py-2 bg-[#F3F6FF] border-t border-gray-200"):
+	#	ui.button("Close", on_click=close_window).props("unelevated").classes("bg-primary text-white")
 
 	# optional: return exec_state too if you want to drive it externally
-	return DummyUIHandles(show=show,
-						  hide=hide,
-						  refresh_sets=header_sets.refresh,
-						  refresh_left=left_panel.refresh,
-						  refresh_right=right_panel.refresh,
-						  refresh_spinner=spinner_overlay.refresh,
-						  refresh_all=refresh_all)
+	return DummyUIHandles(
+		show=show,
+		hide=hide,
+		refresh_state_binding=refresh_state_binding,
+		refresh_sets=header_sets.refresh,
+		refresh_left=left_panel.refresh,
+		refresh_right=right_panel.refresh,
+		refresh_spinner=spinner_overlay.refresh,
+		refresh_all=refresh_all,
+	)
+

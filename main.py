@@ -1,4 +1,6 @@
 import os
+import secrets
+from pathlib import Path
 import queue
 from nicegui import ui, app
 
@@ -43,6 +45,7 @@ from services.worker_commands import (
 )
 
 from services.app_state import AppState
+from services.app_state_persistence import load_selected_state
 from services.logging_setup import (
 	setup_logging,
 	get_error_popup_events_since,
@@ -59,17 +62,34 @@ from services.ui_theme import apply_ui_theme
 # GLOBAL BACKEND (PROCESS LIFETIME)
 # ------------------------------------------------------------------
 
-bootstrap_defaults()
-APP_CONFIG = load_app_config()
-setup_logging(
-	app_name="mes_app",
-	log_level=getattr(APP_CONFIG.logging, "console_level", "INFO"),
-	file_level=getattr(APP_CONFIG.logging, "file_level", "DEBUG"),
-)
-logger = get_logger("main")
-logger.info(f"[module] - startup_begin - component=main")
+_STORAGE_SECRET_FILE = Path("config") / "nicegui_storage_secret.txt"
+WORKER_CATALOG = {}
 
-def _apply_proxy_env(cfg) -> None:
+
+def _ensure_nicegui_storage_secret() -> str:
+	value = os.environ.get("NICEGUI_STORAGE_SECRET")
+	if value:
+		return value
+
+	try:
+		if _STORAGE_SECRET_FILE.exists():
+			file_value = _STORAGE_SECRET_FILE.read_text(encoding="utf-8").strip()
+			if file_value:
+				os.environ["NICEGUI_STORAGE_SECRET"] = file_value
+				return file_value
+	except Exception:
+		logger.exception("[storage_secret] - failed_read")
+
+	value = secrets.token_urlsafe(48)
+	os.environ["NICEGUI_STORAGE_SECRET"] = value
+	try:
+		_STORAGE_SECRET_FILE.parent.mkdir(parents=True, exist_ok=True)
+		_STORAGE_SECRET_FILE.write_text(value, encoding="utf-8")
+	except Exception:
+		logger.exception("[storage_secret] - failed_write")
+	return value
+
+def _apply_proxy_env(cfg, runtime_logger) -> None:
 	# process-local; affects only this app process
 	try:
 		p = getattr(cfg, "proxy", None)
@@ -89,99 +109,117 @@ def _apply_proxy_env(cfg) -> None:
 			os.environ["no_proxy"] = p.no_proxy
 
 	except Exception:
-		logger.exception(f"[_apply_proxy_env] - failed_apply_proxy_env")
+		runtime_logger.exception(f"[_apply_proxy_env] - failed_apply_proxy_env")
 		return
 
-with log_timing("load_app_config"):
-	APP_CONFIG = load_app_config()
-_apply_proxy_env(APP_CONFIG)
-logger.info(f"[config] - app_config_loaded - enabled_workers={summarize_for_log(APP_CONFIG.workers.enabled_workers)}")
 
-GLOBAL_WORKER_BUS = WorkerBus()
-GLOBAL_BRIDGE = UiBridge()
-GLOBAL_APP_STATE = AppState()
-DUMMY_CONTROLLER = DummyController()
-GLOBAL_WORKERS = WorkerRegistry(GLOBAL_BRIDGE, GLOBAL_WORKER_BUS)
+def _load_runtime_config():
+	bootstrap_defaults()
+	with log_timing("load_app_config"):
+		app_config = load_app_config()
+	setup_logging(
+		app_name="mes_app",
+		log_level=getattr(app_config.logging, "console_level", "INFO"),
+		file_level=getattr(app_config.logging, "file_level", "DEBUG"),
+	)
+	runtime_logger = get_logger("main")
+	runtime_logger.info("[module] - startup_begin - component=main")
+	_apply_proxy_env(app_config, runtime_logger)
+	runtime_logger.info(
+		f"[config] - app_config_loaded - enabled_workers={summarize_for_log(app_config.workers.enabled_workers)}"
+	)
+	return app_config, runtime_logger
+
+
+def _create_global_app_state() -> AppState:
+	app_state = AppState()
+	for key, value in load_selected_state().items():
+		setattr(app_state, key, value)
+	return app_state
+
+
+def _build_worker_catalog() -> dict[str, type]:
+	from services.workers.tcp_client_worker import TcpClientWorker
+	from services.workers.twincat_worker import TwinCatWorker
+	from services.workers.itac_worker import ItacWorker
+	from services.workers.rest_api_worker import RestApiWorker
+	from services.workers.com_device_worker import ComDeviceWorker
+	from services.workers.opcua_worker import OpcUaWorker
+
+	return {
+		WorkerName.TCP_CLIENT: TcpClientWorker,
+		WorkerName.TWINCAT: TwinCatWorker,
+		WorkerName.ITAC: ItacWorker,
+		WorkerName.REST_API: RestApiWorker,
+		WorkerName.COM_DEVICE: ComDeviceWorker,
+		WorkerName.OPCUA: OpcUaWorker,
+	}
 
 
 def _send_cmd_to_worker(target_worker: str, cmd: str, payload: dict) -> None:
 	GLOBAL_WORKERS.send_to(target_worker, cmd, **payload)
 
 
-GLOBAL_SCRIPT_RUNTIME = AutomationRuntime(
-	name=WorkerName.SCRIPT,
-	bridge=GLOBAL_BRIDGE,
-	worker_bus=GLOBAL_WORKER_BUS,
-	send_cmd=_send_cmd_to_worker,
-)
-GLOBAL_SCRIPT_RUNTIME.start()
+def _create_script_runtime() -> AutomationRuntime:
+	runtime = AutomationRuntime(
+		name=WorkerName.SCRIPT,
+		bridge=GLOBAL_BRIDGE,
+		worker_bus=GLOBAL_WORKER_BUS,
+		send_cmd=_send_cmd_to_worker,
+	)
+	runtime.start()
+	return runtime
 
 
-# ------------------------------------------------------------------
-# Start workers ONCE
-# ------------------------------------------------------------------
-from services.workers.tcp_client_worker import TcpClientWorker
-from services.workers.twincat_worker import TwinCatWorker
-from services.workers.itac_worker import ItacWorker
-from services.workers.rest_api_worker import RestApiWorker
-from services.workers.com_device_worker import ComDeviceWorker
-from services.workers.opcua_worker import OpcUaWorker
-
-WORKER_CATALOG = {
-	WorkerName.TCP_CLIENT: TcpClientWorker,
-	WorkerName.TWINCAT: TwinCatWorker,
-	WorkerName.ITAC : ItacWorker,
-	WorkerName.REST_API : RestApiWorker,
-	WorkerName.COM_DEVICE: ComDeviceWorker,
-	WorkerName.OPCUA: OpcUaWorker,
-}
-
-for worker_name in APP_CONFIG.workers.enabled_workers:
-	if worker_name == WorkerName.SCRIPT:
-		logger.info("[worker_bootstrap] - script_runtime_already_started")
-		continue
-	target = WORKER_CATALOG.get(worker_name)
-	if not target:
-		logger.warning(f"[worker_bootstrap] - unknown_worker_in_config - worker_name={worker_name}")
-		continue
-	logger.info(f"[worker_bootstrap] - start_worker - worker_name={worker_name} target={target.__name__}")
-	GLOBAL_WORKERS.start_worker(worker_name, target)
+def _start_enabled_workers() -> None:
+	for worker_name in APP_CONFIG.workers.enabled_workers:
+		if worker_name == WorkerName.SCRIPT:
+			logger.info("[worker_bootstrap] - script_runtime_already_started")
+			continue
+		target = WORKER_CATALOG.get(worker_name)
+		if not target:
+			logger.warning(f"[worker_bootstrap] - unknown_worker_in_config - worker_name={worker_name}")
+			continue
+		logger.info(f"[worker_bootstrap] - start_worker - worker_name={worker_name} target={target.__name__}")
+		GLOBAL_WORKERS.start_worker(worker_name, target)
 
 
-# ------------------------------------------------------------------
-# Bootstrap worker configs
-# ------------------------------------------------------------------
+def _bootstrap_com_devices() -> None:
+	from services.worker_commands import ComDeviceCommands
 
-from services.worker_commands import ComDeviceCommands
+	com_handle = GLOBAL_WORKERS.get(WorkerName.COM_DEVICE)
+	if not com_handle:
+		return
 
-com_handle = GLOBAL_WORKERS.get(WorkerName.COM_DEVICE)
-if com_handle:
-		for e in get_com_device_entries(APP_CONFIG):
-			try:
-				com_handle.send(
-					ComDeviceCommands.ADD_DEVICE,
-					device_id=e.device_id,
-					port=e.port,
-					baudrate=e.baudrate,
-					bytesize=e.bytesize,
-					parity=e.parity,
-					stopbits=e.stopbits,
-					timeout_s=e.timeout_s,
-					write_timeout_s=e.write_timeout_s,
-					mode=e.mode,
-					delimiter=e.delimiter,  # already decoded to real "\n" or "\r\n"
-					encoding=e.encoding,
-					read_chunk_size=e.read_chunk_size,
-					max_line_len=e.max_line_len,
-					reconnect_min_s=e.reconnect_min_s,
-					reconnect_max_s=e.reconnect_max_s,
-				)
-			except Exception:
-				logger.exception(f"[com_bootstrap] - failed_add_device - device={getattr(e, 'device_id', 'unknown')}")
+	for entry in get_com_device_entries(APP_CONFIG):
+		try:
+			com_handle.send(
+				ComDeviceCommands.ADD_DEVICE,
+				device_id=entry.device_id,
+				port=entry.port,
+				baudrate=entry.baudrate,
+				bytesize=entry.bytesize,
+				parity=entry.parity,
+				stopbits=entry.stopbits,
+				timeout_s=entry.timeout_s,
+				write_timeout_s=entry.write_timeout_s,
+				mode=entry.mode,
+				delimiter=entry.delimiter,
+				encoding=entry.encoding,
+				read_chunk_size=entry.read_chunk_size,
+				max_line_len=entry.max_line_len,
+				reconnect_min_s=entry.reconnect_min_s,
+				reconnect_max_s=entry.reconnect_max_s,
+			)
+		except Exception:
+			logger.exception(f"[com_bootstrap] - failed_add_device - device={getattr(entry, 'device_id', 'unknown')}")
 
 
-tcp_handle = GLOBAL_WORKERS.get(WorkerName.TCP_CLIENT)
-if tcp_handle:
+def _bootstrap_tcp_clients() -> None:
+	tcp_handle = GLOBAL_WORKERS.get(WorkerName.TCP_CLIENT)
+	if not tcp_handle:
+		return
+
 	for client in get_tcp_client_entries(APP_CONFIG):
 		tcp_handle.send(
 			TCPCommands.ADD_CLIENT,
@@ -199,15 +237,21 @@ if tcp_handle:
 			tcp_nodelay=client.tcp_nodelay,
 		)
 
-for chain in get_script_auto_start_chains(APP_CONFIG):
-	GLOBAL_SCRIPT_RUNTIME.send(
-		ScriptCommands.START_CHAIN,
-		script_name=chain.get("script_name"),
-		instance_id=chain.get("instance_id", "default"),
-	)
 
-rest_handle = GLOBAL_WORKERS.get(WorkerName.REST_API)
-if rest_handle:
+def _bootstrap_script_autostarts() -> None:
+	for chain in get_script_auto_start_chains(APP_CONFIG):
+		GLOBAL_SCRIPT_RUNTIME.send(
+			ScriptCommands.START_CHAIN,
+			script_name=chain.get("script_name"),
+			instance_id=chain.get("instance_id", "default"),
+		)
+
+
+def _bootstrap_rest_endpoints() -> None:
+	rest_handle = GLOBAL_WORKERS.get(WorkerName.REST_API)
+	if not rest_handle:
+		return
+
 	for endpoint in get_rest_api_endpoints(APP_CONFIG):
 		rest_handle.send(
 			RestCommands.ADD_ENDPOINT,
@@ -218,8 +262,12 @@ if rest_handle:
 			verify_ssl=endpoint.verify_ssl,
 		)
 
-twincat_handle = GLOBAL_WORKERS.get(WorkerName.TWINCAT)
-if twincat_handle:
+
+def _bootstrap_twincat_plcs() -> None:
+	twincat_handle = GLOBAL_WORKERS.get(WorkerName.TWINCAT)
+	if not twincat_handle:
+		return
+
 	for client in get_twincat_plc_endpoints(APP_CONFIG):
 		twincat_handle.send(
 			TwinCatCommands.ADD_PLC,
@@ -233,8 +281,12 @@ if twincat_handle:
 			default_string_len=client.default_string_len,
 		)
 
-itac_handle = GLOBAL_WORKERS.get(WorkerName.ITAC)
-if itac_handle:
+
+def _bootstrap_itac_connections() -> None:
+	itac_handle = GLOBAL_WORKERS.get(WorkerName.ITAC)
+	if not itac_handle:
+		return
+
 	for endpoint in get_itac_endpoints(APP_CONFIG):
 		itac_handle.send(
 			ItacCommands.ADD_CONNECTION,
@@ -253,8 +305,12 @@ if itac_handle:
 			force_locale=endpoint.force_locale,
 		)
 
-opcua_handle = GLOBAL_WORKERS.get(WorkerName.OPCUA)
-if opcua_handle:
+
+def _bootstrap_opcua_endpoints() -> None:
+	opcua_handle = GLOBAL_WORKERS.get(WorkerName.OPCUA)
+	if not opcua_handle:
+		return
+
 	for endpoint in get_opcua_endpoints(APP_CONFIG):
 		opcua_handle.send(
 			OpcUaCommands.ADD_ENDPOINT,
@@ -268,6 +324,28 @@ if opcua_handle:
 			auto_connect=endpoint.auto_connect,
 			nodes=endpoint.nodes,
 		)
+
+
+def _bootstrap_worker_configs() -> None:
+	_bootstrap_com_devices()
+	_bootstrap_tcp_clients()
+	_bootstrap_script_autostarts()
+	_bootstrap_rest_endpoints()
+	_bootstrap_twincat_plcs()
+	_bootstrap_itac_connections()
+	_bootstrap_opcua_endpoints()
+
+
+APP_CONFIG, logger = _load_runtime_config()
+GLOBAL_WORKER_BUS = WorkerBus()
+GLOBAL_BRIDGE = UiBridge()
+GLOBAL_APP_STATE = _create_global_app_state()
+DUMMY_CONTROLLER = DummyController()
+GLOBAL_WORKERS = WorkerRegistry(GLOBAL_BRIDGE, GLOBAL_WORKER_BUS)
+WORKER_CATALOG = _build_worker_catalog()
+GLOBAL_SCRIPT_RUNTIME = _create_script_runtime()
+_start_enabled_workers()
+_bootstrap_worker_configs()
 
 
 # ------------------------------------------------------------------
@@ -289,6 +367,7 @@ def index():
 
 	ui.add_head_html("""
 	<style>
+		.row-hover:hover { background: var(--row-hover);}
 		html, body { height: 100%; margin: 0; overflow: hidden; }
 		@keyframes error-pulse {
 			0%, 100% { transform: scale(1); opacity: 1; }
@@ -441,7 +520,7 @@ def index():
 	with ui.row().classes("w-full").style(
 		f"height: calc(100vh - {HEADER_PX}px - {FOOTER_PX}px);"
 	):
-		with ui.column().classes("w-full h-full min-h-0 min-w-0 overflow-hidden p-4 pb-6 gap-4"):
+		with ui.column().classes("w-full h-full min-h-0 min-w-0 overflow-hidden px-1 pt-1 pb-2 gap-1"):
 			build_main_area(ctx)
 
 	default_route = app.storage.user.get(
@@ -453,9 +532,12 @@ def index():
 
 
 ui.run(
+	host="127.0.0.1",
+	port=8080,
+	show=False,
 	title="KE-Elektronik-Shopfloorapp",
 	reload=False,
-	storage_secret=os.environ["NICEGUI_STORAGE_SECRET"],
+	storage_secret=_ensure_nicegui_storage_secret(),
 )
 
 

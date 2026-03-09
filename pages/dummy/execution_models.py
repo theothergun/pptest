@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass, field
 from decimal import Decimal, InvalidOperation
-from typing import Dict, Optional, Any, List, Callable, Tuple
+from typing import Dict, Optional, Any, Callable, Tuple
 from datetime import datetime, timezone
 
 from nicegui import app
@@ -104,6 +104,7 @@ def _in_range(val: Decimal, lo: Decimal, hi: Decimal, left_inclusive: bool, righ
 class DummyUIHandles:
 	show: Callable[[], None]
 	hide: Callable[[], None]
+	refresh_state_binding: Callable[[ExecutionState, bool], None]
 	refresh_all: Callable[[], None]
 	refresh_sets: Callable[[], Any]
 	refresh_left: Callable[[], Any]
@@ -371,13 +372,15 @@ class ExecutionState:
 			*,
 			is_predetermined: bool = False,
 			predetermined_dummy_id: Optional[int] = None,
-	) -> None:
+	) -> bool:
 		"""
 		- predetermined: check selected dummy (or predetermined_dummy_id). If match -> OK. Else -> NOK.
 		- non-predetermined: scan pending dummies; if match -> OK; if none -> do nothing.
 		"""
+		ok = False
+		cap = None
 		if not self.dummies():
-			return
+			return ok
 
 		# ensure we have a running session and entries
 		if self.started_at is None:
@@ -388,7 +391,7 @@ class ExecutionState:
 		pending = self.remaining_dummies()
 		if not pending:
 			#self.finish_execution()
-			return
+			return ok
 
 		executed_dummy = None
 		captured: Dict[int, str] = {}
@@ -396,11 +399,11 @@ class ExecutionState:
 		if is_predetermined:
 			did = predetermined_dummy_id or self.selected_dummy_id
 			if did is None:
-				return
+				return ok
 
 			dummy = next((d for d in self.dummies() if d.id == did), None)
 			if dummy is None:
-				return
+				return ok
 
 			ok, cap = self.is_dummy_match(dummy, ctx_state)
 			captured = cap
@@ -412,7 +415,7 @@ class ExecutionState:
 			#if ok:
 			#	self.selected_dummy_id = self._next_pending_dummy_id_after(dummy.id)
 			self.persist()
-			return
+			return ok
 
 		# non-predetermined: scan pending; if none matches -> do nothing
 		for d in pending:
@@ -426,7 +429,7 @@ class ExecutionState:
 			self.set_dummy_state(executed_dummy.id, True, inspection_values=captured)
 			self.selected_dummy_id = self._next_pending_dummy_id_after(executed_dummy.id)
 			self.persist()
-			return
+			return ok
 
 		# RULE: non-predetermined and no match -> do nothing
-		return
+		return ok

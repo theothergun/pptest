@@ -108,7 +108,7 @@ class ActionBar:
                         action.text,
                         icon=action.icon,
                         on_click=lambda aid=action.id: self._handle_click(aid),
-                    ).props("unelevated no-caps").classes("h-[80px]")
+                    ).props("unelevated no-caps").classes("w-[170px] h-[55px] rounded-2xl")
                     self._buttons[action.id] = btn
                     self._apply_style(action.id)
 

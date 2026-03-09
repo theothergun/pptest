@@ -88,6 +88,30 @@ class WorkersApi:
 			return bucket.get("value", default)
 		return bucket
 
+	def device_is_connected(self, device: str, source_id: Optional[str] = None, default: bool = False) -> bool:
+		worker = str(device or "").strip()
+		sid = str(source_id or "").strip() if source_id is not None else ""
+		if not worker:
+			return bool(default)
+
+		# Preferred path: runtime-maintained connection snapshot.
+		try:
+			if hasattr(self._ctx, "_is_connected"):
+				return bool(self._ctx._is_connected(worker, source_id=sid or None, default=default))
+		except Exception:
+			pass
+
+		# Fallback: infer from last bus events for the provided source_id.
+		if sid:
+			events = self._ctx.data.get("bus_events", {}).get(sid)
+			if isinstance(events, dict):
+				if str(WorkerTopics.CLIENT_CONNECTED) in events:
+					return True
+				if str(WorkerTopics.CLIENT_DISCONNECTED) in events:
+					return False
+
+		return bool(default)
+
 	# -------------------------- bus wait helper --------------------------
 
 	def _wait_for_bus_value(

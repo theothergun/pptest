@@ -1,7 +1,10 @@
 from services.script_api import PublicAutomationContext, StateKeys
-import time
 from enum import StrEnum
 
+
+from services.script_metadata import default_script_meta
+
+SCRIPT_META = default_script_meta(__file__)
 
 class UI(StrEnum) :
 
@@ -38,7 +41,6 @@ def main(ctx: PublicAutomationContext):
 		counter = int(counter) + 1
 		ctx.vars.set("counter", counter)
 		ctx.set_step_desc( "count=%s" % counter)
-		time.sleep(0.03)
 		if counter >= 5:
 			ctx.goto(30)
 		else:
@@ -47,20 +49,17 @@ def main(ctx: PublicAutomationContext):
 	elif step == 20:
 		# Short wait and back to count
 		ctx.set_step_desc("waiting briefly")
-		#time.sleep(0.05)
-		ctx.goto(10)
+		if ctx.wait(0.05, 10, "waiting briefly"):
+			return
 
 	elif step == 30:
 		# Notify / finish / reset
 		ctx.set_step_desc("demo chain finished (counter reached 5)")
-		time.sleep(0.05)
-		ctx.goto(0)
+		if ctx.wait(0.05, 0, "reset"):
+			return
 
 	else:
 		# Unknown step: reset safely
 		ctx.set_step_desc("unknown step=%s; reset" % step)
 		ctx.goto(0)
 
-
-# Export (your loader may look for main/chain/<basename>)
-main = main

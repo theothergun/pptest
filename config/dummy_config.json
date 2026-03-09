@@ -4,34 +4,7 @@
     {
       "id": 1,
       "name": "Set 1",
-      "dummies": [
-        {
-          "id": 1,
-          "name": "OK_dummy",
-          "inspections": [
-            {
-              "id": 11,
-              "name": "Leak rate",
-              "state_field_name": "ltc_result",
-              "expected_value": "[0.00,0.10]",
-              "type_of_value": "Range"
-            }
-          ]
-        },
-        {
-          "id": 2,
-          "name": "NOK_dummy",
-          "inspections": [
-            {
-              "id": 21,
-              "name": "Leak rate",
-              "state_field_name": "ltc_result",
-              "expected_value": "]0.45,0.60]",
-              "type_of_value": "Range"
-            }
-          ]
-        }
-      ]
+      "dummies": []
     },
     {
       "id": 2,
@@ -44,8 +17,8 @@
             {
               "id": 41,
               "name": "Inspection A",
-              "state_field_name": "vc_result",
-              "expected_value": "1",
+              "state_field_name": "last_serial_number",
+              "expected_value": "12",
               "type_of_value": "Int"
             }
           ]
@@ -53,15 +26,7 @@
         {
           "id": 5,
           "name": "Dummy B",
-          "inspections": [
-            {
-              "id": 51,
-              "name": "Inspection A",
-              "state_field_name": "vc_result",
-              "expected_value": "1",
-              "type_of_value": "Int"
-            }
-          ]
+          "inspections": []
         }
       ]
     }

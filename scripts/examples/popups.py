@@ -5,6 +5,10 @@ from enum import StrEnum
 from services.automation_runtime.apis.api_utils import to_int
 
 
+from services.script_metadata import default_script_meta
+
+SCRIPT_META = default_script_meta(__file__)
+
 # ------------------------------------------------------------------ Main
 
 def main(ctx: PublicAutomationContext):
@@ -88,4 +92,3 @@ def main(ctx: PublicAutomationContext):
 
 
 # Export
-main = main

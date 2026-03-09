@@ -1,14 +1,15 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 import importlib.util
 import os
-from typing import Callable, Dict, Optional
+from typing import Callable, Dict
 from nicegui import ui, app
 
 from auth.session import get_user
 from layout.context import PageContext
 from layout.action_bar import ActionBar, Action, EventBus, ACTIONS_BY_ROUTE
+from layout.page_registry import PageDefinition, get_registered_pages
+from pages.builtin_pages import register_builtin_pages
 
 from services.app_config import get_app_config
 from services.i18n import t
@@ -16,19 +17,7 @@ from services.i18n import t
 
 # All pages get (container, ctx) so they can use ctx.bus/action_bar, etc.
 RenderFn = Callable[[ui.element, PageContext], None]
-OnEnterFn = Callable[[PageContext],None]
-
-
-@dataclass(frozen=True)
-class Route:
-    label: str
-    icon: str
-    render: RenderFn | None = None
-    actions: list[Action] = None
-    on_enter: Optional[OnEnterFn] = None
-
-
-BASE_ROUTES: Dict[str, Route] = {}
+Route = PageDefinition
 
 
 def _resolve_route_path(route_path: str) -> str:
@@ -59,8 +48,9 @@ def _render_custom_route(route_path: str) -> RenderFn:
 
 
 def get_routes() -> Dict[str, Route]:
+    register_builtin_pages()
     config = get_app_config()
-    routes = dict(BASE_ROUTES)
+    routes = dict(get_registered_pages())
     for entry in config.ui.navigation.custom_routes:
         key = entry.get("key")
         label = entry.get("label", key or "Custom")
@@ -68,13 +58,24 @@ def get_routes() -> Dict[str, Route]:
         path = entry.get("path")
         if not key or not path:
             continue
-        routes[key] = Route(label, icon, _render_custom_route(path), actions=ACTIONS_BY_ROUTE.get(key, []))
+        routes[key] = Route(
+            key=key,
+            label=label,
+            icon=icon,
+            render=_render_custom_route(path),
+            actions=ACTIONS_BY_ROUTE.get(key, []),
+        )
     return routes
 
 
 def _is_route_allowed_for_user(route_key: str) -> bool:
+    route = get_routes().get(route_key)
     config = get_app_config()
-    allowed_roles = config.ui.navigation.route_roles.get(route_key, [])
+    role_map = config.ui.navigation.route_roles or {}
+    if route_key in role_map:
+        allowed_roles = list(role_map.get(route_key) or [])
+    else:
+        allowed_roles = list(route.roles if route else ())
     if not allowed_roles:
         return True
     user = get_user()
@@ -85,10 +86,26 @@ def _is_route_allowed_for_user(route_key: str) -> bool:
 
 def get_visible_routes() -> Dict[str, Route]:
     config = get_app_config()
-    visible = config.ui.navigation.visible_routes
+    visible = list(config.ui.navigation.visible_routes or [])
     routes = get_routes()
-    visible_routes = routes if not visible else {key: route for key, route in routes.items() if key in visible}
-    return {key: route for key, route in visible_routes.items() if _is_route_allowed_for_user(key)}
+    ordered: dict[str, Route] = {}
+
+    if visible:
+        for key in visible:
+            route = routes.get(key)
+            if route is None:
+                continue
+            ordered[key] = route
+    else:
+        ordered.update(routes)
+
+    for key, route in routes.items():
+        if key in ordered:
+            continue
+        if bool(getattr(route, "always_visible", False)):
+            ordered[key] = route
+
+    return {key: route for key, route in ordered.items() if _is_route_allowed_for_user(key)}
 
 
 def is_route_visible(key: str) -> bool:
@@ -100,8 +117,10 @@ def _apply_drawer_highlight(ctx: PageContext, active_key: str) -> None:
     is_dark = bool(getattr(get_app_config().ui.navigation, "dark_mode", False))
     inactive_color = "grey-3" if is_dark else "grey-8"
     for key, btn in ctx.nav_buttons.items():
+        btn.classes(remove="app-nav-item-active")
         if key == active_key:
             # Selected look:
+            btn.classes(add="app-nav-item-active")
             btn.props("unelevated")
             btn.props("color=primary")
         else:

@@ -222,6 +222,12 @@ class AutomationRuntime:
 
         if topic == str(Topics.VALUE_CHANGED.value):
             ctx._update_bus_value(source=source, source_id=source_id, payload=payload)
+        elif topic == str(Topics.CLIENT_CONNECTED.value):
+            ctx._set_connection_state(source=source, source_id=source_id, connected=True)
+            ctx.data.setdefault("bus_events", {}).setdefault(source_id, {})[topic] = payload
+        elif topic == str(Topics.CLIENT_DISCONNECTED.value):
+            ctx._set_connection_state(source=source, source_id=source_id, connected=False)
+            ctx.data.setdefault("bus_events", {}).setdefault(source_id, {})[topic] = payload
         else:
             ctx.data.setdefault("bus_events", {}).setdefault(source_id, {})[topic] = payload
 
@@ -313,6 +319,11 @@ class AutomationRuntime:
             if need_tick and fn:
                 cycle = int(getattr(inst.context, "cycle_count", 0))
                 try:
+                    with inst.lock:
+                        now_ts = time.time()
+                        if inst.context._step_started_ts <= 0:
+                            inst.context._step_started_ts = now_ts
+                        inst.context.step_elapsed_s = max(0.0, now_ts - inst.context._step_started_ts)
                     start = time.time()
                     fn(inst.context.public)
                     elapsed_ms = (time.time() - start) * 1000.0

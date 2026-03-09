@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 import sys
+import inspect
 import importlib.util
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Callable, Optional, Dict, List, Any
 
@@ -17,6 +18,7 @@ class AutomationProgramInfo:
 	function: Callable
 	last_modified: float
 	module_name: str
+	metadata: dict[str, Any] = field(default_factory=dict)
 
 
 class AutomationScriptLoader:
@@ -26,20 +28,8 @@ class AutomationScriptLoader:
 	Behavior:
 	- Discovers all *.py under scripts_dir (excluding anything starting with "_" in any path segment).
 	- Loads scripts into uniquely named modules to avoid stale state.
-	- Resolves a callable entry function by common naming conventions.
+	- Resolves a callable `main(ctx)` entry function.
 	- Optionally preloads all scripts on initialization.
-
-	Entry function resolution (first match wins):
-	1) chain
-	2) main
-	3) <basename>
-	4) <basename>_chain
-	5) <flattened_path>
-	6) <flattened_path>_chain
-
-	Examples:
-	- scripts/cleanup.py              -> cleanup(), cleanup_chain(), chain(), main()
-	- scripts/tools/cleanup.py        -> cleanup(), cleanup_chain(), tools_cleanup(), tools_cleanup_chain(), chain(), main()
 	"""
 
 	def __init__(self, scripts_dir: str | Path = "scripts", preload: bool = True):
@@ -134,9 +124,9 @@ class AutomationScriptLoader:
 			module = importlib.util.module_from_spec(spec)
 			spec.loader.exec_module(module)
 
-			func = self._resolve_chain_func(module, script_name)
+			func = self._resolve_main_func(module, script_name)
 			if not func:
-				msg = "No chain function in %s" % script_name
+				msg = "No valid main(ctx) entry point in %s" % script_name
 				self._log.error(msg)
 				if raise_on_error:
 					raise AttributeError(msg)
@@ -148,6 +138,7 @@ class AutomationScriptLoader:
 				function=func,
 				last_modified=mtime,
 				module_name=module_name,
+				metadata=self._resolve_metadata(module, script_name, script_path),
 			)
 
 			self._log.trace("Loaded script: {} (module={})", script_name, module_name)
@@ -169,34 +160,70 @@ class AutomationScriptLoader:
 		mtime_tag = str(mtime_tag_value).replace(".", "_")
 		return "automation_runtime_%s_%s" % (flat, mtime_tag)
 
-	def _resolve_chain_func(self, module: Any, script_name: str) -> Optional[Callable]:
-		base = script_name.replace("\\", "/").strip("/").split("/")[-1]
-		flat = script_name.replace("\\", "/").strip("/").replace("/", "_")
+	def _resolve_main_func(self, module: Any, script_name: str) -> Optional[Callable]:
+		fn = getattr(module, "main", None)
+		if not callable(fn):
+			self._log.error("No main(ctx) entry point in {}", script_name)
+			return None
 
-		candidates = [
-			"chain",
-			"main",
-			"step_chain",
-			"stepchain",
-			base,
-			base + "_chain",
-			flat,
-			flat + "_chain",
+		try:
+			signature = inspect.signature(fn)
+		except (TypeError, ValueError):
+			self._log.error("Unable to inspect main(ctx) signature in {}", script_name)
+			return None
+
+		params = list(signature.parameters.values())
+		if not params:
+			self._log.error("main(ctx) missing context parameter in {}", script_name)
+			return None
+
+		first_param = params[0]
+		if first_param.kind not in (
+			inspect.Parameter.POSITIONAL_ONLY,
+			inspect.Parameter.POSITIONAL_OR_KEYWORD,
+		):
+			self._log.error("main(ctx) must accept ctx as first positional parameter in {}", script_name)
+			return None
+
+		required_positionals = [
+			param for param in params
+			if param.kind in (
+				inspect.Parameter.POSITIONAL_ONLY,
+				inspect.Parameter.POSITIONAL_OR_KEYWORD,
+			)
+			and param.default is inspect.Parameter.empty
 		]
+		if len(required_positionals) > 1:
+			self._log.error("main(ctx) must not require more than one positional parameter in {}", script_name)
+			return None
 
-		for name in candidates:
-			if hasattr(module, name):
-				fn = getattr(module, name)
-				if callable(fn):
-					self._log.trace("Resolved entry for {}: {}", script_name, name)
-					return fn
+		self._log.trace("Resolved entry for {}: main", script_name)
+		return fn
 
-		self._log.error(
-			"No chain function in {}. Expected one of: {}",
-			script_name,
-			candidates,
-		)
-		return None
+	def _resolve_metadata(self, module: Any, script_name: str, script_path: Path) -> dict[str, Any]:
+		meta = getattr(module, "SCRIPT_META", None)
+		if not isinstance(meta, dict):
+			meta = {}
+		data = dict(meta)
+		data.setdefault("name", script_name)
+		data.setdefault("title", script_name.split("/")[-1].replace("_", " ").title())
+		data.setdefault("path", script_path.as_posix())
+		data.setdefault("description", "")
+		data.setdefault("buttons", [])
+		return data
+
+	def get_script_metadata(self, script_name: str, *, load_if_missing: bool = True) -> dict[str, Any]:
+		info = self.scripts.get(script_name)
+		if info is None and load_if_missing:
+			self.load_script(script_name, force=False, raise_on_error=False)
+			info = self.scripts.get(script_name)
+		return dict(getattr(info, "metadata", {}) or {})
+
+	def list_script_metadata(self) -> list[dict[str, Any]]:
+		items: list[dict[str, Any]] = []
+		for name in self.list_available_scripts():
+			items.append(self.get_script_metadata(name))
+		return items
 
 	# ------------------------------------------------------------------ hot reload
 

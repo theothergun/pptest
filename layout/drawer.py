@@ -1,6 +1,7 @@
 from nicegui import ui, app
 
 from layout.context import PageContext
+from layout.page_registry import PageDefinition
 from layout.router import get_visible_routes, navigate, Route
 from services.app_config import get_app_config
 
@@ -13,7 +14,12 @@ def _render_drawer_content(ctx: PageContext) -> None:
     active_key = app.storage.user.get("current_route", "")
     routes = get_visible_routes()
     if ctx.dummy_controller.is_feature_enabled():
-        routes["start_dummy_test"] = Route(icon="rocket_launch", label="Dummy Test")
+        routes["start_dummy_test"] = PageDefinition(
+            key="start_dummy_test",
+            label="Dummy Test",
+            icon="rocket_launch",
+            render=lambda _container, _ctx: None,
+        )
 
     with ctx.drawer_content:
         with ui.column().classes("w-full p-2 gap-1"):
@@ -29,12 +35,13 @@ def _render_drawer_content(ctx: PageContext) -> None:
                     btn.classes(add="app-nav-item-active")
                     btn.props("unelevated color=primary")
                 else:
+                    btn.classes(remove="app-nav-item-active")
                     btn.props("flat color=grey-7")
 
 
 def build_drawer(ctx: PageContext) -> ui.left_drawer:
     hide_on_startup = bool(getattr(get_app_config().ui.navigation, "hide_nav_on_startup", False))
-    drawer = ui.left_drawer(value=not hide_on_startup, bordered=True).props("width=220").classes(
+    drawer = ui.left_drawer(value=not hide_on_startup, bordered=True).props("width=240").classes(
         "app-drawer border-r border-[var(--input-border)]"
     )
     ctx.drawer = drawer
@@ -52,7 +59,7 @@ def build_drawer(ctx: PageContext) -> ui.left_drawer:
 
 def _add_standard_button(ctx: PageContext, route: Route, key: str):
     btn = ui.button(route.label, icon=route.icon, on_click=lambda k=key: navigate(ctx, k)).props(
-        "flat no-caps align=left"
+        "flat no-caps align=left dense"
     ).classes("w-full app-nav-item")
     ctx.nav_buttons[key] = btn
     return btn
@@ -60,7 +67,7 @@ def _add_standard_button(ctx: PageContext, route: Route, key: str):
 
 def _add_error_button(ctx: PageContext, route: Route, key: str):
     with ui.row().classes("w-full items-center"):
-        btn = ui.button(on_click=lambda k=key: navigate(ctx, k)).props("flat no-caps align=left").classes(
+        btn = ui.button(on_click=lambda k=key: navigate(ctx, k)).props("flat no-caps align=left dense").classes(
             "w-full app-nav-item px-3"
         )
 
@@ -83,7 +90,7 @@ def _add_error_button(ctx: PageContext, route: Route, key: str):
 
 def _add_dummy_test_button(ctx: PageContext, route: Route, key: str):
     btn = ui.button(route.label, icon=route.icon, on_click=ctx.dummy_controller.start_dummy_test).props(
-        "flat no-caps align=left"
+        "flat no-caps align=left dense"
     ).classes("w-full app-nav-item")
     ctx.nav_buttons[key] = btn
     return btn

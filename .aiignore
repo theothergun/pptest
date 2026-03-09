@@ -23,5 +23,5 @@ __pycache__/*
 .pytest_cache/*
 .git/*
 .idea/*
-log/
+log/*
 .nicegui/*

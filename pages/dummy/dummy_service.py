@@ -50,6 +50,27 @@ class DummyController:
 		self._scheduler_timer: Optional[ui.timer] = None
 		self._scheduler_owner_client: Optional[str] = None
 
+		self._history_written_for_run_key: Optional[str] = None
+		self._history_lock = False
+
+	def _current_run_key(self) -> Optional[str]:
+		"""A key that uniquely identifies one completed run."""
+		if not self.exec_state:
+			return None
+		if not self.exec_state.started_at or not self.exec_state.finished_at:
+			return None
+
+		# started_at+finished_at is usually enough; add set/dummy to be extra safe
+		set_name = ""
+		try:
+			sel = self.exec_state.selected_set()
+			set_name = sel.name if sel else ""
+		except Exception:
+			pass
+
+		dummy_id = getattr(self.exec_state, "selected_dummy_id", "")
+		return f"{self.exec_state.started_at}|{self.exec_state.finished_at}|{set_name}|{dummy_id}"
+
 	def is_feature_enabled(self):
 		return self._feature_enabled
 
@@ -138,7 +159,6 @@ class DummyController:
 			)
 		ctx.refresh_drawer()
 
-
 	def stop_client(self, client_id: str) -> None:
 		"""Stop only this UI session — NEVER stop workers / global machine state."""
 		t = self._timer_by_client.pop(client_id, None)
@@ -184,8 +204,15 @@ class DummyController:
 		self._handles_by_client[client_id] = create_dummy_execution_tool_window(
 			ctx=ctx,
 			execution_state=self.exec_state,
-			is_predetermined = is_pred
+			is_predetermined=is_pred,
+			reload_view=self._reload_view
 		)
+
+	def _reload_view(self):
+		client_id = ui.context.client.id
+		ctx = self._ctx_by_client[client_id]
+		ctx.bridge.emit_patch("dummy_is_enabled", False)
+		ui.timer(0.5, lambda: {ctx.bridge.emit_patch("dummy_is_enabled", True)}, once=True)
 
 	# ---------- subscribe ----------
 	def _subscribe(self, client_id: str) -> None:
@@ -229,12 +256,12 @@ class DummyController:
 		if enabled:
 			assert self.exec_state is not None
 			assert self.edition_state is not None
+			# new run cycle -> allow history again
+			self._history_written_for_run_key = None
+			self._history_lock = False
 
 			# sync current config (machine-wide)
-			self.exec_state.sets = self.edition_state.sets
-			self.exec_state.ensure_valid_selection()
-			self.exec_state.ensure_dummy_result_entries()
-			self.exec_state.persist()
+			self._sync_exec_state()
 
 			uih.show()
 			uih.refresh_all()
@@ -268,8 +295,8 @@ class DummyController:
 		# determine mode from scheduler settings (stored in edition_state)
 		sched = getattr(self.edition_state, "scheduler", None)
 		is_pred = bool(getattr(sched, "is_predetermined", False)) if sched else False
-
-		self.exec_state.analyse_test_result(
+		ctx.bridge.emit_patch("dummy_test_passed", False)
+		res = self.exec_state.analyse_test_result(
 			ctx.state,
 			is_predetermined=is_pred,
 			predetermined_dummy_id=self.exec_state.selected_dummy_id,
@@ -277,6 +304,7 @@ class DummyController:
 
 		# IMPORTANT: clear the shared flag so other sessions don't re-process
 		try:
+			ctx.bridge.emit_patch("dummy_test_passed", res)
 			ctx.bridge.emit_patch("dummy_result_available", False)
 			ctx.bridge.emit_patch("dummy_test_is_running", False)
 		except Exception:
@@ -290,18 +318,139 @@ class DummyController:
 			self._on_execution_finished(ctx)
 
 	def _on_execution_finished(self, ctx: PageContext):
+		# Machine-wide: ensure only one append per finished run
+		run_key = self._current_run_key()
+		if not run_key:
+			return
 
-		record = self.build_history_record_from_state()
-		append_history_record(record)
-		self._scheduler.notify_execution_finished()
+		# simple re-entrancy guard (covers quick double calls in same tick)
+		if self._history_lock:
+			return
+		self._history_lock = True
+		try:
+			if self._history_written_for_run_key == run_key:
+				return  # already written for this run
 
-		ui.timer(1, lambda: (clear_exec_progress(),
-							 self.exec_state.cleanup(),
-							 ctx.bridge.emit_patch("dummy_is_enabled", False)), once=True)
+			record = self.build_history_record_from_state()
+			append_history_record(record)
+			self._history_written_for_run_key = run_key
+
+			# notify once as well
+			self._scheduler.notify_execution_finished()
+
+			ui.timer(1, lambda: (clear_exec_progress(), self.exec_state.cleanup(),
+								 ctx.bridge.emit_patch("dummy_is_enabled", False)), once=True)
+		finally:
+			self._history_lock = False
 
 	def _on_program_changed(self, ctx: Any | None):
 		self._scheduler.notify_program_changed()
 		ctx.bridge.emit_patch("dummy_program_changed", False)
+
+	def _on_dummy_config_updated(self, client_id: str) -> None:
+		"""
+		Reload config (machine-wide), update derived states, and refresh UI windows.
+		This is triggered by topic "dummy_config_updated".
+		"""
+		ctx = self._ctx_by_client.get(client_id)
+		if not ctx:
+			return
+
+		# 1) reload config (machine-wide)
+		if self.edition_state is None:
+			self.edition_state = DummyEditionState()
+		load_config_file(self.edition_state)
+
+		# update cleanup behavior/timer using new scheduler settings
+		self._restart_cleanup_timer()
+
+		# 2) recompute feature enable (global)
+		self._feature_enabled = bool(
+			getattr(self.edition_state, "scheduler", None)
+			and self.edition_state.scheduler.is_dummy_activated
+		)
+
+		# 3) if feature disabled now -> stop UI and clear progress (machine-wide)
+		if not self._feature_enabled:
+			clear_exec_progress()
+
+			for cid, handles in list(self._handles_by_client.items()):
+				try:
+					handles.hide()
+				except Exception:
+					pass
+
+			if self._scheduler_timer:
+				try:
+					self._scheduler_timer.cancel()
+				except Exception:
+					pass
+
+			self._scheduler_timer = None
+			self._scheduler_owner_client = None
+			self._scheduler = None
+
+			for cid, cctx in list(self._ctx_by_client.items()):
+				try:
+					cctx.refresh_drawer()
+				except Exception:
+					pass
+
+			try:
+				ctx.bridge.emit_patch("dummy_config_updated", False)
+			except Exception:
+				pass
+			return
+
+		# 4) feature enabled -> ensure exec_state exists
+		if self.exec_state is None:
+			self.exec_state = ExecutionState(sets=self.edition_state.sets)
+			snap = load_exec_progress()
+			if snap:
+				self.exec_state.restore(snap)
+			else:
+				self.exec_state.init_defaults()
+
+		# sync machine-wide config into exec_state
+		self._sync_exec_state()
+
+		# 5) ensure scheduler exists and updated
+		self._ensure_scheduler(client_id)
+		if self._scheduler and self.edition_state:
+			self._scheduler.edition_state = self.edition_state
+			self._scheduler.ctx = ctx
+
+		# 6) refresh all live client windows (NO REBUILD)
+		for cid, cctx in list(self._ctx_by_client.items()):
+			uih = self._handles_by_client.get(cid)
+			if not uih:
+				continue
+
+			# update execution_state inside view
+			sched = self.edition_state.scheduler
+			is_pred = bool(getattr(sched, "is_predetermined", False)) if sched else False
+			uih.refresh_state_binding(self.exec_state, is_pred)
+
+			# respect each client's runtime visibility
+			if cctx.state.dummy_is_enabled:
+				uih.show()
+
+			try:
+				cctx.refresh_drawer()
+			except Exception:
+				pass
+
+		# 7) clear the flag so it doesn't retrigger
+		try:
+			ctx.bridge.emit_patch("dummy_config_updated", False)
+		except Exception:
+			pass
+
+	def _sync_exec_state(self):
+		self.exec_state.sets = self.edition_state.sets
+		self.exec_state.ensure_valid_selection()
+		self.exec_state.ensure_dummy_result_entries()
+		self.exec_state.persist()
 
 	def _drain_queue(self, client_id: str, max_per_tick: int = 50) -> None:
 		"""Drain up to N messages per tick and dispatch updates."""
@@ -347,7 +496,9 @@ class DummyController:
 		elif topic == "dummy_program_changed":
 			if bool(payload["dummy_program_changed"]):
 				self._on_program_changed(ctx)
-
+		elif topic == "dummy_config_updated":
+			if bool(payload["dummy_config_updated"]):
+				self._on_dummy_config_updated(client_id)
 
 	# ----------- dummy historization --------------------
 	def build_history_record_from_state(self) -> Dict[str, Any]:
@@ -438,3 +589,35 @@ class DummyController:
 				pass
 		self._scheduler_timer = None
 		self._scheduler_owner_client = None
+
+	def _restart_cleanup_timer(self) -> None:
+		"""Restart periodic cleanup timer using the current scheduler settings."""
+		if not self.edition_state:
+			return
+		sched = getattr(self.edition_state, "scheduler", None)
+		if not sched:
+			return
+
+		# immediate cleanup with new settings
+		cleanup_history_if_needed(
+			clean_enabled=sched.clean_enabled,
+			older_value=sched.clean_older_value,
+			older_unit=sched.clean_older_unit,
+		)
+
+		# restart timer (timer is bound to a client slot; ok because this is called from a live client's slot)
+		if self._cleanup_timer:
+			try:
+				self._cleanup_timer.cancel()
+			except Exception:
+				pass
+			self._cleanup_timer = None
+
+		self._cleanup_timer = ui.timer(
+			6 * 6 * 60,
+			lambda: cleanup_history_if_needed(
+				clean_enabled=sched.clean_enabled,
+				older_value=sched.clean_older_value,
+				older_unit=sched.clean_older_unit,
+			),
+		)

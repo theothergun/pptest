@@ -1,4 +1,4 @@
-﻿{
+{
     "auth":  {
                  "login_required":  true
              },
@@ -108,7 +108,8 @@
                                                                              "admin"
                                                                          ],
                                                       "settings":  [
-                                                                       "user"
+                                                                       "user",
+                                                                      "admin"
                                                                    ],
                                                       "settings_connectivity":  [
                                                                                     "user",
@@ -187,10 +188,12 @@
                                                                 "status-muted":  "#374151",
                                                                 "status-warning":  "#92400e",
                                                                 "surface":  "#111827",
-                                                                "surface-muted":  "#1f2937",
+                                                                "surface-muted":  "#1E293B",
                                                                 "text-primary":  "#e5e7eb",
                                                                 "text-secondary":  "#94a3b8",
-                                                                "warning":  "#fbbf24"
+                                                                "warning":  "#fbbf24",
+                                                                "row-selected": "#2A3A5F",
+                                                                "row-hover": "bg-gray-800"
                                                             },
                                               "light-cool":  {
                                                                  "accent":  "#22c55e",
@@ -213,10 +216,12 @@
                                                                  "status-muted":  "#e5e7eb",
                                                                  "status-warning":  "#fdba74",
                                                                  "surface":  "#ffffff",
-                                                                 "surface-muted":  "#e8eef5",
+                                                                 "surface-muted":  "#EEF1F4",
                                                                  "text-primary":  "#0f172a",
                                                                  "text-secondary":  "#475569",
-                                                                 "warning":  "#f59e0b"
+                                                                 "warning":  "#f59e0b",
+                                                                 "row-selected": "#E9F0FF",
+                                                                 "row-hover": "bg-gray-50"
                                                              }
                                           }
                          }

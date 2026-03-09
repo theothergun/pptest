@@ -7,6 +7,10 @@ from typing import Any
 
 from services.script_api import PublicAutomationContext
 
+from services.script_metadata import default_script_meta
+
+SCRIPT_META = default_script_meta(__file__)
+
 VIEW_ID = "training_example_view"
 TCP_CLIENT_ID = "training_scanner"
 CSV_PATH = Path("training/output/training_scans.csv")
@@ -232,4 +236,3 @@ def main(ctx: PublicAutomationContext):
             ctx.goto(10)
 
 
-main = main

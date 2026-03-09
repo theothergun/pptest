@@ -99,17 +99,18 @@ def render(container: ui.element, ctx: PageContext) -> None:
 	def left_dummy_card() -> None:
 		props = dummy_props()
 
-		with ui.card().classes("w-[360px] h-full p-0 app-panel overflow-hidden flex flex-col"):
+		with ui.card().classes("w-[360px] h-full p-0 rounded-2xl overflow-hidden flex flex-col").style(
+				"background:var(--surface);"
+		):
+		#with ui.card().classes("w-[360px] h-full p-0 app-panel overflow-hidden flex flex-col"):
 			with ui.row().classes("w-full items-center justify-between px-4 py-3").style(
-				"background:var(--surface); border-bottom:1px solid var(--input-border);"
+				"border-bottom:1px solid var(--input-border);"
 			):
 				ui.label("Dummy properties").classes("text-sm font-semibold")
 				ui.badge(str(len(props))).props("outline").classes("text-xs")
 
 			# no scroll: keep it compact
-			with ui.column().classes("w-full p-4 gap-3 flex-1").style(
-				"background:var(--surface); color:var(--text-primary);"
-			):
+			with ui.column().classes("w-full p-4 gap-3 flex-1").style("color:var(--text-primary);"):
 				if not props:
 					ui.label("No dummy_* fields found on ctx.state").classes("text-sm opacity-70")
 					return
@@ -118,7 +119,7 @@ def render(container: ui.element, ctx: PageContext) -> None:
 					t, v = get_type_and_value(p)
 
 					with ui.row().classes("w-full items-center justify-between"):
-						ui.label(p).classes("text-xs text-gray-600")
+						ui.label(p).classes("text-xs")
 
 						if t is bool:
 							def _on_change(e, prop=p):
@@ -135,11 +136,13 @@ def render(container: ui.element, ctx: PageContext) -> None:
 
 	@ui.refreshable
 	def watch_section() -> None:
-		with ui.card().classes("w-full flex-1 min-h-0 p-0 app-panel overflow-hidden flex flex-col"):
+		with ui.card().classes("w-full flex-1 min-h-0 p-0 rounded-2xl overflow-hidden flex flex-col").style(
+				"background:var(--surface);"):
+		#with ui.card().classes("w-full flex-1 min-h-0 p-0 app-panel overflow-hidden flex flex-col"):
 
 			#header fix
 			with ui.row().classes("w-full items-center justify-between px-4 py-3").style(
-				"background:var(--surface); border-bottom:1px solid var(--input-border);"
+				"border-bottom:1px solid var(--input-border);"
 			):
 				ui.label("Watch").classes("text-sm font-semibold")
 				with ui.row().classes("items-center gap-2"):
@@ -148,8 +151,7 @@ def render(container: ui.element, ctx: PageContext) -> None:
 
 			#body (scrollable, fills rest)
 			with ui.column().classes("w-full flex-1 min-h-0 overflow-auto p-3 gap-2").style(
-				"background:var(--surface); color:var(--text-primary);"
-			):
+				"color:var(--text-primary);"):
 				if not watch:
 					ui.label("No watched values yet. Use Write to add them.").classes("text-sm opacity-70")
 					return
@@ -239,13 +241,13 @@ def render(container: ui.element, ctx: PageContext) -> None:
 
 			watch_section.refresh()
 
-		with ui.card().classes("w-full p-0 app-panel overflow-hidden"):
+		with ui.card().classes("w-full p-0 rounded-2xl overflow-hidden").style("background:var(--surface);"):
+		#with ui.card().classes("w-full p-0 app-panel overflow-hidden"):
 			with ui.row().classes("w-full items-center justify-between px-4 py-3").style(
-				"background:var(--surface); border-bottom:1px solid var(--input-border);"
-			):
+				"border-bottom:1px solid var(--input-border);"):
 				ui.label("Input").classes("text-sm font-semibold")
 
-			with ui.column().classes("w-full p-4 gap-3").style("background:var(--surface); color:var(--text-primary);"):
+			with ui.column().classes("w-full p-4 gap-3").style("color:var(--text-primary);"):
 				lane_row(1)
 				lane_row(2)
 

@@ -60,6 +60,8 @@ class AutomationContext:
         self._ui_state: Optional[Dict[str, Any]] = None
         self._app_state: Dict[str, Any] = {}
         self._last_seen_by_source: Dict[str, str] = {}
+        self._connection_state_by_worker: Dict[str, bool] = {}
+        self._connection_state_by_endpoint: Dict[str, bool] = {}
         self._public: Optional[PublicAutomationContext] = None
 
         self._modal_pending = {}  # key -> request_id
@@ -166,6 +168,35 @@ class AutomationContext:
         if not isinstance(values, dict):
             return
         self._app_state = dict(values)
+
+    def _set_connection_state(self, source: str, source_id: str, connected: bool) -> None:
+        worker = str(source or "unknown").strip() or "unknown"
+        sid = str(source_id or "").strip()
+        endpoint_key = f"{worker}:{sid}"
+        self._connection_state_by_endpoint[endpoint_key] = bool(connected)
+
+        prefix = f"{worker}:"
+        any_connected = any(
+            bool(v) for k, v in self._connection_state_by_endpoint.items()
+            if str(k).startswith(prefix)
+        )
+        self._connection_state_by_worker[worker] = bool(any_connected)
+
+    def _is_connected(self, source: str, source_id: Optional[str] = None, default: bool = False) -> bool:
+        worker = str(source or "").strip()
+        sid = str(source_id or "").strip() if source_id is not None else ""
+        if not worker:
+            return bool(default)
+
+        if sid:
+            endpoint_key = f"{worker}:{sid}"
+            if endpoint_key in self._connection_state_by_endpoint:
+                return bool(self._connection_state_by_endpoint.get(endpoint_key, False))
+
+        if worker in self._connection_state_by_worker:
+            return bool(self._connection_state_by_worker.get(worker, False))
+
+        return bool(default)
 
     def get_state(self) -> Dict[str, Any]:
         """State exported to UI; includes runtime state, vars, and ui_state."""
@@ -411,6 +442,9 @@ class PublicAutomationContext:
 
     def read_worker_value(self, worker: str, source_id: str, key: str, default: Any = None) -> Any:
         return self.workers.get(worker, source_id, key, default)
+
+    def device_is_connected(self, device: str, source_id: str | None = None, default: bool = False) -> bool:
+        return self.workers.device_is_connected(device=device, source_id=source_id, default=default)
 
     def error(self, message: str) -> None:
         self.flow.fail(message)

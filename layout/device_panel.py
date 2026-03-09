@@ -36,7 +36,7 @@ def build_device_panel(ctx: PageContext) -> ui.right_drawer:
 		except Exception:
 			pass
 
-	with ui.right_drawer(value=visible_default, bordered=True).props("width=340") as drawer:
+	with ui.right_drawer(value=visible_default, bordered=True).props("width=340").style("background:var(--surface);") as drawer:
 		ctx.right_drawer = drawer
 		with ui.column().classes("w-full gap-2 p-2"):
 			ui.label("Device Panel").classes("text-base font-semibold")
@@ -189,13 +189,13 @@ def build_device_panel(ctx: PageContext) -> ui.right_drawer:
 					if candidate in value.get("result", {}):
 						rc = value.get("result", {}).get(candidate)
 						break
-			detail = _truncate_text(value.get("message") or value.get("error") or value.get("description") or "", 200)
+			detail = _truncate_text(value.get("message") or value.get("error") or value.get("description") or "", 500)
 			if rc is not None:
 				title = f"{title} rc={rc}"
 			if detail:
 				return (title, detail)
-			return (title, _truncate_text(value, 200))
-		return (title, _truncate_text(value, 200))
+			return (title, _truncate_text(value, 500))
+		return (title, _truncate_text(value, 500))
 
 	def _push_call_entry(source: str, source_id: str, entry: dict[str, Any]) -> None:
 		k = _history_key(source, source_id)

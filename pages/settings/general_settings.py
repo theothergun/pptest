@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from nicegui import ui
-
+from dataclasses import fields
 from layout.context import PageContext
 from services.app_config import (
 	get_app_config,
@@ -13,17 +13,22 @@ from services.app_config import (
 )
 from services.app_lifecycle import request_app_restart
 from services.logging_setup import setup_logging, read_log_tail
+from services.i18n import SUPPORTED_LANGUAGES, get_language, set_language
+from services.app_state import AppState
+from services.app_state_persistence import sync_selected_from_state_obj
 
 
 LOG_LEVELS = ["TRACE", "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
 
 
-def render(container: ui.element, _ctx: PageContext) -> None:
+def render(container: ui.element, ctx: PageContext) -> None:
 	with container.classes("w-full"):
 		cfg = get_app_config()
 		current = bool(getattr(cfg.ui.navigation, "hide_nav_on_startup", False))
 		current_show_device_panel = bool(getattr(cfg.ui.navigation, "show_device_panel", False))
 		current_dark = bool(getattr(cfg.ui.navigation, "dark_mode", False))
+		language_options = {entry["code"]: entry["label"] for entry in SUPPORTED_LANGUAGES}
+		current_language = get_language()
 		proxy_enabled = bool(getattr(cfg.proxy, "enabled", False))
 		proxy_http = str(getattr(cfg.proxy, "http", "") or "")
 		proxy_https = str(getattr(cfg.proxy, "https", "") or "")
@@ -32,6 +37,8 @@ def render(container: ui.element, _ctx: PageContext) -> None:
 		file_level = str(getattr(cfg.logging, "file_level", "DEBUG") or "DEBUG").upper()
 		active_set = get_active_set_name()
 		config_sets = list_config_sets()
+		persistent_keys = list(getattr(cfg, "persistent_app_state_keys", []) or [])
+		app_state_key_options = [f.name for f in fields(AppState)]
 		if active_set not in config_sets:
 			config_sets = sorted(set(config_sets + [active_set]))
 		config_set_options = {"sets": config_sets}
@@ -43,6 +50,11 @@ def render(container: ui.element, _ctx: PageContext) -> None:
 			hide_nav_switch = ui.switch("Hide nav on startup", value=current)
 			show_device_panel_switch = ui.switch("Show device panel", value=current_show_device_panel)
 			dark_mode_switch = ui.switch("Dark mode", value=current_dark)
+			language_select = ui.select(
+				language_options,
+				value=current_language,
+				label="Language",
+			).props("outlined").classes("w-full min-w-[240px] max-w-[420px] app-input")
 
 			ui.separator().classes("my-2")
 			ui.label("Logging").classes("text-lg font-semibold")
@@ -50,6 +62,7 @@ def render(container: ui.element, _ctx: PageContext) -> None:
 			with ui.row().classes("w-full gap-4"):
 				console_level_select = ui.select(LOG_LEVELS, value=console_level, label="Console log level").props("outlined").classes("min-w-[240px]")
 				file_level_select = ui.select(LOG_LEVELS, value=file_level, label="File log level").props("outlined").classes("min-w-[240px]")
+				persistent_keys = list(getattr(cfg, "persistent_app_state_keys", []) or [])
 
 			ui.separator().classes("my-2")
 			ui.label("Configuration Set").classes("text-lg font-semibold")
@@ -131,9 +144,21 @@ def render(container: ui.element, _ctx: PageContext) -> None:
 					create_name_input.update()
 					ui.notify(f"Created config set '{created}'.", type="positive")
 
-				with ui.row().classes("w-full items-center justify-end gap-2"):
+				with ui.row().classes("w-full items-center gap-2 flex-wrap"):
 					ui.button("Create New Config", on_click=create_new_config_set).props("outline")
 					ui.button("Switch Config Set", on_click=switch_config_set).props("outline")
+
+			ui.separator().classes("my-2")
+			ui.label("Persistent AppState Keys").classes("text-lg font-semibold")
+			ui.label("Select AppState variables that should persist on this computer.").classes("text-sm text-gray-500")
+			persistent_keys_select = ui.select(
+				app_state_key_options,
+				value=[k for k in persistent_keys if k in app_state_key_options],
+				label="Persistent AppState variables",
+				multiple=True,
+			).props("outlined use-chips")
+			persistent_keys_select.classes("w-full")
+
 
 			def _open_logs_popup() -> None:
 				text = read_log_tail(app_name="mes_app", max_lines=500)
@@ -163,7 +188,7 @@ def render(container: ui.element, _ctx: PageContext) -> None:
 					""".replace("__LOG_TEXT__", json.dumps(text))
 				)
 
-			with ui.row().classes("w-full items-center justify-end gap-2"):
+			with ui.row().classes("w-full items-center gap-2 flex-wrap"):
 				ui.button("View logs popup", on_click=_open_logs_popup).props("outline")
 				ui.button("Open logs in new tab", on_click=_open_logs_in_new_tab).props("outline")
 
@@ -196,7 +221,15 @@ def render(container: ui.element, _ctx: PageContext) -> None:
 				cfg.proxy.no_proxy = str(no_proxy_input.value or "").strip()
 				cfg.logging.console_level = str(console_level_select.value or "INFO").upper()
 				cfg.logging.file_level = str(file_level_select.value or "DEBUG").upper()
+				raw_keys = persistent_keys_select.value or []
+				if isinstance(raw_keys, list):
+					cfg.persistent_app_state_keys = [str(k).strip() for k in raw_keys if str(k).strip()]
+				else:
+					cfg.persistent_app_state_keys = []
 				save_app_config(cfg)
+				sync_selected_from_state_obj(getattr(ctx, "state", None))
+				save_app_config(cfg)
+				set_language(str(language_select.value or "en"))
 				setup_logging(app_name="mes_app", log_level=cfg.logging.console_level, file_level=cfg.logging.file_level)
 				ui.notify("General settings saved.", type="positive")
 				ui.run_javascript("location.reload()")

@@ -7,70 +7,72 @@ from typing import Any
 
 @dataclass
 class AppState:
-    # ---- device worker ----
-    device_status: str = "Disconnected"
-    device_last_seen: str = "-"
+	# ---- device worker ----
+	device_status: str = "Disconnected"
+	device_last_seen: str = "-"
 
-    # ---- job worker ----
-    job_status: str = "Idle"
+	# ---- job worker ----
+	job_status: str = "Idle"
 
-    # ---- errors (ui-facing summary) ----
-    error_count: int = 0
+	# ---- errors (ui-facing summary) ----
+	error_count: int = 0
 
-    # ---- counters ----
-    part_good: int = 0
-    part_bad: int = 0
-    part_total: int = 0
+	# ---- counters ----
+	part_good: int = 0
+	part_bad: int = 0
+	part_total: int = 0
 
-    # ---- Operator instructions ----
-    work_instruction: str = "Work instruction goes here"
-    work_feedback: str = "Work feedback goes here"
+	# ---- Operator instructions ----
+	work_instruction: str = "Work instruction goes here"
+	work_feedback: str = "Work feedback goes here"
 
-    # ---- visual inspection ----
-    ltc_error_status: int = 0
-    ltc_dmc: str = ""
-    ltc_status: str = ""
-    ltc_leak_rate: Decimal = field(default_factory=lambda: Decimal("0"))
-    ltc_result: str = ""
-    vc_dmc: str = ""
-    vc_result: str = ""
-    vc_error_status: int = 0
+	# ---- visual inspection ----
+	ltc_error_status: int = 0
+	ltc_dmc: str = ""
+	ltc_status: str = ""
+	ltc_leak_rate: Decimal = field(default_factory=lambda: Decimal("0"))
+	ltc_result: str = ""
+	vc_dmc: str = ""
+	vc_result: str = ""
+	vc_error_status: int = 0
 
-    # ---- packaging ----
-    container_number: str = ""
-    part_number: str = ""
-    description: str = ""
-    current_container_qty: str = ""
-    max_container_qty: str = ""
-    last_serial_number: str = ""
-    current_serialnumber: str = ""
-    update_container: bool = False
-    get_container_result_text: str = ""
+	# ---- packaging ----
+	container_number: str = ""
+	part_number: str = ""
+	description: str = ""
+	current_container_qty: str = ""
+	max_container_qty: str = ""
+	last_serial_number: str = ""
+	current_serialnumber: str = ""
+	update_container: bool = False
+	get_container_result_text: str = ""
 
-    # ---- container management ----
-    container_mgmt_search_query: str = ""
-    container_mgmt_container_selected: str = ""
-    container_mgmt_active_container: str = ""
-    container_mgmt_container_rows: list[dict[str, Any]] = field(default_factory=list)
-    container_mgmt_serial_rows: list[dict[str, Any]] = field(default_factory=list)
-    container_mgmt_serial_selected: str=""
+	# ---- container management ----
+	container_mgmt_search_query: str = ""
+	container_mgmt_container_selected: str = ""
+	container_mgmt_active_container: str = ""
+	container_mgmt_container_rows: list[dict[str, Any]] = field(default_factory=list)
+	container_mgmt_serial_rows: list[dict[str, Any]] = field(default_factory=list)
+	container_mgmt_serial_selected: str=""
 
-    test_new_kea: str= ""
+	test_new_kea: str= ""
 
-    # ----- Dummy -----
-    dummy_is_enabled: bool = False #True the dummy window show up
-    dummy_test_is_running: bool = False # True if a dummy test start
-    dummy_result_available: bool = False # True if dummy result are ready for evaluation
-    dummy_program_changed: bool = False # True if program changed and dummy should be started
+	# ----- Dummy -----
+	dummy_is_enabled: bool = False #True the dummy window show up
+	dummy_test_is_running: bool = False # True if a dummy test start
+	dummy_result_available: bool = False # True if dummy result are ready for evaluation
+	dummy_test_passed:bool = False # True if the result of the tested dummy was ok.
+	dummy_program_changed: bool = False # True if program changed and dummy should be started
+	dummy_config_updated: bool = False # True if the dummy config get updated from the config view
 
-    # ---- training view ----
-    # Map of "<view_id>.<button_key>" -> bool used by UI enabled bindings.
-    view_button_states: dict[str, bool] = field(default_factory=dict)
+	# ---- training view ----
+	# Map of "<view_id>.<button_key>" -> bool used by UI enabled bindings.
+	view_button_states: dict[str, bool] = field(default_factory=dict)
 
 
 # Expose key-name constants on class-level for ergonomic script usage:
 #   ctx.get_state(AppState.container_mgmt_active_container)
 # while keeping instance defaults unchanged.
 for _state_key in AppState.__annotations__.keys():
-    setattr(AppState, _state_key, _state_key)
+	setattr(AppState, _state_key, _state_key)
 

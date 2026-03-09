@@ -6,9 +6,8 @@ from layout.main_area import PageContext
 from auth.auth_service import unregister_itac_user
 from auth.session import get_user, has_role, logout
 from services.app_config import get_app_config, save_app_config
-from services.i18n import SUPPORTED_LANGUAGES, get_language, set_language, t
+from services.i18n import t
 from layout.router import navigate
-from layout.app_style import button_classes, button_props
 from loguru import logger
 
 
@@ -38,23 +37,12 @@ def build_header(ctx: PageContext) -> ui.header:
                 "text-[var(--header-text)]"
             ).tooltip(t("header.tooltip.docs", "Open documentation"))
 
-            language_options = {entry["code"]: entry["label"] for entry in SUPPORTED_LANGUAGES}
-
-            def on_language_change(e) -> None:
-                logger.info(f"[on_language_change] - user_language_change - selected={e.value}")
-                lang = set_language(e.value)
-                ui.notify(f"Language switched to: {language_options[lang]}", type="positive")
-                ui.run_javascript("location.reload()")
-
-            ui.select(
-                options=language_options,
-                value=get_language(),
-                on_change=on_language_change,
-                label=t("header.language", "Language"),
-            ).props("dense outlined").classes("min-w-[180px] app-input")
-
-            mode_label = "Dark" if is_dark else "Light"
             mode_icon = "dark_mode" if is_dark else "light_mode"
+            mode_hint = (
+                t("header.tooltip.theme_to_light", "Switch to light mode")
+                if is_dark
+                else t("header.tooltip.theme_to_dark", "Switch to dark mode")
+            )
 
             def on_toggle_theme() -> None:
                 cfg_local = get_app_config()
@@ -66,9 +54,9 @@ def build_header(ctx: PageContext) -> ui.header:
                 save_app_config(cfg_local)
                 ui.run_javascript("location.reload()")
 
-            ui.button(mode_label, icon=mode_icon, on_click=on_toggle_theme).props(button_props("neutral")).classes(
-                button_classes()
-            ).tooltip(t("header.tooltip.theme", "Switch between light and dark mode"))
+            ui.button(icon=mode_icon, on_click=on_toggle_theme).props("flat round dense").classes(
+                "text-[var(--header-text)]"
+            ).tooltip(mode_hint)
 
             dt_label = ui.label("").classes("ml-2 text-sm app-muted")
 
@@ -100,8 +88,8 @@ def build_header(ctx: PageContext) -> ui.header:
                 logout()
                 ui.run_javascript("window.location.href = '/login'")
 
-            ui.button(t("header.logout", "Logout"), icon="logout", on_click=do_logout).props(
-                button_props("danger")
-            ).classes(button_classes()).tooltip(t("header.tooltip.logout", "Sign out from current session"))
+            ui.button(icon="logout", on_click=do_logout).props("flat round dense").classes(
+                "text-[var(--header-text)]"
+            ).tooltip(t("header.tooltip.logout", "Sign out from current session"))
 
     return header

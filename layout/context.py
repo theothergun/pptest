@@ -120,6 +120,10 @@ class PageContext:
 	# -------- Script runtime (application core service) --------
 	script_runtime: Any = None
 
+	# -------- Current route metadata --------
+	current_route_key: str = ""
+	current_route: Any = None
+
 	def set_state_and_publish(self, key: str, value: Any) -> None:
 		setattr(self.state, key, value)
 		self.bridge.ui_publish_event(f"state.{key}", **{key: value})

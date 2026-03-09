@@ -5,6 +5,10 @@ from loguru import logger
 
 from services.worker_topics import WorkerTopics
 
+from services.script_metadata import default_script_meta
+
+SCRIPT_META = default_script_meta(__file__)
+
 script_name = "ignition.pack.container_management"
 CREATE_CONTAINER_ERROR_POPUP_KEY = "create_and_activate_new_container"
 
@@ -116,4 +120,3 @@ def main(ctx: PublicAutomationContext):
 
 
 # Export
-main = main

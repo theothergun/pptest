@@ -5,6 +5,10 @@ import time
 from services.script_api import PublicAutomationContext, StateKeys, ViewButtons, ViewName
 
 
+from services.script_metadata import default_script_meta
+
+SCRIPT_META = default_script_meta(__file__)
+
 def main(ctx: PublicAutomationContext):
     """
     Demo script for state/button test page.
@@ -86,5 +90,4 @@ def main(ctx: PublicAutomationContext):
         ctx.goto(10)
 
 
-main = main
 

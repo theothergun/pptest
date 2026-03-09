@@ -3,6 +3,10 @@ from __future__ import annotations
 from services.script_api import PublicAutomationContext, t, UiActionName, ViewName, ViewButtons, StateKeys
 from datetime import datetime
 
+from services.script_metadata import default_script_meta
+
+SCRIPT_META = default_script_meta(__file__)
+
 ITAC_SERVER_ID = "itac_mk"
 
 def main(ctx: PublicAutomationContext):
@@ -265,4 +269,3 @@ def main(ctx: PublicAutomationContext):
         ctx.ui.popup_close(msg.wait_modal_key)
 
 # Export
-main = main

@@ -118,7 +118,7 @@ def render(container: ui.element, ctx: PageContext) -> None:
         doc_content.refresh()
 
     def build_content(_parent: ui.element) -> None:
-        with ui.row().classes("w-full h-full min-h-0 gap-3"):
+        with ui.row().classes("w-full h-full min-h-0 gap-1"):
             with ui.card().classes("w-full sm:w-80 h-full min-h-0"):
                 ui.label("Documents").classes("text-base font-semibold")
                 with ui.column().classes("w-full flex-1 min-h-0 overflow-auto gap-1"):

@@ -8,13 +8,13 @@ from pages.settings.settings_layout import render_settings_header
 from pages.settings import general_settings
 from pages.settings import theme_settings
 from pages.settings import startup_settings
+from pages.settings import system_info_settings
 from pages.settings import user_management
 from pages.settings import global_variables_settings
 from pages.settings import app_state_view
 from pages.settings import online_status
 from pages.settings import enabled_workers_settings
 from pages.settings import scripts_lab
-from pages.settings import blockly_builder
 from pages.settings.route import route_settings
 from pages.settings.tcp_client import tcp_settings
 from pages.settings import twincat_settings
@@ -43,10 +43,10 @@ def render(container: ui.element, ctx: PageContext) -> None:
                 subtitle=t("settings.subtitle", "Manage application settings and worker configuration."),
             )
 
-            with ui.column().classes("w-full flex-1 min-h-0 min-w-0 app-panel p-3"):
-                with ui.row().classes("w-full flex-1 min-h-0 min-w-0 overflow-hidden gap-3 no-wrap items-stretch"):
+            with ui.column().classes("w-full flex-1 min-h-0 min-w-0 app-panel p-1"):
+                with ui.row().classes("w-full flex-1 min-h-0 min-w-0 overflow-hidden gap-1 no-wrap items-stretch"):
                     left_col = ui.column().classes(
-                        "w-[290px] min-w-[240px] h-full min-h-0 overflow-y-auto shrink-0 app-panel p-2"
+                        "w-[290px] min-w-[240px] h-full min-h-0 overflow-y-auto shrink-0 app-panel p-1"
                     )
                     left_col.style("overscroll-behavior: contain;")
 
@@ -54,6 +54,7 @@ def render(container: ui.element, ctx: PageContext) -> None:
                         {"id": "general", "label": f"⚙️ {t('settings.general.title', 'General')}", "children": [
                             {"id": "general.core", "label": f"🛠️ {t('settings.general.core', 'General Settings')}"},
                             {"id": "general.themes", "label": f"🎨 {t('settings.general.themes', 'Color Themes')}"},
+                            {"id": "general.system", "label": "🖥️ Station & System"},
                             {"id": "general.startup", "label": f"🚀 {t('settings.general.startup', 'Startup')}"},
                             {"id": "general.users", "label": f"👤 {t('settings.general.users', 'User Management')}"},
                             {"id": "general.global_vars", "label": f"🌐 {t('settings.general.global_vars', 'Global Variables')}"},
@@ -65,7 +66,6 @@ def render(container: ui.element, ctx: PageContext) -> None:
                         {"id": "workers", "label": f"👷 {t('settings.workers.title', 'Workers')}", "children": [
                             {"id": "workers.enabled", "label": f"✅ {t('settings.workers.enabled', 'Enabled Workers')}"},
                             {"id": "workers.scripts", "label": f"💻 {t('settings.workers.scripts', 'Scripts')}"},
-                            {"id": "workers.blockly", "label": "🧩 Blockly Builder"},
                         ]},
                         {"id": "connectivity", "label": f"🔌 {t('settings.connectivity.title', 'Connectivity')}", "children": [
                             {"id": "connectivity.routes", "label": f"🧭 {t('settings.connectivity.routes', 'Routes')}"},
@@ -106,7 +106,7 @@ def render(container: ui.element, ctx: PageContext) -> None:
 
                         with right_col:
                             panel_scroll = ui.column().classes(
-                                "w-full h-full flex-1 min-h-0 min-w-0 overflow-y-auto overflow-x-hidden app-panel p-3"
+                                "w-full h-full flex-1 min-h-0 min-w-0 overflow-y-auto overflow-x-hidden app-panel p-1"
                             )
                             panel_scroll.style("overscroll-behavior: contain;")
 
@@ -118,11 +118,11 @@ def render(container: ui.element, ctx: PageContext) -> None:
                                     "general.startup": startup_settings.render,
                                     "general.users": user_management.render,
                                     "general.global_vars": global_variables_settings.render,
+                                    "general.system": system_info_settings.render,
                                     "runtime.app_state": app_state_view.render,
                                     "runtime.online": online_status.render,
                                     "workers.enabled": enabled_workers_settings.render,
                                     "workers.scripts": scripts_lab.render,
-                                    "workers.blockly": blockly_builder.render,
                                     "connectivity.routes": route_settings.render,
                                     "connectivity.tcp": tcp_settings.render,
                                     "connectivity.twincat": twincat_settings.render,
@@ -164,3 +164,4 @@ def render(container: ui.element, ctx: PageContext) -> None:
                         nav_tree.expand()
 
                     render_panel("general.core")
+

@@ -4,6 +4,10 @@ from services.script_api import PublicAutomationContext
 import time
 
 
+from services.script_metadata import default_script_meta
+
+SCRIPT_META = default_script_meta(__file__)
+
 def main(ctx: PublicAutomationContext):
     """
     Example script using generic automation APIs.
@@ -48,4 +52,3 @@ def main(ctx: PublicAutomationContext):
         pass
 
 # Export
-main = main

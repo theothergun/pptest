@@ -5,6 +5,7 @@ from typing import Any
 from nicegui import ui
 
 from layout.context import PageContext
+from layout.page_scaffold import build_page as build_view
 from loguru import logger
 from services.i18n import t
 from services.ui.view_action import publish_standard_view_action
@@ -19,12 +20,17 @@ CONTAINER_MGMT_WAIT_MODAL_KEY = view_wait_key(CONTAINER_MGMT_VIEW)
 
 def render(container: ui.element, ctx: PageContext) -> None:
     logger.debug("[render] - page_render - page=container_management")
-    container.style("overflow: auto !important; min-height: 0 !important;")
-    with container:
-        build_page(ctx)
+    build_view(
+        ctx,
+        container,
+        title=t("container_management.title", "Container Management"),
+        content=lambda _parent: build_content(ctx),
+        show_action_bar=False,
+        content_padding_classes="",
+    )
 
 
-def build_page(ctx: PageContext) -> None:
+def build_content(ctx: PageContext) -> None:
     worker_bus = ctx.workers.worker_bus
     page_timers: list = []
     ui_refs: dict[str, Any] = {
@@ -431,7 +437,7 @@ def build_page(ctx: PageContext) -> None:
                 ui.icon("inventory").classes("text-primary text-xs")
                 ui.label(t("container_management.active_container", "Active Container:")).classes("text-[11px] text-gray-500")
                 ui.label("").classes("text-sm font-bold") \
-                    .bind_text_from(ctx.state, "container_mgmt_active_container", backward=lambda n: str(n or "-"))
+                    .bind_text_from(ctx.state, "container_number", backward=lambda n: str(n or "-"))
 
         with ui.column().classes("w-full flex-1 min-h-0 gap-2"):
             with ui.card().classes("cm-card cm-half-card p-2 w-full flex-1"):

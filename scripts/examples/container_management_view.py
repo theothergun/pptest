@@ -4,6 +4,10 @@ from services.script_api import PublicAutomationContext, StateKeys
 import time
 
 
+from services.script_metadata import default_script_meta
+
+SCRIPT_META = default_script_meta(__file__)
+
 def _demo_container_rows() -> list[dict]:
 	return [
 		{"material_bin": "SP08000000AB", "part_number": "3618278074", "current_qty": "130/130"},
@@ -86,4 +90,3 @@ def main(ctx: PublicAutomationContext):
 
 
 # Export
-main = main

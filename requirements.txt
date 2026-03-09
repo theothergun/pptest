@@ -1,0 +1,8 @@
+# Core runtime dependencies inferred from imports
+nicegui
+loguru
+requests
+starlette
+pyserial
+asyncua
+pyads

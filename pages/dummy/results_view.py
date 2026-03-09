@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import json
-from datetime import date, datetime, timedelta
+from datetime import date, datetime
 from typing import Any, Dict, Optional
 
 from nicegui import ui
@@ -95,6 +95,11 @@ def render(container: ui.element, ctx: PageContext, *, max_range_days: int = 31)
 	# it gives the flex chain a real height to compute against.
 	# ui.query("body").classes("h-screen overflow-hidden")
 
+	colors = {
+		"dark": {"container_bg": "bg-[#1E293B]", "border_color": "border-gray-800","hover_color":"hover:bg-gray-800", "selected_color":"bg-[#2A3A5F]"},
+		"light": {"container_bg": "bg-[#EEF1F4]", "border_color": "border-gray-100","hover_color":"hover:bg-gray-50", "selected_color":"bg-[#how to set hovetr sdfereef]"}}
+
+
 	def build_content(_parent: ui.element) -> None:
 		available_set_names = [s.name for s in (ctx.dummy_controller.edition_state.sets or [])]
 		st = ResultsViewState(max_range_days=max_range_days)
@@ -123,9 +128,11 @@ def render(container: ui.element, ctx: PageContext, *, max_range_days: int = 31)
 			for i, r in enumerate(st.records):
 				sel = (st.selected_index == i)
 				row_cls = "w-full px-3 py-2 border-b cursor-pointer"
-				row_style = "border-color:var(--input-border);"
+				row_style = "border-color:var(--tbl-row-separator);"
 				if sel:
-					row_style += " background:var(--surface-muted);"
+					row_style += " background:var(--tbl-row-selected);"
+				else:
+					row_cls+= " row-hover"
 
 				started = _fmt_dt(str(r.get("started_at", "")))
 				set_name = str(r.get("set_name", "-"))
@@ -169,7 +176,7 @@ def render(container: ui.element, ctx: PageContext, *, max_range_days: int = 31)
 				values = (drec.get("values") or {})
 
 				with ui.expansion(dummy_name, icon="assignment", value=True).classes(
-						"w-full rounded-xl border border-slate-200/60"):
+						f"w-full rounded-xl border").style("border-color:var(--input-border);"):
 
 					if not values:
 						ui.label("No captured inspection values").classes("text-sm opacity-60")
@@ -207,18 +214,18 @@ def render(container: ui.element, ctx: PageContext, *, max_range_days: int = 31)
 			st.mode = mode
 			right_detail.refresh()
 
-		# ---------------- ROOT (same idea as your working Config view) ----------------
-		with ui.column().classes("w-full h-full min-h-0 flex flex-col overflow-hidden gap-3"):
+		# ---------------- ROOT ----------------
+		with ui.column().classes(
+				f"w-full h-full min-h-0 flex flex-col overflow-hidden gap-3 rounded-2xl p-4").style(
+				"background:var(--surface-muted)"):
 			# HEADER (fixed)
-			#with ui.row().classes(
+			# with ui.row().classes(
 			#		"w-full items-center justify-between px-4 py-2 bg-primary text-white rounded-xl shrink-0"):
 			#	ui.label("Dummy Test Results").classes("text-base font-semibold")
 			#	ui.icon("insights").classes("text-lg")
 
 			# FILTER (fixed)
-			with ui.card().classes("w-full p-3 rounded-xl border border-slate-200/60 shadow-sm shrink-0").style(
-				"background:var(--surface); border-color:var(--input-border);"
-			):
+			with ui.card().classes("w-full p-3 rounded-xl shrink-0").style("background:var(--surface);"):
 				with ui.row().classes("w-full items-end gap-3"):
 					date_range_selector(st)
 
@@ -238,27 +245,22 @@ def render(container: ui.element, ctx: PageContext, *, max_range_days: int = 31)
 			# BODY (fills remaining height)
 			with ui.row().classes("w-full flex-1 min-h-0 overflow-hidden gap-3"):
 				# LEFT CARD
-				with ui.card().classes(
-						"w-[360px] min-w-[360px] h-full overflow-hidden "
-						"rounded-xl shadow-sm border border-slate-200/60 p-0 flex flex-col"
-				).style("background:var(--surface); border-color:var(--input-border);"):
-					with ui.row().classes(
-							"w-full items-center justify-between px-3 py-2 border-b border-slate-200/60 shrink-0"
-					).style("background:var(--surface); border-color:var(--input-border);"):
+				with ui.card().classes("w-[360px] min-w-[360px] h-full overflow-hidden rounded-xl p-0 flex flex-col"
+				).style("background:var(--surface);"):
+					with ui.row().classes("w-full items-center justify-between px-3 py-2 border-b shrink-0"
+					).style("border-color:var(--input-border);"):
 						left_header()
 
 					# only this scrolls
-					with ui.scroll_area().classes("w-full flex-1 min-h-0").style("background:var(--surface);"):
+					with ui.scroll_area().classes("w-full flex-1 min-h-0"):#.style("background:var(--surface);"):
 						left_list()
 
 				# RIGHT CARD
-				with ui.card().classes(
-						"flex-1 h-full overflow-hidden rounded-xl shadow-sm border border-slate-200/60 p-0 flex flex-col"
-				).style("background:var(--surface); border-color:var(--input-border);"):
+				with ui.card().classes("flex-1 h-full overflow-hidden rounded-xl p-0 flex flex-col"
+				).style("background:var(--surface);"):
 					# fixed header
-					with ui.row().classes(
-							"w-full items-center justify-between px-3 py-2 border-b border-slate-200/60 shrink-0"
-					).style("background:var(--surface); border-color:var(--input-border);"):
+					with ui.row().classes("w-full items-center justify-between px-3 py-2 border-b shrink-0"
+					).style("border-color:var(--input-border);"):
 						ui.label("Details").classes("text-sm font-semibold")
 
 						def mode_btn(icon: str, mode: str, tooltip: str) -> None:
@@ -273,7 +275,7 @@ def render(container: ui.element, ctx: PageContext, *, max_range_days: int = 31)
 							mode_btn("data_object", "raw", "Raw JSON")
 
 					# only this scrolls
-					with ui.scroll_area().classes("w-full flex-1 min-h-0 p-3").style("background:var(--surface);"):
+					with ui.scroll_area().classes("w-full flex-1 min-h-0 p-3"):#.style("background:var(--surface);"):
 						right_detail()
 
 		# Load once after the UI exists (so you actually see data without clicking)

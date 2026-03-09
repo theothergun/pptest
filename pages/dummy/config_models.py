@@ -2,7 +2,7 @@
 # Data models (dummy data)
 # -----------------------------
 from dataclasses import dataclass, field, asdict
-from typing import List, Optional
+from typing import List, Optional, Dict
 import json
 from pathlib import Path
 from typing import List, Any
@@ -93,17 +93,31 @@ def build_demo_sets() -> List[DummySet]:
 # View / State
 # -----------------------------
 
-def _deserialize_sets(data) -> List[DummySet]:
-	# data is list[dict]
+def _deserialize_state(edition_state, data: Dict[str, Any]) -> None:
+	"""
+	Restore BOTH sets + scheduler into an existing edition_state.
+	Use this for rollback and for any "reload from json" operations.
+	"""
+	# ----- scheduler -----
+	# Keep your dataclass name here:
+	sched_raw = data.get("scheduler") or {}
+	edition_state.scheduler = DummySchedulerSettings(**sched_raw)
+
+	# ----- sets -----
+	raw_sets = data.get("sets", []) or []
 	sets: List[DummySet] = []
-	for s in data:
+
+	for s in raw_sets:
 		dummies: List[DummyTest] = []
-		for d in s["dummies"]:
-			inspections = [Inspection(**i) for i in d["inspections"]]
-			dummies.append(DummyTest(id=d["id"], name=d["name"], is_checked=d.get("is_checked", False),
-									 inspections=inspections))
+		for d in (s.get("dummies", []) or []):
+			inspections = [Inspection(**i) for i in (d.get("inspections", []) or [])]
+			dummies.append(
+				DummyTest(id=d["id"], name=d["name"], is_checked=d.get("is_checked", False), inspections=inspections))
+
 		sets.append(DummySet(id=s["id"], name=s["name"], dummies=dummies))
-	return sets
+
+	edition_state.sets = sets
+
 
 
 def _get_previous_selected(previous_selected_id: int, data:list):
@@ -155,14 +169,6 @@ def dict_to_sets(data: Any) -> List["DummySet"]:
 	return sets
 
 
-def save_config_file(state: DummyEditionState, path: Path = CONFIG_FILE) -> None:
-	payload = get_state_payload(state)
-	path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
-
-def get_state_payload(state: DummyEditionState) -> dict:
-	return {"version": 1, "sets": sets_to_dict(state.sets), "scheduler": asdict(state.scheduler)}
-
-
 def load_config_file(state) -> None:
 	if not CONFIG_FILE.exists():
 		return
@@ -180,6 +186,7 @@ def load_config_file(state) -> None:
 		for k, v in sched.items():
 			if hasattr(state.scheduler, k):
 				setattr(state.scheduler, k, v)
+
 
 class DummyEditionState:
 	def __init__(self) -> None:
@@ -220,6 +227,9 @@ class DummyEditionState:
 		}
 		return json.dumps(payload, sort_keys=True)
 
+	def save_state(self):
+		self._baseline_json = self._serialize_state()
+
 	@property
 	def has_changes(self) -> bool:
 		return self._dirty
@@ -238,7 +248,7 @@ class DummyEditionState:
 		"""Revert to baseline."""
 		baseline_data = json.loads(self._baseline_json)
 		# easiest: rebuild dataclasses from dicts (see note below)
-		self.sets = _deserialize_sets(baseline_data) or []
+		_deserialize_state(self, baseline_data)
 		self.selected_set = _get_previous_selected(self.selected_set.id, self.sets)
 		dummies = self.selected_set.dummies if self.selected_set else []
 		selected_dummy = _get_previous_selected(self.selected_dummy_id, dummies)
@@ -281,3 +291,12 @@ class DummyEditionState:
 	def all_inspection_selected(self) -> bool:
 		st = self.inspections()
 		return len(st) > 0 and all(s.is_checked for s in st)
+
+
+
+def save_config_file(state: DummyEditionState, path: Path = CONFIG_FILE) -> None:
+	payload = get_state_payload(state)
+	path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+
+def get_state_payload(state: DummyEditionState) -> dict:
+	return {"version": 1, "sets": sets_to_dict(state.sets), "scheduler": asdict(state.scheduler)}

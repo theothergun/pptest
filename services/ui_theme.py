@@ -49,7 +49,7 @@ def apply_ui_theme(cfg: AppConfig) -> None:
         """
         <style>
             :root {
-        %s
+        __CSS_VARS__
             }
 
             html, body, #app, .nicegui-content {
@@ -144,13 +144,45 @@ def apply_ui_theme(cfg: AppConfig) -> None:
             .app-nav-item {
                 border-radius: 12px;
                 justify-content: flex-start;
-                min-height: 42px;
+                min-height: 40px;
                 font-weight: 600;
+                font-size: 0.92rem;
+                padding: 8px 10px;
+                border: 1px solid transparent;
+                color: var(--drawer-text) !important;
+                transition: background-color 140ms ease, border-color 140ms ease, transform 140ms ease;
+            }
+
+            .app-nav-item .q-btn__content {
+                width: 100%;
+                justify-content: flex-start;
+                gap: 8px;
+                flex-wrap: nowrap !important;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+
+            .app-nav-item .q-icon,
+            .app-nav-item .block {
+                color: inherit !important;
+            }
+
+            .app-nav-item:hover {
+                background: color-mix(in srgb, var(--primary) 10%, transparent) !important;
+                border-color: color-mix(in srgb, var(--primary) 30%, transparent);
+                transform: translateX(1px);
             }
 
             .app-nav-item.q-btn--active,
             .app-nav-item.app-nav-item-active {
                 background: var(--primary) !important;
+                color: #ffffff !important;
+                border-color: color-mix(in srgb, var(--primary) 65%, #ffffff 35%) !important;
+            }
+
+            .app-nav-item.q-btn--active *,
+            .app-nav-item.app-nav-item-active * {
                 color: #ffffff !important;
             }
 
@@ -164,5 +196,5 @@ def apply_ui_theme(cfg: AppConfig) -> None:
             }
         </style>
         """
-        % css_vars
+        .replace("__CSS_VARS__", css_vars)
     )

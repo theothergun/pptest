@@ -35,6 +35,8 @@ COLOR_KEYS = [
     "status-bad",
     "status-info",
     "status-muted",
+	"tbl-row-selected",
+	"tbl-row-separator"
 ]
 
 

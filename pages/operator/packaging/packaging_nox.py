@@ -5,6 +5,7 @@ from typing import Any
 
 from nicegui import ui
 from layout.context import PageContext
+from layout.page_scaffold import build_page as build_view
 from services.i18n import t
 from loguru import logger
 from services.app_config import get_app_config
@@ -21,11 +22,17 @@ PACKAGING_NOX_WAIT_MODAL_KEY = view_wait_key(PACKAGING_NOX_VIEW)
 
 def render(container: ui.element, ctx: PageContext) -> None:
 	logger.debug(f"[render] - page_render - page=packaging_nox")
-	with container:
-		build_page(ctx)
+	build_view(
+		ctx,
+		container,
+		title=t("packaging.title", "Packaging Station"),
+		content=lambda _parent: build_content(ctx),
+		show_action_bar=False,
+		content_padding_classes="",
+	)
 
 
-def build_page(ctx: PageContext) -> None:
+def build_content(ctx: PageContext) -> None:
 	cfg = get_app_config()
 	worker_bus = ctx.workers.worker_bus
 	bridge = ctx.bridge

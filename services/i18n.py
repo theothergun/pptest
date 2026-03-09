@@ -137,25 +137,24 @@ def get_language() -> str:
     Outside UI context (e.g. script runtime threads), fall back to
     app-wide storage and finally DEFAULT_LANGUAGE.
     """
-    lang = DEFAULT_LANGUAGE
-
     # Per-user language (only valid inside NiceGUI UI context).
     try:
-        lang = app.storage.user.get("language", DEFAULT_LANGUAGE)
+        user_lang = app.storage.user.get("language")
+        if user_lang in SUPPORTED_LANGUAGE_CODES:
+            return str(user_lang)
     except Exception:
         # RuntimeError is expected outside UI context.
         pass
 
     # App-wide fallback, available without user context.
-    if lang not in SUPPORTED_LANGUAGE_CODES:
-        try:
-            lang = app.storage.general.get("language", DEFAULT_LANGUAGE)
-        except Exception:
-            lang = DEFAULT_LANGUAGE
+    try:
+        general_lang = app.storage.general.get("language")
+        if general_lang in SUPPORTED_LANGUAGE_CODES:
+            return str(general_lang)
+    except Exception:
+        pass
 
-    if lang not in SUPPORTED_LANGUAGE_CODES:
-        return DEFAULT_LANGUAGE
-    return str(lang)
+    return DEFAULT_LANGUAGE
 
 
 def set_language(language: str) -> str:
